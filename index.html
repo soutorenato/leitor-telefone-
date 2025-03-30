@@ -28,13 +28,21 @@
     const output = document.getElementById('output');
     const errorEl = document.getElementById('error');
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        errorEl.innerText = "Erro ao acessar a câmera: " + err.message;
-      });
+    function iniciarCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        errorEl.innerText = "Seu navegador não suporta acesso à câmera.";
+        return;
+      }
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          errorEl.innerText = "Erro ao acessar a câmera: " + err.message +
+                              "\\nVerifique se o navegador tem permissão.";
+        });
+    }
 
     function scan() {
       canvas.width = video.videoWidth;
@@ -55,6 +63,9 @@
         errorEl.innerText = "Erro no reconhecimento: " + err.message;
       });
     }
+
+    // Iniciar a câmera ao carregar a página
+    window.onload = iniciarCamera;
   </script>
 </body>
 </html>
