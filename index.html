@@ -1,77 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Leitor de Telefone por Imagem</title>
+  <title>Scanner por Câmera - OCR</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    input[type="file"] { margin-top: 20px; }
-    img { max-width: 100%; height: auto; margin-top: 20px; display: none; }
+    video { width: 100%; max-width: 400px; margin-top: 20px; }
+    canvas { display: none; }
     button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
-    #output { margin-top: 20px; font-size: 18px; font-weight: bold; }
+    #output { margin-top: 20px; font-size: 18px; white-space: pre-wrap; }
     #status { margin-top: 10px; color: blue; }
     #error { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Leitor de Telefone por Imagem</h1>
-  <p>Envie uma imagem com número de telefone</p>
-  <input type="file" id="imageInput" accept="image/*">
+  <h1>Scanner por Câmera</h1>
+  <p>Aponte a câmera para qualquer texto e clique abaixo</p>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
   <br>
-  <img id="preview" alt="Prévia da imagem">
-  <br>
-  <button id="lerBtn" onclick="lerImagem()" disabled>Ler Número</button>
+  <button onclick="scanText()">Escanear Texto</button>
   <p id="status"></p>
   <p id="output"></p>
   <p id="error"></p>
 
   <script>
-    const input = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
     const output = document.getElementById('output');
     const status = document.getElementById('status');
     const error = document.getElementById('error');
-    const lerBtn = document.getElementById('lerBtn');
 
-    input.addEventListener('change', () => {
-      const file = input.files[0];
-      if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
-        status.innerText = "Carregando imagem...";
-        output.innerText = "";
-        error.innerText = "";
-        lerBtn.disabled = true;
+    function iniciarCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        error.innerText = "Seu navegador não suporta acesso à câmera.";
+        return;
       }
-    });
 
-    preview.onload = () => {
-      status.innerText = "Imagem carregada com sucesso. Pronta para leitura.";
-      lerBtn.disabled = false;
-    };
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          error.innerText = "Erro ao acessar a câmera: " + err.message;
+        });
+    }
 
-    function lerImagem() {
-      status.innerText = "Lendo número, aguarde...";
+    function scanText() {
+      status.innerText = "Lendo texto, aguarde...";
       output.innerText = "";
       error.innerText = "";
 
-      Tesseract.recognize(preview, 'eng').then(({ data: { text } }) => {
-        const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
-        if (phone && phone[0]) {
-          const numeroLimpo = phone[0].replace(/\\D/g, '');
-          const link = `https://wa.me/55${numeroLimpo}`;
-          output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
-          status.innerText = "Leitura concluída com sucesso.";
-        } else {
-          output.innerText = "Número não encontrado.";
-          status.innerText = "";
-        }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      Tesseract.recognize(canvas, 'eng').then(({ data: { text } }) => {
+        output.innerText = text;
+        status.innerText = "Leitura concluída.";
       }).catch(err => {
         error.innerText = "Erro no OCR: " + err.message;
         status.innerText = "";
       });
     }
+
+    window.onload = iniciarCamera;
   </script>
 </body>
 </html>
