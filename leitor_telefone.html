@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leitor de Telefone</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <h1>Escanear número de telefone</h1>
+  <video id="video" width="300" autoplay></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <button onclick="scan()">Ler Número</button>
+  <p id="output"></p>
+
+  <script>
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        document.getElementById('video').srcObject = stream;
+      });
+
+    function scan() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      Tesseract.recognize(
+        canvas,
+        'eng',
+        { logger: m => console.log(m) }
+      ).then(({ data: { text } }) => {
+        const phone = text.match(/(\(?\d{2}\)?\s?\d{4,5}-?\d{4})/g);
+        document.getElementById('output').innerText = phone ? phone.join(', ') : "Número não encontrado.";
+      });
+    }
+  </script>
+</body>
+</html>
