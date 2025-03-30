@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Scanner por Câmera - OCR</title>
+  <title>Scanner por Câmera com Melhor Leitura</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
     video { width: 100%; max-width: 400px; margin-top: 20px; }
-    canvas { display: none; }
+    canvas, img { display: none; }
     button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
     #output { margin-top: 20px; font-size: 18px; white-space: pre-wrap; }
     #status { margin-top: 10px; color: blue; }
@@ -15,8 +15,8 @@
   </style>
 </head>
 <body>
-  <h1>Scanner por Câmera</h1>
-  <p>Aponte a câmera para qualquer texto e clique abaixo</p>
+  <h1>Scanner com Câmera (Melhorado)</h1>
+  <p>Aponte para um texto e clique abaixo</p>
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas"></canvas>
   <br>
@@ -33,11 +33,6 @@
     const error = document.getElementById('error');
 
     function iniciarCamera() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        error.innerText = "Seu navegador não suporta acesso à câmera.";
-        return;
-      }
-
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
           video.srcObject = stream;
@@ -47,8 +42,22 @@
         });
     }
 
+    function preprocessImage(ctx, width, height) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        const gray = 0.3 * r + 0.59 * g + 0.11 * b;
+        const bw = gray > 140 ? 255 : 0; // binarização (threshold)
+        data[i] = data[i + 1] = data[i + 2] = bw;
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    }
+
     function scanText() {
-      status.innerText = "Lendo texto, aguarde...";
+      status.innerText = "Processando imagem...";
       output.innerText = "";
       error.innerText = "";
 
@@ -57,13 +66,17 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      Tesseract.recognize(canvas, 'eng').then(({ data: { text } }) => {
-        output.innerText = text;
-        status.innerText = "Leitura concluída.";
-      }).catch(err => {
-        error.innerText = "Erro no OCR: " + err.message;
-        status.innerText = "";
-      });
+      preprocessImage(ctx, canvas.width, canvas.height);
+
+      Tesseract.recognize(canvas, 'eng')
+        .then(({ data: { text } }) => {
+          output.innerText = text;
+          status.innerText = "Leitura concluída.";
+        })
+        .catch(err => {
+          error.innerText = "Erro no OCR: " + err.message;
+          status.innerText = "";
+        });
     }
 
     window.onload = iniciarCamera;
