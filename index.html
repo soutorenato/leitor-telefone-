@@ -1,71 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Leitor de Telefone com WhatsApp</title>
+  <title>Teste da Câmera</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     video { width: 100%; max-width: 400px; margin-top: 20px; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
-    #output { margin-top: 20px; font-size: 18px; font-weight: bold; }
-    #error { color: red; margin-top: 20px; }
+    #erro { color: red; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>Leitor de Telefone</h1>
-  <p>Aponte a câmera para um número e clique abaixo</p>
+  <h1>Teste de Câmera</h1>
+  <p>Se estiver funcionando, a câmera deve aparecer abaixo:</p>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <br>
-  <button onclick="scan()">Ler Número</button>
-  <p id="output"></p>
-  <p id="error"></p>
+  <p id="erro"></p>
 
   <script>
     const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const output = document.getElementById('output');
-    const errorEl = document.getElementById('error');
+    const erro = document.getElementById('erro');
 
-    function iniciarCamera() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        errorEl.innerText = "Seu navegador não suporta acesso à câmera.";
-        return;
-      }
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          errorEl.innerText = "Erro ao acessar a câmera: " + err.message +
-                              "\\nVerifique se o navegador tem permissão.";
-        });
-    }
-
-    function scan() {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      Tesseract.recognize(canvas, 'eng').then(({ data: { text } }) => {
-        const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
-        if (phone && phone[0]) {
-          const numeroLimpo = phone[0].replace(/\\D/g, '');
-          const link = `https://wa.me/55${numeroLimpo}`;
-          output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
-        } else {
-          output.innerText = "Número não encontrado.";
-        }
-      }).catch(err => {
-        errorEl.innerText = "Erro no reconhecimento: " + err.message;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        erro.innerText = "Erro ao acessar a câmera: " + err.message;
       });
-    }
-
-    // Iniciar a câmera ao carregar a página
-    window.onload = iniciarCamera;
   </script>
 </body>
 </html>
