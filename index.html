@@ -19,9 +19,9 @@
   <p>Envie uma imagem com número de telefone</p>
   <input type="file" id="imageInput" accept="image/*">
   <br>
-  <img id="preview">
+  <img id="preview" alt="Prévia da imagem">
   <br>
-  <button onclick="lerImagem()">Ler Número</button>
+  <button id="lerBtn" onclick="lerImagem()" disabled>Ler Número</button>
   <p id="status"></p>
   <p id="output"></p>
   <p id="error"></p>
@@ -32,29 +32,27 @@
     const output = document.getElementById('output');
     const status = document.getElementById('status');
     const error = document.getElementById('error');
-
-    let imagemCarregada = false;
+    const lerBtn = document.getElementById('lerBtn');
 
     input.addEventListener('change', () => {
       const file = input.files[0];
       if (file) {
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
-        imagemCarregada = true;
-        status.innerText = "Imagem carregada. Pronta para leitura.";
+        status.innerText = "Carregando imagem...";
         output.innerText = "";
         error.innerText = "";
+        lerBtn.disabled = true;
       }
     });
 
-    function lerImagem() {
-      if (!imagemCarregada) {
-        status.innerText = "";
-        error.innerText = "Por favor, selecione uma imagem primeiro.";
-        return;
-      }
+    preview.onload = () => {
+      status.innerText = "Imagem carregada com sucesso. Pronta para leitura.";
+      lerBtn.disabled = false;
+    };
 
-      status.innerText = "Processando imagem...";
+    function lerImagem() {
+      status.innerText = "Lendo número, aguarde...";
       output.innerText = "";
       error.innerText = "";
 
@@ -64,7 +62,7 @@
           const numeroLimpo = phone[0].replace(/\\D/g, '');
           const link = `https://wa.me/55${numeroLimpo}`;
           output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
-          status.innerText = "Leitura concluída.";
+          status.innerText = "Leitura concluída com sucesso.";
         } else {
           output.innerText = "Número não encontrado.";
           status.innerText = "";
