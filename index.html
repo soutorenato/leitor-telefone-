@@ -1,31 +1,60 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Teste de Câmera</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      body { text-align: center; font-family: Arial; padding: 20px; }
-      video { width: 100%; max-width: 400px; }
-      #error { color: red; margin-top: 20px; }
-    </style>
-  </head>
-  <body>
-    <h2>Teste de Câmera</h2>
-    <p>Se a câmera estiver funcionando, ela aparecerá abaixo.</p>
-    <video id="video" autoplay playsinline></video>
-    <p id="error"></p>
+<head>
+  <title>Leitor de Telefone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    video { width: 100%; max-width: 400px; margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    #output { margin-top: 20px; font-size: 18px; font-weight: bold; }
+    #error { color: red; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Leitor de Telefone</h1>
+  <p>Aponte a câmera para um número de telefone</p>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <br>
+  <button onclick="scan()">Ler Número</button>
+  <p id="output"></p>
+  <p id="error"></p>
 
-    <script>
-      const video = document.getElementById('video');
-      const errorEl = document.getElementById('error');
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const output = document.getElementById('output');
+    const errorEl = document.getElementById('error');
 
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          errorEl.innerText = "Erro ao acessar a câmera: " + err.message;
-        });
-    </script>
-  </body>
+    // Acessar a câmera traseira
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        errorEl.innerText = "Erro ao acessar a câmera: " + err.message +
+                            "\\nVerifique se o navegador tem permissão.";
+      });
+
+    function scan() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      Tesseract.recognize(
+        canvas,
+        'eng',
+        { logger: m => console.log(m) }
+      ).then(({ data: { text } }) => {
+        const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
+        output.innerText = phone ? "Número detectado: " + phone.join(', ') : "Número não encontrado.";
+      }).catch(err => {
+        errorEl.innerText = "Erro no reconhecimento de texto: " + err.message;
+      });
+    }
+  </script>
+</body>
 </html>
