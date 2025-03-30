@@ -7,9 +7,11 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
     input[type="file"] { margin-top: 20px; }
-    img { max-width: 100%; height: auto; margin-top: 20px; }
+    img { max-width: 100%; height: auto; margin-top: 20px; display: none; }
     button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
     #output { margin-top: 20px; font-size: 18px; font-weight: bold; }
+    #status { margin-top: 10px; color: blue; }
+    #error { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -17,40 +19,59 @@
   <p>Envie uma imagem com número de telefone</p>
   <input type="file" id="imageInput" accept="image/*">
   <br>
-  <img id="preview" style="display:none;">
+  <img id="preview">
   <br>
   <button onclick="lerImagem()">Ler Número</button>
+  <p id="status"></p>
   <p id="output"></p>
+  <p id="error"></p>
 
   <script>
     const input = document.getElementById('imageInput');
     const preview = document.getElementById('preview');
     const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    const error = document.getElementById('error');
+
+    let imagemCarregada = false;
 
     input.addEventListener('change', () => {
       const file = input.files[0];
       if (file) {
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
+        imagemCarregada = true;
+        status.innerText = "Imagem carregada. Pronta para leitura.";
+        output.innerText = "";
+        error.innerText = "";
       }
     });
 
     function lerImagem() {
-      output.innerText = "Lendo imagem...";
-      Tesseract.recognize(
-        preview,
-        'eng'
-      ).then(({ data: { text } }) => {
+      if (!imagemCarregada) {
+        status.innerText = "";
+        error.innerText = "Por favor, selecione uma imagem primeiro.";
+        return;
+      }
+
+      status.innerText = "Processando imagem...";
+      output.innerText = "";
+      error.innerText = "";
+
+      Tesseract.recognize(preview, 'eng').then(({ data: { text } }) => {
         const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
         if (phone && phone[0]) {
           const numeroLimpo = phone[0].replace(/\\D/g, '');
           const link = `https://wa.me/55${numeroLimpo}`;
           output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
+          status.innerText = "Leitura concluída.";
         } else {
           output.innerText = "Número não encontrado.";
+          status.innerText = "";
         }
       }).catch(err => {
-        output.innerText = "Erro no OCR: " + err.message;
+        error.innerText = "Erro no OCR: " + err.message;
+        status.innerText = "";
       });
     }
   </script>
