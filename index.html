@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Teste de Câmera</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { text-align: center; font-family: Arial; padding: 20px; }
+      video { width: 100%; max-width: 400px; }
+      #error { color: red; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <h2>Teste de Câmera</h2>
+    <p>Se a câmera estiver funcionando, ela aparecerá abaixo.</p>
+    <video id="video" autoplay playsinline></video>
+    <p id="error"></p>
+
+    <script>
+      const video = document.getElementById('video');
+      const errorEl = document.getElementById('error');
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          errorEl.innerText = "Erro ao acessar a câmera: " + err.message;
+        });
+    </script>
+  </body>
+</html>
