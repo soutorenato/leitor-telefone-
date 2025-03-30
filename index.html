@@ -1,31 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teste da Câmera</title>
+  <title>Leitor de Telefone por Imagem</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    video { width: 100%; max-width: 400px; margin-top: 20px; }
-    #erro { color: red; margin-top: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    input[type="file"] { margin-top: 20px; }
+    img { max-width: 100%; height: auto; margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    #output { margin-top: 20px; font-size: 18px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Teste de Câmera</h1>
-  <p>Se estiver funcionando, a câmera deve aparecer abaixo:</p>
-  <video id="video" autoplay playsinline></video>
-  <p id="erro"></p>
+  <h1>Leitor de Telefone por Imagem</h1>
+  <p>Envie uma imagem com número de telefone</p>
+  <input type="file" id="imageInput" accept="image/*">
+  <br>
+  <img id="preview" style="display:none;">
+  <br>
+  <button onclick="lerImagem()">Ler Número</button>
+  <p id="output"></p>
 
   <script>
-    const video = document.getElementById('video');
-    const erro = document.getElementById('erro');
+    const input = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const output = document.getElementById('output');
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        erro.innerText = "Erro ao acessar a câmera: " + err.message;
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      }
+    });
+
+    function lerImagem() {
+      output.innerText = "Lendo imagem...";
+      Tesseract.recognize(
+        preview,
+        'eng'
+      ).then(({ data: { text } }) => {
+        const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
+        if (phone && phone[0]) {
+          const numeroLimpo = phone[0].replace(/\\D/g, '');
+          const link = `https://wa.me/55${numeroLimpo}`;
+          output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
+        } else {
+          output.innerText = "Número não encontrado.";
+        }
+      }).catch(err => {
+        output.innerText = "Erro no OCR: " + err.message;
       });
+    }
   </script>
 </body>
 </html>
