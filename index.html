@@ -1,85 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Scanner por Câmera com Melhor Leitura</title>
+  <title>QR Code para WhatsApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    video { width: 100%; max-width: 400px; margin-top: 20px; }
-    canvas, img { display: none; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
-    #output { margin-top: 20px; font-size: 18px; white-space: pre-wrap; }
-    #status { margin-top: 10px; color: blue; }
-    #error { color: red; margin-top: 10px; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    input, textarea { width: 90%; max-width: 400px; padding: 10px; margin-top: 10px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+    canvas { margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>Scanner com Câmera (Melhorado)</h1>
-  <p>Aponte para um texto e clique abaixo</p>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas"></canvas>
+  <h1>QR Code para WhatsApp</h1>
+  <p>Digite o número com DDD (somente números) e a mensagem:</p>
+
+  <input type="tel" id="telefone" placeholder="11999998888" />
+  <textarea id="mensagem" rows="3" placeholder="Digite sua mensagem...">Olá! Tudo bem?</textarea>
   <br>
-  <button onclick="scanText()">Escanear Texto</button>
-  <p id="status"></p>
-  <p id="output"></p>
-  <p id="error"></p>
+  <button onclick="gerarQRCode()">Gerar QR Code</button>
+  <br>
+  <canvas id="qrcode"></canvas>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const output = document.getElementById('output');
-    const status = document.getElementById('status');
-    const error = document.getElementById('error');
+    function gerarQRCode() {
+      const telefone = document.getElementById('telefone').value.replace(/\\D/g, '');
+      const mensagem = encodeURIComponent(document.getElementById('mensagem').value);
+      const canvas = document.getElementById('qrcode');
 
-    function iniciarCamera() {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          error.innerText = "Erro ao acessar a câmera: " + err.message;
-        });
-    }
-
-    function preprocessImage(ctx, width, height) {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const data = imageData.data;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2];
-        const gray = 0.3 * r + 0.59 * g + 0.11 * b;
-        const bw = gray > 140 ? 255 : 0; // binarização (threshold)
-        data[i] = data[i + 1] = data[i + 2] = bw;
+      if (!telefone) {
+        alert("Por favor, insira um número de telefone válido.");
+        return;
       }
 
-      ctx.putImageData(imageData, 0, 0);
+      const url = `https://wa.me/55${telefone}?text=${mensagem}`;
+
+      QRCode.toCanvas(canvas, url, { width: 300 }, function (error) {
+        if (error) {
+          console.error(error);
+          alert("Erro ao gerar o QR Code.");
+        } else {
+          console.log("QR Code gerado com sucesso!");
+        }
+      });
     }
-
-    function scanText() {
-      status.innerText = "Processando imagem...";
-      output.innerText = "";
-      error.innerText = "";
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      preprocessImage(ctx, canvas.width, canvas.height);
-
-      Tesseract.recognize(canvas, 'eng')
-        .then(({ data: { text } }) => {
-          output.innerText = text;
-          status.innerText = "Leitura concluída.";
-        })
-        .catch(err => {
-          error.innerText = "Erro no OCR: " + err.message;
-          status.innerText = "";
-        });
-    }
-
-    window.onload = iniciarCamera;
   </script>
 </body>
 </html>
