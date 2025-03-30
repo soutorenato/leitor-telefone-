@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Leitor de Telefone</title>
+  <title>Leitor de Telefone com WhatsApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
   <style>
@@ -14,7 +14,7 @@
 </head>
 <body>
   <h1>Leitor de Telefone</h1>
-  <p>Aponte a câmera para um número de telefone</p>
+  <p>Aponte a câmera para um número e clique abaixo</p>
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" style="display:none;"></canvas>
   <br>
@@ -28,14 +28,12 @@
     const output = document.getElementById('output');
     const errorEl = document.getElementById('error');
 
-    // Acessar a câmera traseira
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       .then(stream => {
         video.srcObject = stream;
       })
       .catch(err => {
-        errorEl.innerText = "Erro ao acessar a câmera: " + err.message +
-                            "\\nVerifique se o navegador tem permissão.";
+        errorEl.innerText = "Erro ao acessar a câmera: " + err.message;
       });
 
     function scan() {
@@ -44,15 +42,17 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      Tesseract.recognize(
-        canvas,
-        'eng',
-        { logger: m => console.log(m) }
-      ).then(({ data: { text } }) => {
+      Tesseract.recognize(canvas, 'eng').then(({ data: { text } }) => {
         const phone = text.match(/(\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4})/g);
-        output.innerText = phone ? "Número detectado: " + phone.join(', ') : "Número não encontrado.";
+        if (phone && phone[0]) {
+          const numeroLimpo = phone[0].replace(/\\D/g, '');
+          const link = `https://wa.me/55${numeroLimpo}`;
+          output.innerHTML = `Número detectado: ${phone[0]}<br><a href="${link}" target="_blank">Abrir no WhatsApp</a>`;
+        } else {
+          output.innerText = "Número não encontrado.";
+        }
       }).catch(err => {
-        errorEl.innerText = "Erro no reconhecimento de texto: " + err.message;
+        errorEl.innerText = "Erro no reconhecimento: " + err.message;
       });
     }
   </script>
