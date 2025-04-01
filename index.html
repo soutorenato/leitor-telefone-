@@ -54,36 +54,6 @@
       </div>
     </nav>
     
-    <div class="container-fluid mt-4">
-      <div class="row mb-4">
-        <!-- Card de Consultorias -->
-        <div class="col-md-4" id="consultoriaCard">
-          <div class="card mb-3">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title">Consultorias</h5>
-                <div class="icons-container">
-                  <span class="icon-wrapper consultorias-action" data-tooltip="Adicionar">
-                    <i class="ri-play-circle-line icon-line"></i>
-                    <i class="ri-play-circle-fill icon-fill"></i>
-                  </span>
-                  <span class="icon-wrapper consultorias-history" data-tooltip="Consultar">
-                    <i class="ri-pie-chart-line icon-line"></i>
-                    <i class="ri-pie-chart-fill icon-fill"></i>
-                  </span>
-                </div>
-              </div>
-              <div class="d-flex gap-2 w-100 justify-content-between">
-                <button class="btn btn-outline-primary flex-fill" id="consultoriasDayBtn">
-                  Dia: <span id="consultoriasDay">0</span>
-                </button>
-                <button class="btn btn-outline-secondary flex-fill" id="consultoriasMonthBtn">
-                  Mês: <span id="consultoriasMonth">0</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
         
 <!-- Card de Vendas - Gestão -->
 <div class="col-md-4">
@@ -133,92 +103,9 @@
   </div>
 </div>
         
-        <!-- Card de Regularização -->
-        <div class="col-md-4">
-          <div class="card mb-3">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title">Regularização</h5>
-                <div class="icons-container">
-                  <span class="icon-wrapper regularizacao-history" data-tooltip="Consultar">
-                    <i class="ri-refresh-line icon-line"></i>
-                    <i class="ri-refresh-fill icon-fill"></i>
-                  </span>
-                </div>
-              </div>
-              <div class="d-flex gap-2 w-100 justify-content-between">
-                <div class="btn btn-outline-primary flex-fill" id="regularizacaoAtualBtn">
-                  <div class="info-container">
-                    <div class="info">Atual</div>
-                    <div class="info">Faltam: <span id="regularizacaoMonthAtual">0</span></div>
-                  </div>
-                  <div class="percentual">0,00%</div>
-                </div>
-                <div class="btn btn-outline-primary flex-fill" id="regularizacaoPromessasBtn">
-                  <div class="info-container">
-                    <div class="info">Promessas</div>
-                    <div class="info">Total: <span id="regularizacaoMonthPromessas">0</span></div>
-                  </div>
-                  <div class="percentual">0,00%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
         
       
-      <!-- Modal de Regularização -->
-      <div id="regularizacaoModal" class="modal-overlay">
-        <div class="modal-content">
-          <button id="closeRegularizacaoModal" class="close-modal">X</button>
-          <h2>Consultar Regularização</h2>
-          <div class="d-flex mb-3" style="justify-content: space-between; align-items: center;">
-            <div class="d-flex" style="gap: 1rem; align-items: center;">
-              <span id="loadExcelBtn" class="icon-wrapper" data-tooltip="Upload" style="cursor: pointer;">
-                <i class="ri-file-upload-line"></i>
-                <i class="ri-file-upload-fill" style="display: none;"></i>
-              </span>
-              <input type="file" id="excelFileInput" style="display: none;" accept=".xlsx, .xls">
-              <span id="deleteBtn" class="icon-wrapper" data-tooltip="Delete">
-                <i class="ri-delete-bin-line"></i>
-                <i class="ri-delete-bin-fill" style="display: none;"></i>
-              </span>	    
-              <button id="totalCasosBtn" class="btn btn-sm btn-custom">Total de Casos:</button>
-              <button id="regularizadosBtn" class="btn btn-sm btn-custom">Regularizados:</button>
-              <button id="promessasBtn" class="btn btn-sm btn-custom">Promessas:</button>
-              <button id="percentAtualBtn" class="btn btn-sm btn-blue">% Atual:</button>
-              <button id="percentPromessasBtn" class="btn btn-sm btn-orange">% Promessas:</button>
-            </div>
-            <div style="width: 20%;">
-              <input type="text" id="regularizacaoSearch" placeholder="Pesquisar..." class="form-control">
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-striped table-bordered" id="regularizacaoTable">
-              <thead>
-                <tr>
-                  <th>PERIODO</th>
-                  <th>UNIDADE</th>
-                  <th>MATRÍCULA</th>
-                  <th>PRODUTO</th>
-                  <th>TIPO</th>
-                  <th>SEGMENTO</th>
-                  <th>PENUMPER</th>
-                  <th>CLIENTE</th>
-                  <th>CONTRATO</th>
-                  <th>PRODUÇÃO</th>
-                  <th>PROMESSA</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Dados dinâmicos -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      
-
 
 
 
