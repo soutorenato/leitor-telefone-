@@ -1,10 +1,77 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM carregado.");
 
-  // Variável global para armazenar o modal anterior (usada para o QR Code).
+  // Variáveis globais
   let previousModal = null;
-  // Global: "" significa visualização completa; ou "Venda", "Pipeline" ou "Lead".
   let currentFilter = "";
+  let currentWhatsappNumber = "";
+
+  // Mapeamento dos produtos para mensagens no atendimento "Venda"
+  const productMessages = {
+    "Abertura de Conta": "Bem-vindo ao Santander! É um prazer termos você conosco. Sua nova conta abre portas para um mundo de possibilidades financeiras.",
+    "Câmbio": "Obrigado por escolher o Santander para suas operações de câmbio. Estamos prontos para oferecer soluções seguras e convenientes para suas transações internacionais.",
+    "Captação Líquida": "Sua confiança nos serviços do Santander é o que nos motiva a oferecer as melhores opções para sua gestão financeira. Obrigado por essa parceria!",
+    "Captalização": "Investir no futuro nunca foi tão inteligente. Obrigado por confiar no Santander para realizar seus planos.",
+    "Cartão Novo": "Seu novo cartão Santander chegou para simplificar sua vida. Aproveite todos os benefícios exclusivos que ele oferece!",
+    "Cartão Upgrade": "Com o upgrade do seu cartão Santander, você agora conta com ainda mais vantagens. Estamos felizes em fazer parte deste momento.",
+    "COE": "Obrigado por confiar no Santander ao investir no Certificado de Operações Estruturadas (COE). É um prazer oferecer soluções personalizadas para seus investimentos.",
+    "Consignado": "Sua escolha pelo crédito consignado Santander é uma prova de confiança que valorizamos muito. Conte conosco para apoiar seus planos.",
+    "Consignado Preventivo": "Com o crédito consignado preventivo do Santander, você está sempre preparado. Agradecemos sua confiança!",
+    "Consórcio": "Realizar seus sonhos é a nossa prioridade. Obrigado por escolher o consórcio Santander como seu parceiro nessa jornada.",
+    "Crédito Imobiliário": "Agradecemos por confiar no Santander para realizar o sonho da casa própria. Estamos prontos para caminhar com você.",
+    "Crédito Pessoal": "Com o crédito pessoal do Santander, suas metas estão ao alcance das mãos. Obrigado por nos escolher!",
+    "Crédito Pessoal Com Garantia": "Obrigado por optar pelo crédito pessoal com garantia Santander. Sua confiança nos inspira a oferecer o melhor serviço.",
+    "Crédito Pessoal Preventivo": "Preparação é tudo! Obrigado por confiar no crédito pessoal preventivo do Santander para garantir sua tranquilidade.",
+    "Open Finance": "Com o Open Finance do Santander, sua liberdade financeira é prioridade. Agradecemos por aderir a essa inovação!",
+    "Parcelamento de Fatura": "Mais flexibilidade no pagamento das suas contas com o Santander. Obrigado por escolher nosso parcelamento de fatura.",
+    "Previdência": "Segurança e estabilidade são o futuro que desejamos para você. Obrigado por confiar na previdência Santander.",
+    "Seguro Auto": "Seu carro merece o melhor cuidado! Obrigado por escolher o seguro auto do Santander.",
+    "Seguro Casa": "Sua casa está protegida com a gente. Obrigado por confiar no seguro residencial Santander.",
+    "Seguro Demais": "Independentemente da sua necessidade, estamos aqui para proteger o que importa. Obrigado por contratar nossos seguros Santander.",
+    "Seguro Vida": "O seguro de vida Santander foi feito para cuidar de você e de quem você ama. Obrigado pela confiança!",
+    "Use Casa": "Transformar seu imóvel em oportunidade é fácil com o Santander. Obrigado por aproveitar essa solução inovadora.",
+    "Reativação de Conta": "Reative sua conta Santander e volte a aproveitar todos os benefícios e vantagens exclusivas que preparamos para você."
+  };
+
+  // Mapeamento dos produtos para mensagens no atendimento "Lead"
+  const leadProductMessages = {
+    "Abertura de Conta": "Abra sua conta no Santander e explore um mundo de soluções financeiras feitas para você. Estou aqui para acompanhar cada etapa dessa jornada.",
+    "Aniversário": "Parabéns pelo seu aniversário! 🎉 Em nome do Santander, desejo muita alegria e conquistas. Lembre-se de que você pode aproveitar descontos exclusivos na Esfera ao usar seu Cartão de Crédito Santander!",
+    "Apresentação do Gerente": "Olá! Sou seu novo gerente no Santander e estou aqui para ser seu parceiro na gestão das suas finanças. Meu objetivo é ajudar você a alcançar suas metas e tornar sua experiência financeira mais prática e eficiente.\n\nGostaria de saber se você tem interesse em participar de uma assessoria financeira personalizada, para que possamos planejar juntos as melhores estratégias para o seu sucesso.",
+    "Ativação de Conta": "Ative sua conta Santander e volte a aproveitar todos os benefícios e soluções feitas para facilitar sua rotina financeira.",
+    "Câmbio": "Conte comigo para realizar suas transações internacionais de forma prática e segura. O Santander oferece a confiança necessária para suas operações de câmbio.",
+    "Capitalização": "Planeje seu futuro com a Capitalização Santander. Economize, participe de sorteios e alcance seus sonhos com tranquilidade.",
+    "Cartão Novo": "Solicite o seu Cartão Santander Unique e aproveite benefícios exclusivos, como:\n\n- Acesso a Salas VIP nos aeroportos para maior conforto em suas viagens.\n- Acúmulo de pontos no Esfera, que podem ser trocados por produtos, serviços ou descontos.\n- Vantagens internacionais, pensadas para atender às suas necessidades financeiras.\n\nTransforme sua experiência financeira com exclusividade e benefícios únicos!",
+    "Cartão Upgrade": "Faça seu upgrade do cartão Santander e tenha acesso a melhores benefícios! Eleve sua experiência com exclusividades feitas para você.",
+    "COE (Certificado de Operações Estruturadas)": "Diversifique seus investimentos com o COE Santander, uma solução inovadora e adaptada ao seu perfil para alcançar seus objetivos financeiros.",
+    "Consignado": "Realize seus projetos com o crédito consignado Santander. Taxas atrativas e condições especiais esperam por você!",
+    "Consignado Preventivo": "Garanta mais segurança e tranquilidade com o crédito consignado preventivo Santander, uma solução ideal para suas necessidades.",
+    "Consórcio de Imóvel": "Conquiste sua casa própria com o Consórcio de Imóvel Santander. Planejamento e confiança para suas realizações.",
+    "Consórcio de Veículo": "Adquira o veículo dos seus sonhos com o Consórcio Santander, uma forma prática e econômica de planejar suas metas.",
+    "Consultoria de Investimentos": "Quero convidar você para participar de uma assessoria de investimentos personalizada no Santander. Você pode escolher o formato que mais combina com sua rotina: presencial, por telefone ou videoconferência.",
+    "Crédito Imobiliário": "Conquiste o imóvel dos seus sonhos com o Crédito Imobiliário Santander, adaptado para atender às suas necessidades e metas.",
+    "Crédito Pessoal": "Realize seus planos com o crédito pessoal Santander, oferecendo flexibilidade e condições pensadas para você.",
+    "Crédito Pessoal with Garantia": "Aproveite vantagens exclusivas com o crédito pessoal com garantia Santander, uma solução inteligente e personalizada.",
+    "Crédito Pessoal Preventivo": "Prepare-se para imprevistos com o crédito pessoal preventivo Santander. Garantimos mais segurança e tranquilidade financeira para você.",
+    "Open Finance": "Com o Open Finance Santander, você gerencia suas finanças de forma prática e integrada. Para ativar no aplicativo:\n\n- Acesse o app Santander.\n- Clique no menu Open Finance.\n- Autorize e gerencie suas contas e serviços financeiros de forma integrada.\n\nSimplifique sua rotina e tenha controle total das suas finanças!",
+    "Parcelamento de Fatura": "Organize seus pagamentos com o Parcelamento de Fatura Santander, garantindo mais flexibilidade e controle financeiro.",
+    "Previdência": "Quero ajudar você a planejar sua aposentadoria com os planos de previdência do Santander. Minha prioridade é garantir sua segurança e conforto no futuro.\n\nMe informe qual a renda mensal que você deseja ter na sua aposentadoria, e eu farei uma simulação personalizada para ajudar você a se preparar da melhor forma possível.",
+    "Reativação de Conta": "Reative sua conta Santander e volte a aproveitar todos os benefícios e vantagens exclusivas que preparamos para você.",
+    "Saldo Parado em Conta": "Percebi que você possui um saldo parado na conta, e isso pode significar perda de dinheiro para a inflação ao longo do tempo. Por exemplo, se você tem R$ 100.000,00 parados, ao aplicá-los em um CDB de 100% do CDI, o valor renderia aproximadamente R$ 13.650,00 brutos ao ano (baseado no CDI atual de 13,65% ao ano, que pode variar). Mesmo descontando impostos, o rendimento seria maior do que o impacto da inflação, preservando o poder de compra do seu dinheiro.",
+    "Seguro Auto": "Com o Seguro Auto Santander, você pode garantir até 30% de desconto na contratação do seguro para o seu veículo. Além disso, utilizamos o sistema Auto Compara, que simula opções com até 11 seguradoras diferentes.\n\nO Auto Compara é uma plataforma que permite comparar preços, coberturas e condições de seguros de forma rápida e prática, ajudando você a escolher a melhor opção para suas necessidades.\n\nMe informe a data de vencimento do seguro do seu veículo, assim podemos encontrar a melhor solução no momento certo para você.",
+    "Seguro Casa": "Cuide do seu lar com o Seguro Casa Santander e garanta a proteção que você merece. Oferecemos seguros a partir de R$ 19,90, com coberturas completas para o que realmente importa.",
+    "Seguro Demais": "Independentemente da sua necessidade, o Santander tem o seguro ideal para você. Proteja o que importa e tenha mais segurança no seu dia a dia.",
+    "Seguro Vida": "Cuide de você e de sua família com o Seguro Vida Santander, garantindo segurança e bem-estar para o futuro.",
+    "Use Casa": "Transforme o valor do seu imóvel em uma solução financeira com o Use Casa Santander. Com esse empréstimo, você pode usar o dinheiro liberado para diversas finalidades, como:\n\n- Reforma ou ampliação do seu imóvel, para deixá-lo do jeito que sempre sonhou.\n- Investimento em negócios ou projetos que deseja iniciar ou expandir.\n- Educação, financiando estudos ou cursos importantes para você ou sua família.\n- Viagens, realizando aquela viagem especial que sempre planejou.\n- Quitar dívidas, reorganizando suas finanças com taxas mais atrativas.\n\nTudo isso com a segurança de um empréstimo com garantia de imóvel, que oferece prazos mais longos e condições vantajosas para você."
+  };
+
+  // Texto adicional para "Venda" (permanece o mesmo)
+  const additionalMessage =
+    "Estou à disposição sempre que precisar. Você também pode contar com o atendimento 24 horas por dia, 7 dias por semana pelo Chat Santander. Para acessá-lo, basta entrar no aplicativo Santander, ir até o Menu Atendimento e selecionar a opção Chat.";
+
+  // Texto final a ser adicionado para "Lead"
+  const finalLeadMessage =
+    "Retorne este contato para agendarmos um horário e darmos continuidade. Estou à disposição!";
 
   // Inject custom style
   const customStyle = document.createElement("style");
@@ -14,8 +81,9 @@ document.addEventListener("DOMContentLoaded", function () {
       border-color: #0d6efd !important;
       color: #fff !important;
     }
-    /* WhatsApp Modal styling */
-    .whatsapp-modal-overlay {
+    /* Estilização dos modais */
+    .whatsapp-modal-overlay, 
+    .whatsapp-message-modal {
       position: fixed;
       top: 0;
       left: 0;
@@ -27,26 +95,37 @@ document.addEventListener("DOMContentLoaded", function () {
       align-items: center;
       z-index: 11000;
     }
-    .whatsapp-modal-content {
+    .whatsapp-modal-content, .whatsapp-message-modal-content {
       background: #fff;
       padding: 20px;
       border-radius: 8px;
       text-align: center;
       position: relative;
+      width: 90%;
+      max-width: 500px;
     }
-    .whatsapp-modal-close {
+    .whatsapp-modal-close, .whatsapp-message-close {
       position: absolute;
       top: 8px;
       right: 8px;
       cursor: pointer;
       font-weight: bold;
     }
+    /* Estilo para evitar overflow nas células da tabela */
+    .table-responsive table td {
+      white-space: normal;
+      word-break: break-word;
+    }
+    textarea#whatsappMessageText {
+      width: 100%;
+      resize: vertical;
+      padding: 10px;
+      font-size: 14px;
+    }
   `;
   document.head.appendChild(customStyle);
 
   // ----------------- Helper Functions -----------------
-  // Formata a coluna "Qtde/Valor" na tabela.
-  // Se o produto for especial, retorna "1"; senão, formata o número para pt-BR.
   function formatQuantidadeValor(val, produto) {
     const specialProducts = ["Abertura de Conta", "Cartão Novo", "Cartão Upgrade", "Open Finance"];
     if (specialProducts.includes(produto)) {
@@ -57,11 +136,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Recupera os registros do localStorage.
   function getSalesData() {
     return JSON.parse(localStorage.getItem("vendasData")) || [];
   }
-  // Salva os registros no localStorage.
+  
   function saveSalesData(salesArray) {
     localStorage.setItem("vendasData", JSON.stringify(salesArray));
     console.log("✅ Dados salvos no localStorage.");
@@ -74,6 +152,8 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="modal-content">
           <button id="closeVendaModal" class="close-modal">X</button>
           <h2>Produtividade</h2>
+          <!-- Campo de pesquisa -->
+          <input type="text" id="searchInput" placeholder="Pesquisar por nome, CPF ou Whatsapp" style="width: 100%; padding: 8px; margin-bottom: 10px;" />
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
@@ -106,6 +186,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.key === "Escape") {
       vendaModal.style.display = "none";
       closeWhatsappModal();
+      closeWhatsappMessageModal();
     }
   });
   document.getElementById("closeVendaModal").addEventListener("click", () => {
@@ -165,13 +246,22 @@ document.addEventListener("DOMContentLoaded", function () {
                   <div class="col-9">
                     <select class="form-control" id="produto" required>
                       <option value="">Selecione um produto</option>
+                      <!-- Lista atualizada de produtos -->
                       <option value="Abertura de Conta">Abertura de Conta</option>
+                      <option value="Aniversário">Aniversário</option>
+                      <option value="Apresentação Gerente">Apresentação Gerente</option>
+                      <option value="Ativação de Conta">Ativação de Conta</option>
                       <option value="Câmbio">Câmbio</option>
-                      <option value="Captação Líquida">Captação Líquida</option>
+                      <option value="Captalização">Captalização</option>
                       <option value="Cartão Novo">Cartão Novo</option>
                       <option value="Cartão Upgrade">Cartão Upgrade</option>
                       <option value="COE">COE</option>
+                      <option value="Consignado">Consignado</option>
+                      <option value="Consignado Preventivo">Consignado Preventivo</option>
                       <option value="Consórcio">Consórcio</option>
+                      <option value="Consórcio de Imóvel">Consórcio de Imóvel</option>
+                      <option value="Consórcio de Veículo">Consórcio de Veículo</option>
+                      <option value="Consultoria de Investimentos">Consultoria de Investimentos</option>
                       <option value="Crédito Imobiliário">Crédito Imobiliário</option>
                       <option value="Crédito Pessoal">Crédito Pessoal</option>
                       <option value="Crédito Pessoal Com Garantia">Crédito Pessoal Com Garantia</option>
@@ -179,6 +269,8 @@ document.addEventListener("DOMContentLoaded", function () {
                       <option value="Open Finance">Open Finance</option>
                       <option value="Parcelamento de Fatura">Parcelamento de Fatura</option>
                       <option value="Previdência">Previdência</option>
+                      <option value="Reativação de Conta">Reativação de Conta</option>
+                      <option value="Saldo Parado Em Conta">Saldo Parado Em Conta</option>
                       <option value="Seguro Auto">Seguro Auto</option>
                       <option value="Seguro Casa">Seguro Casa</option>
                       <option value="Seguro Demais">Seguro Demais</option>
@@ -188,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   </div>
                 </div>
                 <div class="mb-2 row align-items-center">
-                  <label class="col-3 col-form-label">Qtde/Valor</label>
+                  <label class="col-3 col-form-label">Qtde/VALOR</label>
                   <div class="col-9">
                     <input type="text" class="form-control" id="quantidadeValor" required>
                   </div>
@@ -216,35 +308,44 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Modal de produção adicionado no body.");
   }
 
-  // ----------------- Eventos de Formatação -----------------
-  // Formata CPF ao perder o foco.
-  document.getElementById("cpf").addEventListener("blur", function () {
-    let digits = this.value.replace(/\D/g, "");
-    if (digits.length === 11) {
-      this.value = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-    } else if (digits.length > 0 && digits.length !== 11) {
-      alert("CPF deve conter 11 dígitos. Por favor, verifique o número inserido.");
-      setTimeout(() => this.focus(), 0);
-    }
-  });
-  // Formata Whatsapp ao perder o foco.
-  document.getElementById("whatsapp").addEventListener("blur", function () {
-    let digits = this.value.replace(/\D/g, "");
-    if (digits.length === 11) {
-      this.value = digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-    } else if (digits.length > 0 && digits.length !== 11) {
-      alert("Whatsapp deve conter 11 dígitos. Por favor, verifique o número inserido.");
-      setTimeout(() => this.focus(), 0);
-    }
-  });
-  // Formata o campo "Qtde/Valor" para o padrão pt-BR (ex: 100.000,00) ao perder o foco.
-  document.getElementById("quantidadeValor").addEventListener("blur", function () {
-    let rawValue = this.value;
-    // Remove pontos e substitui vírgula por ponto para conversão numérica.
-    let numericValue = parseFloat(rawValue.replace(/\./g, "").replace(",", "."));
-    if (!isNaN(numericValue)) {
-      this.value = numericValue.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+  // ----------------- Modal de Edição da Mensagem WhatsApp -----------------
+  if (!document.getElementById("whatsappMessageModal")) {
+    const whatsappMessageModalHTML = `
+      <div id="whatsappMessageModal" class="whatsapp-message-modal" style="display: none;">
+        <div class="whatsapp-message-modal-content">
+          <span id="closeWhatsappMessageModal" class="whatsapp-message-close">X</span>
+          <h3>Mensagem para WhatsApp</h3>
+          <textarea id="whatsappMessageText" rows="6"></textarea>
+          <div style="margin-top: 10px; text-align: right;">
+            <button id="generateQrButton" class="btn btn-primary">Gerar QR Code</button>
+            <button id="cancelWhatsappMessage" class="btn btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML("beforeend", whatsappMessageModalHTML);
+  }
+  const whatsappMessageModal = document.getElementById("whatsappMessageModal");
+  const whatsappMessageText = document.getElementById("whatsappMessageText");
+  const generateQrButton = document.getElementById("generateQrButton");
+  const cancelWhatsappMessage = document.getElementById("cancelWhatsappMessage");
+
+  function showWhatsappMessageModal(messageText, whatsappNumber) {
+    currentWhatsappNumber = whatsappNumber;
+    whatsappMessageText.value = messageText;
+    whatsappMessageModal.style.display = "flex";
+  }
+  function closeWhatsappMessageModal() {
+    whatsappMessageModal.style.display = "none";
+  }
+  document.getElementById("closeWhatsappMessageModal").addEventListener("click", closeWhatsappMessageModal);
+  cancelWhatsappMessage.addEventListener("click", closeWhatsappMessageModal);
+  
+  generateQrButton.addEventListener("click", function () {
+    const editedText = whatsappMessageText.value;
+    const waLink = `https://wa.me/55${currentWhatsappNumber}?text=${encodeURIComponent(editedText)}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(waLink)}&size=200x200`;
+    closeWhatsappMessageModal();
+    openWhatsappModal(qrCodeUrl);
   });
 
   // ----------------- WhatsApp Modal (QR Code) -----------------
@@ -261,7 +362,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.insertAdjacentHTML("beforeend", whatsappModalHTML);
   }
   const whatsappModal = document.getElementById("whatsappModal");
-  // Ao abrir o QR Code, guarda o modal atual (se estiver visível) e o oculta.
   function openWhatsappModal(qrCodeUrl) {
     if (vendaModal && vendaModal.style.display !== "none") {
       previousModal = vendaModal;
@@ -273,7 +373,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     whatsappModal.style.display = "flex";
   }
-  // Ao fechar o QR Code, oculta-o e retorna ao modal anterior, se houver.
   function closeWhatsappModal() {
     whatsappModal.style.display = "none";
     if (previousModal) {
@@ -284,7 +383,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("closeWhatsappModal").addEventListener("click", closeWhatsappModal);
 
   // ----------------- Table Rendering -----------------
-  // Renderiza a tabela completa (ordenada pela data do mais recente para o mais antigo).
   function loadFromLocalStorageVenda() {
     let data = getSalesData();
     data.sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -325,7 +423,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </td>`;
     });
   }
-  // Renderiza a tabela filtrada (ordenada pela data).
+  
   function loadFilteredData(filterType) {
     let data = getSalesData();
     data.sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -368,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-  // Atualiza a visualização e os contadores do dashboard.
+  
   function refreshAllViews() {
     updateDashboardCounts();
     if (currentFilter === "Venda" || currentFilter === "Pipeline" || currentFilter === "Lead") {
@@ -377,6 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
       loadFromLocalStorageVenda();
     }
   }
+  
   function updateDashboardCounts() {
     const data = getSalesData();
     const vendaCount = data.filter(item => item.atendimento === "Venda").length;
@@ -391,7 +490,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ----------------- EDIÇÃO, EXCLUSÃO, EMAIL & WHATSAPP -----------------
-  // Função exclusiva para tratar a edição ao clicar no ícone.
   function handleEditRecord(e) {
     const editBtn = e.target.closest(".edit-btn");
     if (!editBtn) return;
@@ -403,7 +501,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const salesData = getSalesData();
     const record = salesData[parseInt(index)];
     if (!record) return;
-    // Popula o formulário com os dados do registro.
     document.getElementById("tipoAtendimento").value = record.atendimento;
     document.getElementById("nome").value = record.nome;
     document.getElementById("cpf").value = record.cpf;
@@ -412,7 +509,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("produto").value = record.produto;
     document.getElementById("quantidadeValor").value = record.quantidadeValor;
     document.getElementById("data").value = record.data;
-    // Abre o modal de edição.
     const editModalEl = document.getElementById("addProductModal");
     if (editModalEl) {
       const modal = new bootstrap.Modal(editModalEl);
@@ -420,7 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Listener para capturar cliques na tabela (edição, exclusão, email e WhatsApp).
   const vendaTableBody = document.querySelector("#vendaModal tbody");
   if (vendaTableBody) {
     vendaTableBody.addEventListener("click", function (e) {
@@ -445,9 +540,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!row) return;
         const clientEmail = row.cells[3].textContent.trim();
         const fullName = row.cells[1].textContent.trim();
-        const firstName = fullName.split(" ")[0];
+        let firstName = fullName.split(" ")[0];
+        firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        const atendimento = row.cells[0].textContent.trim();
+        let messageBody = `${firstName}, tudo bem?`;
+        if (atendimento === "Venda") {
+          const produto = row.cells[5].textContent.trim();
+          messageBody += `\n\n${productMessages[produto] || ""}\n\n${additionalMessage}`;
+        } else if (atendimento === "Lead") {
+          const produto = row.cells[5].textContent.trim();
+          messageBody = `${firstName}, tudo bem?\n\n${leadProductMessages[produto] || ""}\n\n${finalLeadMessage}`;
+        }
         const subject = encodeURIComponent("Atendimento Santander");
-        const body = encodeURIComponent(`${firstName}, tudo bem?\n\nAtenciosamente,\nSantander`);
+        const body = encodeURIComponent(messageBody);
         window.location.href = `mailto:${clientEmail}?subject=${subject}&body=${body}`;
       }
       const whatsappBtn = e.target.closest(".whatsapp-btn");
@@ -456,11 +561,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!row) return;
         let clientWhatsapp = row.cells[4].textContent.trim().replace(/[^0-9]/g, "");
         const fullName = row.cells[1].textContent.trim();
-        const firstName = fullName.split(" ")[0];
-        const messageText = `${firstName}, tudo bem?\n\nQuero agradecer pelo contato de hoje!\n\nAbraço!`;
-        const waLink = `https://wa.me/55${clientWhatsapp}?text=${encodeURIComponent(messageText)}`;
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(waLink)}&size=200x200`;
-        openWhatsappModal(qrCodeUrl);
+        let firstName = fullName.split(" ")[0];
+        firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        const atendimento = row.cells[0].textContent.trim();
+        let messageText = `${firstName}, tudo bem?`;
+        if (atendimento === "Venda") {
+          const produto = row.cells[5].textContent.trim();
+          messageText += `\n\n${productMessages[produto] || ""}\n\n${additionalMessage}`;
+        } else if (atendimento === "Lead") {
+          const produto = row.cells[5].textContent.trim();
+          messageText = `${firstName}, tudo bem?\n\n${leadProductMessages[produto] || ""}\n\n${finalLeadMessage}`;
+        }
+        // Exibe o modal para editar a mensagem antes de gerar o QR Code
+        showWhatsappMessageModal(messageText, clientWhatsapp);
       }
     });
   }
@@ -470,7 +583,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (productionForm) {
     productionForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      // Validação dos formatos CPF e Whatsapp.
       const cpfValue = document.getElementById("cpf").value.trim();
       const whatsappValue = document.getElementById("whatsapp").value.trim();
       const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
@@ -504,11 +616,9 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         currentData.unshift(newRecord);
       }
-      // Ordena os registros pela data (mais recente primeiro) antes de salvar.
       currentData.sort((a, b) => new Date(b.data) - new Date(a.data));
       saveSalesData(currentData);
       refreshAllViews();
-      // Fecha o modal e reseta o formulário.
       const addProductModal = bootstrap.Modal.getInstance(document.getElementById("addProductModal"));
       if (addProductModal) addProductModal.hide();
       productionForm.reset();
@@ -577,6 +687,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   
-  // Inicializa a visualização.
   refreshAllViews();
+
+  // ----------------- Evento para campo de pesquisa -----------------
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", function() {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#vendaModal tbody tr");
+      rows.forEach(row => {
+        const nome = row.cells[1].textContent.toLowerCase();
+        const cpf = row.cells[2].textContent.toLowerCase();
+        const whatsapp = row.cells[4].textContent.toLowerCase();
+        if (nome.includes(filter) || cpf.includes(filter) || whatsapp.includes(filter)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  }
+
+  // ----------------- Funções para o Modal de Mensagem WhatsApp -----------------
+  function showWhatsappMessageModal(messageText, whatsappNumber) {
+    currentWhatsappNumber = whatsappNumber;
+    whatsappMessageText.value = messageText;
+    whatsappMessageModal.style.display = "flex";
+  }
+  function closeWhatsappMessageModal() {
+    whatsappMessageModal.style.display = "none";
+  }
 });
