@@ -4,10 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const table = document.getElementById("regularizacaoTable");
   const tbody = table ? table.querySelector("tbody") : null;
   const searchInput = document.getElementById("regularizacaoSearch");
-  // Note: Our upload button now uses the id "loadExcelBtn" (all lowercase)
   const loadExcelBtn = document.getElementById("loadExcelBtn");
   const excelFileInput = document.getElementById("excelFileInput");
-  // Delete icon button (for table deletion)
   const deleteBtn = document.getElementById("deleteBtn");
   const regularizacaoHistory = document.querySelector(".regularizacao-history");
   const closeBtn = document.getElementById("closeRegularizacaoModal");
@@ -22,7 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Elemento com a classe 'regularizacao-history' não foi encontrado.");
   }
 
-  // Fecha o modal clicando fora dele ou pressionando Esc
   modal.addEventListener("click", function (e) {
     if (e.target === modal) {
       modal.style.display = "none";
@@ -62,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====== FUNÇÃO DE ORDENAR A TABELA ======
-  if(table){
+  if (table) {
     const headerCells = table.querySelectorAll("thead th");
     headerCells.forEach((th, index) => {
       th.style.cursor = "pointer";
@@ -315,8 +312,8 @@ document.addEventListener("DOMContentLoaded", function () {
               }
             }
           });
-          localStorage.setItem("regularizacaoData", JSON.stringify(jsonData));
-          populateTable(jsonData, false);
+          localStorage.setItem("regularizacaoData", JSON.stringify(storedData));
+          populateTable(storedData, false);
           excelFileInput.value = "";
         } catch (error) {
           console.error("Erro ao processar o arquivo Excel:", error);
@@ -351,7 +348,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====== ATUALIZAÇÃO DO DASHBOARD ======
-  // Atualiza porcentagens e estatísticas do dashboard sempre que a tabela muda.
   function updateAtualPercent() {
     if (!tbody) return;
     const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -408,152 +404,4 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalCount = countProdSim + countPromessas;
     let percentual = 0;
     if (totalRows > 0) {
-      percentual = (totalCount / totalRows) * 100;
-    }
-    const formattedPercent = percentual.toFixed(2).replace('.', ',') + '%';
-    const percentPromessasBtn = document.getElementById("percentPromessasBtn");
-    if (percentPromessasBtn) {
-      percentPromessasBtn.innerText = `% Promessas: ${formattedPercent}`;
-    }
-    localStorage.setItem('percentualPromessas', formattedPercent);
-  }
-
-  function updateDashboardStats() {
-    if (!tbody) return;
-    const rows = Array.from(tbody.querySelectorAll("tr"));
-    const totalRows = rows.length;
-    let countProdSim = 0;
-    let countPromessas = 0;
-    rows.forEach(row => {
-      const cells = row.getElementsByTagName("td");
-      if (cells.length >= 2) {
-        const prodCell = cells[cells.length - 2];
-        const promessaCell = cells[cells.length - 1];
-        if (prodCell && prodCell.textContent.trim().toLowerCase() === "sim") {
-          countProdSim++;
-        }
-        if (
-          promessaCell &&
-          promessaCell.textContent.trim() !== "" &&
-          promessaCell.textContent.trim().toLowerCase() !== "não"
-        ) {
-          countPromessas++;
-        }
-      }
-    });
-    const totalCasosBtn = document.getElementById("totalCasosBtn");
-    if (totalCasosBtn) {
-      totalCasosBtn.innerText = `Total de Casos: ${totalRows}`;
-    }
-    const regularizadosBtn = document.getElementById("regularizadosBtn");
-    if (regularizadosBtn) {
-      regularizadosBtn.innerText = `Regularizados: ${countProdSim}`;
-    }
-    const promessasBtn = document.getElementById("promessasBtn");
-    if (promessasBtn) {
-      promessasBtn.innerText = `Promessas: ${countPromessas}`;
-    }
-    const expectedRegularizations = Math.ceil(totalRows * 0.75);
-    const faltamAtual = Math.max(0, expectedRegularizations - countProdSim);
-    const faltamAtualElement = document.getElementById("regularizacaoMonthAtual");
-    if (faltamAtualElement) {
-      faltamAtualElement.innerText = faltamAtual;
-    }
-    const faltamPromessasElement = document.getElementById("regularizacaoMonthPromessas");
-    if (faltamPromessasElement) {
-      faltamPromessasElement.innerText = countPromessas;
-    }
-  }
-
-  updateAtualPercent();
-  updatePromessasPercent();
-  updateDashboardStats();
-
-  if (tbody) {
-    const observer = new MutationObserver(function () {
-      updateAtualPercent();
-      updatePromessasPercent();
-      updateDashboardStats();
-    });
-    observer.observe(tbody, { childList: true, subtree: true, characterData: true });
-  }
-});
-
-
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Function to update "Promessas" percentage (valid promise percentage calculation)
-  function updatePromessasPercent() {
-    const tbody = document.querySelector("#regularizacaoTable tbody");
-    if (!tbody) return;
-  
-    const rows = Array.from(tbody.querySelectorAll("tr"));
-    const totalRows = rows.length;
-    let countProdSim = 0;
-    let countPromessas = 0;
-  
-    rows.forEach(row => {
-      const cells = row.getElementsByTagName("td");
-      if (cells.length >= 2) {
-        const prodCell = cells[cells.length - 2];
-        const promessaCell = cells[cells.length - 1];
-  
-        if (prodCell && prodCell.textContent.trim().toLowerCase() === "sim") {
-          countProdSim++;
-        }
-        if (
-          promessaCell &&
-          promessaCell.textContent.trim() !== "" &&
-          promessaCell.textContent.trim().toLowerCase() !== "não"
-        ) {
-          countPromessas++;
-        }
-      }
-    });
-  
-    // Calculate percentage using total valid Promessas count from production "sim" and promise count
-    const totalCount = countProdSim + countPromessas;
-    let percentual = 0;
-    if (totalRows > 0) {
-      percentual = (totalCount / totalRows) * 100;
-    }
-    const formattedPercent = percentual.toFixed(2).replace('.', ',') + '%';
-  
-    // Update the Promessas button located at "regularizacaoPromessasBtn"
-    const promessasBtn = document.getElementById("regularizacaoPromessasBtn");
-    if (promessasBtn) {
-      // Update its child element with class "percentual"
-      const percentualElement = promessasBtn.querySelector("div.percentual");
-      if (percentualElement) {
-        percentualElement.innerText = formattedPercent;
-      }
-    }
-  
-    localStorage.setItem('percentualPromessas', formattedPercent);
-  }
-  
-  // Initial call and observer (rest of your code can remain similar)
-  updatePromessasPercent();
-  
-  const tbody = document.querySelector("#regularizacaoTable tbody");
-  if (tbody) {
-    const observer = new MutationObserver(function () {
-      updatePromessasPercent();
-    });
-    observer.observe(tbody, { childList: true, subtree: true, characterData: true });
-  }
-});
-
-
-
-
-
-
-
-
-
-
+      percentual = (totalCount / totalRows
