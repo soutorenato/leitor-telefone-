@@ -1,6 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM carregado.");
 
+  // Funções utilitárias para formatação de CPF e Whatsapp
+  function formatCPF(cpf) {
+    cpf = cpf.replace(/\D/g, ""); // Remove tudo que não é dígito
+    if (cpf.length > 11) cpf = cpf.slice(0, 11);
+    // Formata no padrão 000.000.000-00
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  function formatWhatsapp(whatsapp) {
+    whatsapp = whatsapp.replace(/\D/g, ""); // Remove tudo que não é dígito
+    if (whatsapp.length > 11) whatsapp = whatsapp.slice(0, 11);
+    // Formata no padrão (11) 99999-9999
+    return whatsapp.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  }
+
+  // Adiciona eventos "blur" para formatar automaticamente os inputs de CPF e Whatsapp
+  const cpfInput = document.getElementById("cpf");
+  if (cpfInput) {
+    cpfInput.addEventListener("blur", function () {
+      cpfInput.value = formatCPF(cpfInput.value);
+    });
+  }
+  const whatsappInput = document.getElementById("whatsapp");
+  if (whatsappInput) {
+    whatsappInput.addEventListener("blur", function () {
+      whatsappInput.value = formatWhatsapp(whatsappInput.value);
+    });
+  }
+
   // Variáveis globais
   let previousModal = null;
   let currentFilter = "";
@@ -62,14 +91,13 @@ document.addEventListener("DOMContentLoaded", function () {
     "Seguro Casa": "Cuide do seu lar com o Seguro Casa Santander e garanta a proteção que você merece. Oferecemos seguros a partir de R$ 19,90, com coberturas completas para o que realmente importa.",
     "Seguro Demais": "Independentemente da sua necessidade, o Santander tem o seguro ideal para você. Proteja o que importa e tenha mais segurança no seu dia a dia.",
     "Seguro Vida": "Cuide de você e de sua família com o Seguro Vida Santander, garantindo segurança e bem-estar para o futuro.",
-    "Use Casa": "Transforme o valor do seu imóvel em uma solução financeira com o Use Casa Santander. Com esse empréstimo, você pode usar o dinheiro liberado para diversas finalidades, como:\n\n- Reforma ou ampliação do seu imóvel, para deixá-lo do jeito que sempre sonhou.\n- Investimento em negócios ou projetos que deseja iniciar ou expandir.\n- Educação, financiando estudos ou cursos importantes para você ou sua família.\n- Viagens, realizando aquela viagem especial que sempre planejou.\n- Quitar dívidas, reorganizando suas finanças com taxas mais atrativas.\n\nTudo isso com a segurança de um empréstimo com garantia de imóvel, que oferece prazos mais longos e condições vantajosas para você."
+    "Use Casa": "Transforme o valor do seu imóvel em uma solução financeira com o Use Casa Santander. Com esse empréstimo, você pode usar o dinheiro liberado para diversas finalidades, como:\n\n- Reforma ou ampliação do seu imóvel, para deixá-lo do jeito que sempre sonhou.\n- Investimento em negócios ou projetos que deseja iniciar ou expandir.\n- Educação, financiando estudos ou cursos importantes para você ou sua família.\n- Viagens, realizando aquela viagem especial que sempre planejou.\n- Quitar dívidas, reorganizando suas finanças com taxas mais atrativas.\n\nTudo isso com a segurança de um empréstimo com garantia de imóvel, que oferece prazos mais longos e condições vantajosas para você.",
+    "Reativação de Conta": "Reative sua conta Santander e volte a aproveitar todos os benefícios e vantagens exclusivas que preparamos para você."
   };
 
-  // Texto adicional para "Venda" (permanece o mesmo)
   const additionalMessage =
     "Estou à disposição sempre que precisar. Você também pode contar com o atendimento 24 horas por dia, 7 dias por semana pelo Chat Santander. Para acessá-lo, basta entrar no aplicativo Santander, ir até o Menu Atendimento e selecionar a opção Chat.";
 
-  // Texto final a ser adicionado para "Lead"
   const finalLeadMessage =
     "Retorne este contato para agendarmos um horário e darmos continuidade. Estou à disposição!";
 
@@ -81,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
       border-color: #0d6efd !important;
       color: #fff !important;
     }
-    /* Estilização dos modais */
     .whatsapp-modal-overlay, 
     .whatsapp-message-modal {
       position: fixed;
@@ -111,7 +138,6 @@ document.addEventListener("DOMContentLoaded", function () {
       cursor: pointer;
       font-weight: bold;
     }
-    /* Estilo para evitar overflow nas células da tabela */
     .table-responsive table td {
       white-space: normal;
       word-break: break-word;
@@ -152,7 +178,6 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="modal-content">
           <button id="closeVendaModal" class="close-modal">X</button>
           <h2>Produtividade</h2>
-          <!-- Campo de pesquisa -->
           <input type="text" id="searchInput" placeholder="Pesquisar por nome, CPF ou Whatsapp" style="width: 100%; padding: 8px; margin-bottom: 10px;" />
           <div class="table-responsive">
             <table class="table table-striped">
@@ -246,7 +271,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   <div class="col-9">
                     <select class="form-control" id="produto" required>
                       <option value="">Selecione um produto</option>
-                      <!-- Lista atualizada de produtos -->
                       <option value="Abertura de Conta">Abertura de Conta</option>
                       <option value="Aniversário">Aniversário</option>
                       <option value="Apresentação Gerente">Apresentação Gerente</option>
@@ -572,7 +596,6 @@ document.addEventListener("DOMContentLoaded", function () {
           const produto = row.cells[5].textContent.trim();
           messageText = `${firstName}, tudo bem?\n\n${leadProductMessages[produto] || ""}\n\n${finalLeadMessage}`;
         }
-        // Exibe o modal para editar a mensagem antes de gerar o QR Code
         showWhatsappMessageModal(messageText, clientWhatsapp);
       }
     });
@@ -597,16 +620,17 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => document.getElementById("whatsapp").focus(), 0);
         return;
       }
+      // Os campos já foram formatados no blur, mas garantimos a formatação:
+      const formattedCPF = formatCPF(cpfValue);
+      const formattedWhatsapp = formatWhatsapp(whatsappValue);
       const atendimento = document.getElementById("tipoAtendimento").value;
       const nome = document.getElementById("nome").value;
-      const cpf = cpfValue;
       const email = document.getElementById("email").value;
-      const whatsapp = whatsappValue;
       const produto = document.getElementById("produto").value;
       const quantidadeValor = document.getElementById("quantidadeValor").value;
       const data = document.getElementById("data").value;
       const editingIndex = document.getElementById("editingIndex").value;
-      const newRecord = { atendimento, nome, cpf, email, whatsapp, produto, quantidadeValor, data };
+      const newRecord = { atendimento, nome, cpf: formattedCPF, email, whatsapp: formattedWhatsapp, produto, quantidadeValor, data };
       let currentData = getSalesData();
       if (editingIndex !== "") {
         const idx = parseInt(editingIndex);
@@ -690,9 +714,9 @@ document.addEventListener("DOMContentLoaded", function () {
   refreshAllViews();
 
   // ----------------- Evento para campo de pesquisa -----------------
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput) {
-    searchInput.addEventListener("input", function() {
+  const searchInputField = document.getElementById("searchInput");
+  if (searchInputField) {
+    searchInputField.addEventListener("input", function() {
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll("#vendaModal tbody tr");
       rows.forEach(row => {
@@ -717,4 +741,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeWhatsappMessageModal() {
     whatsappMessageModal.style.display = "none";
   }
+  document.getElementById("closeWhatsappMessageModal").addEventListener("click", closeWhatsappMessageModal);
+  cancelWhatsappMessage.addEventListener("click", closeWhatsappMessageModal);
 });
