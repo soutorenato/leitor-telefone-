@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão Financeira</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Gestão Financeira Familiar</h1>
+
+<div style="text-align: center; margin-bottom: 20px;"><button onclick="enviarEmail()">Enviar por E-mail</button></div>
+
+  <div class="card-grid">
+    <div class="card">
+      <canvas id="grafico-receitas"></canvas>
+      <h4>Receitas</h4>
+      <div class="valor" id="valor-receitas">R$ 0,00</div>
+      <button onclick="abrirModal('receitas')">Atualizar receitas</button>
+    </div>
+    <div class="card">
+      <canvas id="grafico-despesas"></canvas>
+      <h4>Despesas</h4>
+      <div class="valor" id="valor-despesas">R$ 0,00</div>
+      <button onclick="abrirModal('despesas')">Atualizar despesas</button>
+    </div>
+    <div class="card">
+      <canvas id="grafico-patrimonio"></canvas>
+      <h4>Patrimônio</h4>
+      <div class="valor" id="valor-patrimonio">R$ 0,00</div>
+      <button onclick="abrirModal('patrimonio')">Atualizar patrimônio</button>
+    </div>
+    <div class="card">
+      <h4>Outro</h4>
+      <div class="valor">R$ 0,00</div>
+    </div>
+  </div>
+  <div id="modal-container"></div>
+  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
