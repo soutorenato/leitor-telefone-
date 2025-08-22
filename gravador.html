@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravador de Atendimento</title>
+</head>
+<body>
+  <h1>Gravador de Atendimento</h1>
+
+  <button id="startButton">Iniciar Atendimento</button>
+  <button id="stopButton" disabled>Finalizar Atendimento</button>
+  <a id="downloadLink" style="display:none;">Baixar Gravação</a>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    // Iniciar a gravação
+    document.getElementById('startButton').onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const downloadLink = document.getElementById('downloadLink');
+        downloadLink.href = audioUrl;
+        downloadLink.download = 'atendimento.webm';
+        downloadLink.style.display = 'block';
+        downloadLink.textContent = 'Baixar Gravação';
+      };
+
+      mediaRecorder.start();
+      document.getElementById('startButton').disabled = true;
+      document.getElementById('stopButton').disabled = false;
+    };
+
+    // Parar a gravação
+    document.getElementById('stopButton').onclick = () => {
+      mediaRecorder.stop();
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+    };
+  </script>
+</body>
+</html>
