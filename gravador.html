@@ -1,52 +1,123 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Gravador de Atendimento</title>
+  <meta charset="utf-8" />
+  <title>Gravador WAV (PCM 16-bit)</title>
+  <style>button{margin:6px;padding:10px 14px}</style>
 </head>
 <body>
-  <h2>Gravador de Atendimento</h2>
+  <h2>Gravar atendimento em WAV (PCM 16-bit)</h2>
   <button id="startBtn">Iniciar</button>
   <button id="stopBtn" disabled>Finalizar</button>
-  <a id="downloadLink" style="display:none;">Baixar Gravação</a>
+  <a id="download" style="display:none">Baixar WAV</a>
 
   <script>
-    let mediaRecorder;
-    let audioChunks = [];
+    let audioCtx, micStream, source, processor;
+    let buffers = [];  // Float32 pedaços
+    let sampleRate = 48000; // será ajustado ao abrir o AudioContext
 
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const downloadLink = document.getElementById("downloadLink");
+    function floatTo16BitPCM(float32) {
+      const out = new Int16Array(float32.length);
+      for (let i = 0; i < float32.length; i++) {
+        let s = Math.max(-1, Math.min(1, float32[i]));
+        out[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return out;
+    }
+
+    function encodeWAV(float32Data, sampleRate) {
+      // Concatena todos os blocos Float32
+      const totalLen = float32Data.reduce((acc, cur) => acc + cur.length, 0);
+      const merged = new Float32Array(totalLen);
+      let offset = 0;
+      for (const f32 of float32Data) { merged.set(f32, offset); offset += f32.length; }
+
+      // Converte para PCM16
+      const pcm16 = floatTo16BitPCM(merged);
+      const bytesPerSample = 2;
+      const blockAlign = 1 * bytesPerSample; // mono
+      const byteRate = sampleRate * blockAlign;
+
+      // Cabeçalho WAV (44 bytes)
+      const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
+      const view = new DataView(buffer);
+
+      function writeString(off, str){ for(let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
+
+      // RIFF chunk descriptor
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + pcm16.length * bytesPerSample, true);
+      writeString(8, 'WAVE');
+
+      // fmt sub-chunk
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);         // Subchunk1Size (16 for PCM)
+      view.setUint16(20, 1, true);          // AudioFormat = 1 (PCM)
+      view.setUint16(22, 1, true);          // NumChannels = 1 (mono)
+      view.setUint32(24, sampleRate, true); // SampleRate
+      view.setUint32(28, byteRate, true);   // ByteRate
+      view.setUint16(32, blockAlign, true); // BlockAlign
+      view.setUint16(34, 16, true);         // BitsPerSample
+
+      // data sub-chunk
+      writeString(36, 'data');
+      view.setUint32(40, pcm16.length * bytesPerSample, true);
+
+      // PCM samples
+      let idx = 44;
+      for (let i = 0; i < pcm16.length; i++, idx += 2) {
+        view.setInt16(idx, pcm16[i], true);
+      }
+
+      return new Blob([view], { type: 'audio/wav' });
+    }
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn  = document.getElementById('stopBtn');
+    const dl       = document.getElementById('download');
 
     startBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+      buffers = [];
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      sampleRate = audioCtx.sampleRate; // tipicamente 48000
 
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) {
-          audioChunks.push(e.data);
-        }
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      source = audioCtx.createMediaStreamSource(micStream);
+
+      // ScriptProcessor é simples e suficiente p/ protótipo
+      processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      processor.onaudioprocess = (e) => {
+        const chan = e.inputBuffer.getChannelData(0);
+        // Copia pra evitar referência ao buffer interno
+        buffers.push(new Float32Array(chan));
       };
 
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        const url = URL.createObjectURL(audioBlob);
-        downloadLink.href = url;
-        downloadLink.download = "atendimento.webm";
-        downloadLink.textContent = "Baixar Gravação";
-        downloadLink.style.display = "block";
-      };
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
 
-      mediaRecorder.start();
       startBtn.disabled = true;
-      stopBtn.disabled = false;
+      stopBtn.disabled  = false;
+      dl.style.display  = 'none';
     };
 
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
+    stopBtn.onclick = async () => {
+      // Para nós do grafo
+      processor.disconnect();
+      source.disconnect();
+      if (micStream) micStream.getTracks().forEach(t => t.stop());
+      await audioCtx.close();
+
+      // Codifica WAV
+      const wavBlob = encodeWAV(buffers, sampleRate);
+      const url = URL.createObjectURL(wavBlob);
+
+      dl.href = url;
+      dl.download = 'atendimento.wav';
+      dl.textContent = 'Baixar WAV';
+      dl.style.display = 'inline-block';
+
       startBtn.disabled = false;
-      stopBtn.disabled = true;
+      stopBtn.disabled  = true;
     };
   </script>
 </body>
