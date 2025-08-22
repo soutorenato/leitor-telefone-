@@ -85,6 +85,7 @@ function salvarPatrimonio() {
   document.getElementById("valor-patrimonio").innerText = "R$ " + total.toLocaleString("pt-BR", {minimumFractionDigits: 2});
   localStorage.setItem("patrimonioTotal", total);
   atualizarGrafico(patrimonioChart, patrimonioCampos, patrimonioCampos.map(c => parseFloat(document.getElementById(c).value) || 0));
+  atualizarCard4Diagnostico();
   fecharModal();
 }
 
@@ -118,6 +119,7 @@ function salvarDespesas(cat, btn) {
   btn.style.borderColor = "green";
   const totalGeral = Object.values(despesasTotais).reduce((a,b) => a+b, 0);
   document.getElementById("valor-despesas").innerText = "R$ " + totalGeral.toLocaleString("pt-BR", {minimumFractionDigits: 2});
+  atualizarCard4Diagnostico();
   atualizarGrafico(despesasChart, Object.keys(despesasTotais), Object.values(despesasTotais));
   fecharModal();
 }
@@ -180,6 +182,477 @@ window.onload = function() {
     document.getElementById("valor-despesas").innerText = "R$ " + totalGeral.toLocaleString("pt-BR", {minimumFractionDigits: 2});
   }
 };
+
+
+
+
+// ===== Util: formata em BRL =====
+function formatBRL(v) {
+  return `R$ ${Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// ===== Lê o valor de "Conta de Luz" de várias formas possíveis =====
+function obterValorContaDeLuz() {
+  // 1) Chave direta
+  let v = localStorage.getItem("Conta de Luz");
+  if (v != null) return parseFloat(v) || 0;
+
+  // 2) Chave qualificada (ex.: "Casa:Conta de Luz")
+  v = localStorage.getItem("Casa:Conta de Luz");
+  if (v != null) return parseFloat(v) || 0;
+
+  // 3) Objeto detalhado por categoria (ex.: { Casa: { "Conta de Luz": 300 } })
+  try {
+    const det = JSON.parse(localStorage.getItem("despesasDetalhadas") || "{}");
+    if (det?.Casa && det.Casa["Conta de Luz"] != null) {
+      return parseFloat(det.Casa["Conta de Luz"]) || 0;
+    }
+  } catch (_) {}
+
+  // 4) Fallback: nada encontrado
+  return 0;
+}
+
+// Normaliza string: minúsculas + sem acentos
+function norm(s) {
+  return String(s || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().trim();
+}
+
+// --- Converte "R$ 1.234,56" -> 1234.56 (aceita number ou string)
+function parseValorBR(v) {
+  if (typeof v === "number") return v;
+  const s = String(v || "")
+    .replace(/\s/g, "")
+    .replace(/^r\$\s?/i, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+// --- Lê "Seguro da casa" do localStorage (usa a chave do seu formulário)
+function obterValorSeguroDaCasa() {
+  let v = localStorage.getItem("Seguro da casa");
+  if (v != null && v !== "") return parseValorBR(v);
+
+  // Variações (caso mude no futuro)
+  const alternativas = ["Seguro da Casa", "Casa:Seguro da casa", "Casa:Seguro da Casa"];
+  for (const k of alternativas) {
+    v = localStorage.getItem(k);
+    if (v != null && v !== "") return parseValorBR(v);
+  }
+  return 0;
+}
+
+// --- Lê "Animais de estimação (ração, tosa, remédios, etc.)"
+function obterValorAnimaisEstimacao() {
+  const key = "Animais de estimação (ração, tosa, remédios, etc.)";
+
+  // 1) Chave direta
+  let v = localStorage.getItem(key);
+  if (v != null && v !== "") return parseValorBR(v);
+
+  // 2) Variação com prefixo (se algum dia salvar como "Casa:...")
+  v = localStorage.getItem("Casa:" + key);
+  if (v != null && v !== "") return parseValorBR(v);
+
+  // 3) Procurar dentro de despesasDetalhadas em QUALQUER categoria
+  try {
+    const det = JSON.parse(localStorage.getItem("despesasDetalhadas") || "{}");
+    for (const categoria of Object.values(det || {})) {
+      for (const [label, raw] of Object.entries(categoria || {})) {
+        const L = norm(label);
+        if (L.startsWith("animais de estimacao")) {
+          const n = parseValorBR(raw);
+          if (n > 0) return n;
+        }
+      }
+    }
+  } catch {}
+
+  return 0;
+}
+
+// Lê o objeto detalhado salvo no localStorage (por categoria)
+function getDespesasDetalhadas() {
+  try {
+    return JSON.parse(localStorage.getItem("despesasDetalhadas") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+// ======= NOVOS HELPERS PARA "SEGURO VIDA" =======
+
+// Localiza um objeto de categoria por nome (insensível a acentos/caixa)
+function getCategoria(det, nomeAlvo) {
+  const alvo = norm(nomeAlvo);
+  for (const [nome, obj] of Object.entries(det || {})) {
+    if (norm(nome) === alvo) return obj || {};
+  }
+  return {};
+}
+
+// Lê valor do item "Seguro de Vida" (procurando em Saúde e Proteção e variações)
+function obterValorSeguroDeVida() {
+  const det = getDespesasDetalhadas();
+
+  // 1) Dentro de "Saúde e Proteção"
+  const catSaude = getCategoria(det, "Saúde e Proteção");
+  for (const [label, raw] of Object.entries(catSaude)) {
+    const L = norm(label);
+    if (L === "seguro de vida" || (L.includes("seguro") && L.includes("vida"))) {
+      return parseValorBR(raw);
+    }
+  }
+
+  // 2) Chaves no localStorage
+  const chaves = [
+    "Saúde e Proteção:Seguro de Vida",
+    "Saude e Protecao:Seguro de Vida",
+    "Seguro de Vida"
+  ];
+  for (const k of chaves) {
+    const v = localStorage.getItem(k);
+    if (v != null && v !== "") return parseValorBR(v);
+  }
+
+  return 0;
+}
+
+// Soma do patrimônio (Imóvel, Veículo, Investimentos) de forma robusta
+function obterTotalPatrimonio() {
+  // a) objeto detalhado (se existir)
+  try {
+    const pat = JSON.parse(localStorage.getItem("patrimonioDetalhado") || "{}");
+    if (pat && typeof pat === "object" && Object.keys(pat).length) {
+      return Object.values(pat).reduce((acc, v) => acc + parseValorBR(v), 0);
+    }
+  } catch {}
+
+  // b) chaves diretas e variações
+  const chaves = [
+    "Imóvel", "Imovel",
+    "Veículo", "Veiculo",
+    "Investimentos",
+    "Patrimônio:Imóvel", "Patrimonio:Imovel",
+    "Patrimônio:Veículo", "Patrimonio:Veiculo",
+    "Patrimônio:Investimentos", "Patrimonio:Investimentos"
+  ];
+  let total = 0;
+  for (const k of chaves) {
+    const v = localStorage.getItem(k);
+    if (v != null && v !== "") total += parseValorBR(v);
+  }
+  return total;
+}
+
+// Soma das despesas das categorias: Casa + Alimentação + Educação (robusta)
+function obterTotalDespesasCAE() {
+  // 1) Tentar usar o agregado por categoria (despesasTotais)
+  try {
+    const tot = JSON.parse(localStorage.getItem("despesasTotais") || "{}");
+    if (tot && typeof tot === "object" && Object.keys(tot).length) {
+      const somaTotais =
+        parseValorBR(tot["Casa"]) +
+        // cobre "Alimentação" e possíveis variações sem acento:
+        (tot["Alimentação"] != null ? parseValorBR(tot["Alimentação"]) : parseValorBR(tot["Alimentacao"])) +
+        (tot["Educação"]   != null ? parseValorBR(tot["Educação"])   : parseValorBR(tot["Educacao"]));
+      if (somaTotais > 0) return somaTotais;
+    }
+  } catch {}
+
+  // 2) Somar a partir de despesasDetalhadas (categorias e itens)
+  try {
+    const det = JSON.parse(localStorage.getItem("despesasDetalhadas") || "{}");
+    const categoriasAlvo = ["Casa", "Alimentação", "Alimentacao", "Educação", "Educacao"].map(norm);
+    let total = 0;
+    for (const [nomeCat, itens] of Object.entries(det || {})) {
+      if (!categoriasAlvo.includes(norm(nomeCat))) continue;
+      for (const val of Object.values(itens || {})) {
+        total += parseValorBR(val);
+      }
+    }
+    if (total > 0) return total;
+  } catch {}
+
+  // 3) Fallback: somar por prefixos no localStorage (Casa:*, Alimentação:*, Educação:*)
+  let totalPrefixos = 0;
+  const prefixos = ["Casa:", "Alimentação:", "Alimentacao:", "Educação:", "Educacao:"];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i) || "";
+    if (prefixos.some(p => k.startsWith(p))) {
+      totalPrefixos += parseValorBR(localStorage.getItem(k));
+    }
+  }
+  return totalPrefixos;
+}
+
+
+// Arredonda para cima ao múltiplo informado (ex.: 50.000)
+function arredondarParaCimaMultiplo(valor, multiplo) {
+  if (multiplo <= 0) return valor;
+  return Math.ceil((valor || 0) / multiplo) * multiplo;
+}
+
+// Lê o custo de "Combustível" na categoria "Transporte" (robusto: detalhado + chaves avulsas)
+function obterValorCombustivelTransporte() {
+  let total = 0;
+
+  // 1) despesasDetalhadas → categoria "Transporte"
+  try {
+    const det = getDespesasDetalhadas();
+    for (const [nomeCat, itens] of Object.entries(det || {})) {
+      if (norm(nomeCat) !== "transporte") continue;
+      for (const [label, raw] of Object.entries(itens || {})) {
+        const L = norm(label);
+        if (L === "combustivel" || L.includes("combustivel")) {
+          total += parseValorBR(raw);
+        }
+      }
+    }
+  } catch {}
+
+  if (total > 0) return total;
+
+  // 2) Fallback: chaves no localStorage
+  const chaves = ["Transporte:Combustível", "Transporte:Combustivel", "Combustível", "Combustivel"];
+  for (const k of chaves) {
+    const v = localStorage.getItem(k);
+    if (v != null && v !== "") total += parseValorBR(v);
+  }
+
+  return total;
+}
+
+
+// Lê o valor de "Presentes" na categoria "Celebrações e compromissos"
+function obterValorPresentesCelebracoes() {
+  let total = 0;
+
+  // 1) despesasDetalhadas → categoria "Celebrações e compromissos"
+  try {
+    const det = getDespesasDetalhadas();
+    for (const [nomeCat, itens] of Object.entries(det || {})) {
+      if (norm(nomeCat) === "celebracoes e compromissos") {
+        for (const [label, raw] of Object.entries(itens || {})) {
+          const L = norm(label);
+          if (L.startsWith("presente")) {
+            total += parseValorBR(raw);
+          }
+        }
+      }
+    }
+  } catch {}
+
+  if (total > 0) return total;
+
+  // 2) Fallback: chaves no localStorage
+  //   - tenta chaves exatas
+  const chavesExatas = [
+    "Celebrações e compromissos:Presentes",
+    "Celebracoes e compromissos:Presentes",
+    "Presentes"
+  ];
+  for (const k of chavesExatas) {
+    const v = localStorage.getItem(k);
+    if (v != null && v !== "") total += parseValorBR(v);
+  }
+  if (total > 0) return total;
+
+  //   - varre prefixos "Celebrações e compromissos:*" / "Celebracoes e compromissos:*"
+  const prefixos = ["Celebrações e compromissos:", "Celebracoes e compromissos:"];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i) || "";
+    if (prefixos.some(p => k.startsWith(p))) {
+      const rotulo = k.split(":")[1] || "";
+      if (norm(rotulo).startsWith("presente")) {
+        total += parseValorBR(localStorage.getItem(k));
+      }
+    }
+  }
+
+  return total;
+}
+
+
+// ===== Atualiza o Card 4 com o diagnóstico (FIT Energia + Seguro Residencial + Seguro Vida) =====
+function atualizarCard4Diagnostico() {
+  const card4 = document.querySelector(".card-grid .card:nth-child(4)");
+  if (!card4) {
+    console.warn("Card 4 não encontrado.");
+    return;
+  }
+
+  // Valores base
+  const valorLuz        = obterValorContaDeLuz();        // FIT Energia
+  const valorSeguroCasa = obterValorSeguroDaCasa();      // Seguro Residencial
+  const valorPet        = obterValorAnimaisEstimacao();  // Pet
+  const valorSeguroVida = obterValorSeguroDeVida();      // Seguro Vida
+  const valorCombustivel = obterValorCombustivelTransporte(); // Auto Compara
+  const valorPresentes   = obterValorPresentesCelebracoes(); // ← NOVO (Esfera)
+
+  // Limpa o card antes de preencher
+  card4.innerHTML = "";
+
+  // Título
+  const h4 = document.createElement("h4");
+  h4.textContent = "Diagnóstico";
+  card4.appendChild(h4);
+
+  // Subtítulo/valor (mantido como no seu código)
+  const sub = document.createElement("div");
+  sub.className = "valor";
+  card4.appendChild(sub);
+
+  let teveIndicacao = false;
+
+  // ===== Indicação 1: FIT Energia (>= 250) =====
+  if (valorLuz >= 250) {
+    const economia10 = valorLuz * 0.10;
+    const economia15 = valorLuz * 0.15;
+
+    const wrap = document.createElement("div");
+    wrap.className = "indicacao";
+
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip-produto";
+    chip.textContent = "FIT Energia";
+    wrap.appendChild(chip);
+
+    const tip = document.createElement("div");
+    tip.className = "tooltip";
+    tip.innerHTML = `
+      A conta da energia é de <b>${formatBRL(valorLuz)}</b>. 
+      Terá uma economia entre <b>${formatBRL(economia10)}</b> a <b>${formatBRL(economia15)}</b> ao mês.
+    `;
+    wrap.appendChild(tip);
+
+    card4.appendChild(wrap);
+    teveIndicacao = true;
+  }
+
+  // ===== Indicação 2: Seguro Residencial =====
+  // Exibe SOMENTE quando "Seguro da casa" == 0
+  if (valorSeguroCasa === 0) {
+    const wrap = document.createElement("div");
+    wrap.className = "indicacao";
+
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip-produto";
+    chip.textContent = "Seguro Residencial";
+    wrap.appendChild(chip);
+
+    const tip = document.createElement("div");
+    tip.className = "tooltip";
+    tip.textContent = (valorPet > 0)
+      ? "Possui custos com moradia, oferte as assistências do seguro residencial e não deixe de falar do serviço Pet."
+      : "Possui custos com moradia, oferte as assistências do seguro residencial.";
+    wrap.appendChild(tip);
+
+    card4.appendChild(wrap);
+    teveIndicacao = true;
+  }
+
+// ===== Indicação 3: Seguro Vida =====
+// Regra: em "Saúde e Proteção", "Seguro de Vida" == 0
+if (obterValorSeguroDeVida() === 0) {
+  const totalPatrimonio = obterTotalPatrimonio();
+  const totalDespesasCAE = obterTotalDespesasCAE();
+
+  // capital = 10% do patrimônio + 60 * (Casa + Alimentação + Educação)
+  const capitalBase = (totalPatrimonio * 0.10) + (totalDespesasCAE * 60);
+  const capitalSugerido = arredondarParaCimaMultiplo(capitalBase, 50000);
+
+  const wrap = document.createElement("div");
+  wrap.className = "indicacao";
+
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip-produto";
+  chip.textContent = "Seguro Vida";
+  wrap.appendChild(chip);
+
+  const tip = document.createElement("div");
+  tip.className = "tooltip";
+  tip.innerHTML = `Oferte o capital assegurado de <b>${formatBRL(capitalSugerido)}</b> (cálculo baseado nas despesas e patrimônio).`;
+  wrap.appendChild(tip);
+
+  card4.appendChild(wrap);
+  teveIndicacao = true;
+}
+
+
+// ===== Indicação 4: Auto Compara =====
+// Regra: existir custo de "Combustível" em "Transporte"
+if (valorCombustivel > 0) {
+  const wrap = document.createElement("div");
+  wrap.className = "indicacao";
+
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip-produto";
+  chip.textContent = "Auto Compara";
+  wrap.appendChild(chip);
+
+  const tip = document.createElement("div");
+  tip.className = "tooltip";
+  tip.textContent = "Agende o vencimento do seguro auto.";
+  wrap.appendChild(tip);
+
+  card4.appendChild(wrap);
+  teveIndicacao = true;
+}
+
+
+// ===== Indicação 5: Esfera =====
+// Regra: "Celebrações e compromissos → Presentes" > 0
+if (valorPresentes > 0) {
+  const wrap = document.createElement("div");
+  wrap.className = "indicacao";
+
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip-produto";
+  chip.textContent = "Esfera";
+  wrap.appendChild(chip);
+
+  const tip = document.createElement("div");
+  tip.className = "tooltip";
+  tip.textContent = "Oferecer descontos para presentes nas lojas parceiras do Esfera.";
+  wrap.appendChild(tip);
+
+  card4.appendChild(wrap);
+  teveIndicacao = true;
+}
+
+
+  // Caso nenhuma indicação tenha sido exibida
+  if (!teveIndicacao) {
+    const vazio = document.createElement("p");
+    vazio.className = "sem-indicacao";
+    vazio.textContent = "Nenhuma indicação no momento.";
+    card4.appendChild(vazio);
+  }
+}
+
+// Rode no carregamento da página
+document.addEventListener("DOMContentLoaded", atualizarCard4Diagnostico);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
