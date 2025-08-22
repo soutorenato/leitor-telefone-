@@ -1,160 +1,52 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Gravar Mic + Áudio da Aba (MP3)</title>
-  <script src="https://cdn.jsdelivr.net/npm/lamejs/lame.min.js"></script>
-  <style>
-    button{margin:6px;padding:10px 14px}
-  </style>
+  <meta charset="UTF-8">
+  <title>Gravador de Atendimento</title>
 </head>
 <body>
-  <h2>Gravar Atendimento (Mic + Áudio da Aba) em MP3</h2>
-  <p>1) Clique em <b>Selecionar aba com a ligação</b> e escolha a aba onde está a chamada (compartilhe com áudio).<br>
-     2) Clique <b>Iniciar</b> para começar a gravar. 3) Clique <b>Finalizar</b> para baixar o MP3.</p>
-
-  <button id="pickTab">Selecionar aba com a ligação</button>
-  <button id="startBtn" disabled>Iniciar</button>
+  <h2>Gravador de Atendimento</h2>
+  <button id="startBtn">Iniciar</button>
   <button id="stopBtn" disabled>Finalizar</button>
-  <a id="dl" style="display:none">Baixar MP3</a>
+  <a id="downloadLink" style="display:none;">Baixar Gravação</a>
 
   <script>
-    let audioCtx, workletNode, micStream, tabStream;
-    let mp3encoder, mp3Data = [];
-    let mixedNode, micSource, tabSource, merger, gainMic, gainTab;
+    let mediaRecorder;
+    let audioChunks = [];
 
-    const pickTabBtn = document.getElementById('pickTab');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn  = document.getElementById('stopBtn');
-    const dl = document.getElementById('dl');
-
-    async function setupAudioGraph() {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-      // Carrega Worklet para puxar PCM do mix
-      const workletCode = `
-        class CaptureProcessor extends AudioWorkletProcessor {
-          constructor() {
-            super();
-            this.port.onmessage = () => {};
-          }
-          process(inputs, outputs, parameters) {
-            const input = inputs[0];
-            if (input && input[0]) {
-              this.port.postMessage(input[0]);
-            }
-            return true;
-          }
-        }
-        registerProcessor('capture-processor', CaptureProcessor);
-      `;
-      const blob = new Blob([workletCode], { type: 'application/javascript' });
-      const url  = URL.createObjectURL(blob);
-      await audioCtx.audioWorklet.addModule(url);
-
-      // Fontes
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      micSource = audioCtx.createMediaStreamSource(micStream);
-
-      // tabStream já vem de getDisplayMedia no passo anterior
-      tabSource = audioCtx.createMediaStreamSource(tabStream);
-
-      // Ganhos individuais (se quiser equilibrar volumes)
-      gainMic = audioCtx.createGain(); gainMic.gain.value = 1.0;
-      gainTab = audioCtx.createGain(); gainTab.gain.value = 1.0;
-
-      // Mistura as duas fontes para 1 canal (mono) para simplificar o MP3
-      merger = audioCtx.createChannelMerger(2);
-      micSource.connect(gainMic).connect(merger, 0, 0); // Mic no canal L
-      tabSource.connect(gainTab).connect(merger, 0, 1); // Aba no canal R
-
-      // Converte para mono
-      const splitter = audioCtx.createChannelSplitter(2);
-      merger.connect(splitter);
-      const monoGain = audioCtx.createGain(); monoGain.gain.value = 0.5;
-
-      // Soma L+R em um único canal
-      const sumNode = audioCtx.createGain();
-      splitter.connect(sumNode, 0);
-      splitter.connect(sumNode, 1);
-      sumNode.connect(monoGain);
-
-      // Worklet que entrega Float32 PCM
-      workletNode = new AudioWorkletNode(audioCtx, 'capture-processor');
-      monoGain.connect(workletNode);
-
-      // Inicializa encoder MP3 (mono)
-      const sampleRate = audioCtx.sampleRate; // tipicamente 48000
-      mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, 128);
-
-      workletNode.port.onmessage = (msg) => {
-        const float32 = msg.data; // Float32Array
-        const pcm16 = floatTo16(float32);
-        const mp3buf = mp3encoder.encodeBuffer(pcm16);
-        if (mp3buf.length) mp3Data.push(new Int8Array(mp3buf));
-      };
-
-      // Necessário ter um destino no grafo para processar
-      workletNode.connect(audioCtx.destination);
-    }
-
-    function floatTo16(float32Array) {
-      const out = new Int16Array(float32Array.length);
-      for (let i=0; i<float32Array.length; i++) {
-        let s = Math.max(-1, Math.min(1, float32Array[i]));
-        out[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-      }
-      return out;
-    }
-
-    pickTabBtn.onclick = async () => {
-      // Pega áudio da ABA (escolha a aba com a ligação e marque "Compartilhar áudio da aba")
-      tabStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-      // Oculta o vídeo compartilhado (não precisamos da imagem)
-      const v = document.createElement('video');
-      v.style.display = 'none';
-      v.srcObject = tabStream;
-      v.muted = true;
-      document.body.appendChild(v);
-      startBtn.disabled = false;
-      pickTabBtn.disabled = true;
-    };
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const downloadLink = document.getElementById("downloadLink");
 
     startBtn.onclick = async () => {
-      dl.style.display = 'none';
-      mp3Data = [];
-      await setupAudioGraph();
-      await audioCtx.resume();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) {
+          audioChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const url = URL.createObjectURL(audioBlob);
+        downloadLink.href = url;
+        downloadLink.download = "atendimento.webm";
+        downloadLink.textContent = "Baixar Gravação";
+        downloadLink.style.display = "block";
+      };
+
+      mediaRecorder.start();
       startBtn.disabled = true;
       stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
-      // Finaliza o encoder
-      const end = mp3encoder.flush();
-      if (end.length) mp3Data.push(new Int8Array(end));
-
-      // Libera recursos
-      workletNode.disconnect();
-      if (micStream) micStream.getTracks().forEach(t => t.stop());
-      if (tabStream) tabStream.getTracks().forEach(t => t.stop());
-      audioCtx.close();
-
-      // Gera o MP3
-      // Concatena os blocos
-      let length = 0;
-      mp3Data.forEach(b => length += b.length);
-      const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
-
-      const url = URL.createObjectURL(mp3Blob);
-      dl.href = url;
-      dl.download = 'atendimento_mix.mp3';
-      dl.textContent = 'Baixar MP3';
-      dl.style.display = 'inline-block';
-
-      stopBtn.disabled = true;
+      mediaRecorder.stop();
       startBtn.disabled = false;
-      pickTabBtn.disabled = false;
+      stopBtn.disabled = true;
     };
   </script>
 </body>
