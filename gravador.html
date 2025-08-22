@@ -3,53 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gravador de Atendimento</title>
+  <title>Gravador em MP3</title>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs/lame.min.js"></script>
 </head>
 <body>
-  <h1>Gravador de Atendimento</h1>
+  <h1>Gravador de Atendimento (MP3)</h1>
 
   <button id="startButton">Iniciar Atendimento</button>
   <button id="stopButton" disabled>Finalizar Atendimento</button>
-  <a id="downloadLink" style="display:none;">Baixar Gravação</a>
+  <a id="downloadLink" style="display:none;">Baixar Gravação MP3</a>
 
   <script>
-    let mediaRecorder;
-    let audioChunks = [];
+    let audioContext;
+    let mediaStream;
+    let processor;
+    let mp3encoder;
+    let mp3Data = [];
 
-    // Iniciar a gravação
     document.getElementById('startButton').onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+      audioContext = new AudioContext();
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source = audioContext.createMediaStreamSource(mediaStream);
 
-      mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
+      processor = audioContext.createScriptProcessor(4096, 1, 1);
+      mp3encoder = new lamejs.Mp3Encoder(1, audioContext.sampleRate, 128);
+
+      processor.onaudioprocess = (e) => {
+        const samples = e.inputBuffer.getChannelData(0);
+        const mp3buf = mp3encoder.encodeBuffer(convertFloat32ToInt16(samples));
+        if (mp3buf.length > 0) {
+          mp3Data.push(mp3buf);
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
+      source.connect(processor);
+      processor.connect(audioContext.destination);
 
-        const downloadLink = document.getElementById('downloadLink');
-        downloadLink.href = audioUrl;
-        downloadLink.download = 'atendimento.webm';
-        downloadLink.style.display = 'block';
-        downloadLink.textContent = 'Baixar Gravação';
-      };
-
-      mediaRecorder.start();
       document.getElementById('startButton').disabled = true;
       document.getElementById('stopButton').disabled = false;
     };
 
-    // Parar a gravação
     document.getElementById('stopButton').onclick = () => {
-      mediaRecorder.stop();
+      processor.disconnect();
+      audioContext.close();
+      const mp3buf = mp3encoder.flush();
+      if (mp3buf.length > 0) {
+        mp3Data.push(mp3buf);
+      }
+      const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = url;
+      downloadLink.download = 'atendimento.mp3';
+      downloadLink.style.display = 'block';
+      downloadLink.textContent = 'Baixar Gravação MP3';
+
       document.getElementById('startButton').disabled = false;
       document.getElementById('stopButton').disabled = true;
     };
+
+    function convertFloat32ToInt16(buffer) {
+      let l = buffer.length;
+      const buf = new Int16Array(l);
+      for (let i = 0; i < l; i++) {
+        buf[i] = buffer[i] < 0 ? buffer[i] * 0x8000 : buffer[i] * 0x7FFF;
+      }
+      return buf;
+    }
   </script>
 </body>
 </html>
