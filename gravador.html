@@ -2,123 +2,181 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Gravador WAV (PCM 16-bit)</title>
-  <style>button{margin:6px;padding:10px 14px}</style>
+  <title>Transcrição em tempo real (pt-BR)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    h1 { margin-bottom: 8px; }
+    .row { margin: 10px 0; }
+    button { padding: 10px 14px; margin-right: 8px; }
+    #live { padding: 10px; border: 1px dashed #bbb; min-height: 60px; }
+    #final { padding: 10px; border: 1px solid #ccc; min-height: 120px; }
+    small { color:#666 }
+  </style>
 </head>
 <body>
-  <h2>Gravar atendimento em WAV (PCM 16-bit)</h2>
-  <button id="startBtn">Iniciar</button>
-  <button id="stopBtn" disabled>Finalizar</button>
-  <a id="download" style="display:none">Baixar WAV</a>
+  <h1>Transcrição em tempo real (pt-BR)</h1>
+  <div class="row">
+    <button id="startBtn">Iniciar</button>
+    <button id="pauseBtn" disabled>Pausar</button>
+    <button id="stopBtn" disabled>Parar</button>
+    <button id="copyBtn" disabled>Copiar</button>
+    <button id="downloadBtn" disabled>Baixar .txt</button>
+    <button id="clearBtn">Limpar</button>
+  </div>
+
+  <div class="row">
+    <strong>Ao vivo (parcial):</strong>
+    <div id="live"></div>
+    <small>Dica: fale pausadamente para melhor pontuação.</small>
+  </div>
+
+  <div class="row">
+    <strong>Transcrição final:</strong>
+    <div id="final"></div>
+  </div>
 
   <script>
-    let audioCtx, micStream, source, processor;
-    let buffers = [];  // Float32 pedaços
-    let sampleRate = 48000; // será ajustado ao abrir o AudioContext
-
-    function floatTo16BitPCM(float32) {
-      const out = new Int16Array(float32.length);
-      for (let i = 0; i < float32.length; i++) {
-        let s = Math.max(-1, Math.min(1, float32[i]));
-        out[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-      }
-      return out;
-    }
-
-    function encodeWAV(float32Data, sampleRate) {
-      // Concatena todos os blocos Float32
-      const totalLen = float32Data.reduce((acc, cur) => acc + cur.length, 0);
-      const merged = new Float32Array(totalLen);
-      let offset = 0;
-      for (const f32 of float32Data) { merged.set(f32, offset); offset += f32.length; }
-
-      // Converte para PCM16
-      const pcm16 = floatTo16BitPCM(merged);
-      const bytesPerSample = 2;
-      const blockAlign = 1 * bytesPerSample; // mono
-      const byteRate = sampleRate * blockAlign;
-
-      // Cabeçalho WAV (44 bytes)
-      const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
-      const view = new DataView(buffer);
-
-      function writeString(off, str){ for(let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
-
-      // RIFF chunk descriptor
-      writeString(0, 'RIFF');
-      view.setUint32(4, 36 + pcm16.length * bytesPerSample, true);
-      writeString(8, 'WAVE');
-
-      // fmt sub-chunk
-      writeString(12, 'fmt ');
-      view.setUint32(16, 16, true);         // Subchunk1Size (16 for PCM)
-      view.setUint16(20, 1, true);          // AudioFormat = 1 (PCM)
-      view.setUint16(22, 1, true);          // NumChannels = 1 (mono)
-      view.setUint32(24, sampleRate, true); // SampleRate
-      view.setUint32(28, byteRate, true);   // ByteRate
-      view.setUint16(32, blockAlign, true); // BlockAlign
-      view.setUint16(34, 16, true);         // BitsPerSample
-
-      // data sub-chunk
-      writeString(36, 'data');
-      view.setUint32(40, pcm16.length * bytesPerSample, true);
-
-      // PCM samples
-      let idx = 44;
-      for (let i = 0; i < pcm16.length; i++, idx += 2) {
-        view.setInt16(idx, pcm16[i], true);
-      }
-
-      return new Blob([view], { type: 'audio/wav' });
-    }
-
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const startBtn = document.getElementById('startBtn');
-    const stopBtn  = document.getElementById('stopBtn');
-    const dl       = document.getElementById('download');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const liveEl = document.getElementById('live');
+    const finalEl = document.getElementById('final');
 
-    startBtn.onclick = async () => {
-      buffers = [];
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      sampleRate = audioCtx.sampleRate; // tipicamente 48000
+    if (!SpeechRecognition) {
+      alert('Seu navegador não suporta Web Speech API. Use Chrome ou Edge.');
+    }
 
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      source = audioCtx.createMediaStreamSource(micStream);
+    let recognition;
+    let isRunning = false;
+    let isPaused = false;
+    let finalText = '';
 
-      // ScriptProcessor é simples e suficiente p/ protótipo
-      processor = audioCtx.createScriptProcessor(4096, 1, 1);
-      processor.onaudioprocess = (e) => {
-        const chan = e.inputBuffer.getChannelData(0);
-        // Copia pra evitar referência ao buffer interno
-        buffers.push(new Float32Array(chan));
+    function initRecognition() {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'pt-BR';
+      recognition.continuous = true;        // continua ouvindo
+      recognition.interimResults = true;     // resultados parciais
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isRunning = true;
+        liveEl.textContent = '';
       };
 
-      source.connect(processor);
-      processor.connect(audioCtx.destination);
+      recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (res.isFinal) {
+            // Acrescenta um espaço e pontuação simples
+            let chunk = res[0].transcript.trim();
+            if (!/[.!?]$/.test(chunk)) chunk += '.';
+            finalText += (finalText ? ' ' : '') + capitalize(chunk);
+            finalEl.textContent = finalText;
+            liveEl.textContent = '';
+          } else {
+            interim += res[0].transcript;
+          }
+        }
+        if (interim) liveEl.textContent = interim;
+        toggleActionButtons();
+      };
 
-      startBtn.disabled = true;
-      stopBtn.disabled  = false;
-      dl.style.display  = 'none';
+      recognition.onerror = (e) => {
+        console.error('Erro de reconhecimento:', e.error);
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          alert('Permissão de microfone negada. Autorize o acesso ao microfone.');
+        }
+      };
+
+      recognition.onend = () => {
+        // Se não foi pausa manual, considera parado
+        isRunning = false;
+        if (isPaused) return; // pausa reativa sem limpar estado
+        toggleActionButtons();
+      };
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function toggleActionButtons() {
+      startBtn.disabled = isRunning && !isPaused;
+      pauseBtn.disabled = !isRunning;
+      pauseBtn.textContent = isPaused ? 'Retomar' : 'Pausar';
+      stopBtn.disabled = !isRunning && !isPaused && !finalText && !liveEl.textContent;
+      copyBtn.disabled = !finalText;
+      downloadBtn.disabled = !finalText;
+    }
+
+    startBtn.onclick = () => {
+      if (!recognition) initRecognition();
+      isPaused = false;
+      recognition.start();
+      isRunning = true;
+      toggleActionButtons();
     };
 
-    stopBtn.onclick = async () => {
-      // Para nós do grafo
-      processor.disconnect();
-      source.disconnect();
-      if (micStream) micStream.getTracks().forEach(t => t.stop());
-      await audioCtx.close();
-
-      // Codifica WAV
-      const wavBlob = encodeWAV(buffers, sampleRate);
-      const url = URL.createObjectURL(wavBlob);
-
-      dl.href = url;
-      dl.download = 'atendimento.wav';
-      dl.textContent = 'Baixar WAV';
-      dl.style.display = 'inline-block';
-
-      startBtn.disabled = false;
-      stopBtn.disabled  = true;
+    pauseBtn.onclick = () => {
+      if (!recognition) return;
+      if (!isPaused) {
+        // Pausar = parar temporariamente, mas manter estado
+        isPaused = true;
+        recognition.stop();
+      } else {
+        // Retomar
+        isPaused = false;
+        recognition.start();
+      }
+      toggleActionButtons();
     };
+
+    stopBtn.onclick = () => {
+      if (!recognition) return;
+      isPaused = false;
+      recognition.stop();
+      isRunning = false;
+      toggleActionButtons();
+    };
+
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(finalText);
+        copyBtn.textContent = 'Copiado!';
+        setTimeout(() => (copyBtn.textContent = 'Copiar'), 1200);
+      } catch (e) {
+        alert('Não foi possível copiar automaticamente. Selecione o texto manualmente.');
+      }
+    };
+
+    downloadBtn.onclick = () => {
+      const blob = new Blob([finalText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'transcricao.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    clearBtn.onclick = () => {
+      finalText = '';
+      finalEl.textContent = '';
+      liveEl.textContent = '';
+      toggleActionButtons();
+    };
+
+    // Inicializa no load para deixar pronto
+    initRecognition();
+    toggleActionButtons();
   </script>
 </body>
 </html>
