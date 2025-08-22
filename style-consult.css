@@ -151,3 +151,54 @@ td {
   border-color: green;
 
 }
+
+/* Container do bloco de indicação */
+.indicacao {
+  position: relative;
+  display: inline-block;
+  margin-top: 8px;
+}
+
+/* "Chip" do produto */
+.chip-produto {
+  background: #f3f4f6;      /* cinza claro */
+  color: #111827;           /* cinza-900 */
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: default;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 260px;
+  max-width: 360px;
+  background: rgba(17,24,39,0.95); /* quase preto, semiopaco */
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.35;
+  box-shadow: 0 10px 18px rgba(0,0,0,.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 20;
+}
+
+/* Mostra tooltip ao passar o mouse no chip */
+.chip-produto:hover + .tooltip {
+  opacity: 1;
+}
+
+/* Mensagem “sem indicação” */
+.sem-indicacao {
+  color: #6b7280;  /* cinza-500 */
+  font-size: 14px;
+  margin-top: 8px;
+}
