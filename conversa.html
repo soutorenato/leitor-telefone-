@@ -1,105 +1,184 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Teste de Transcrição</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transcrição com Toasts (sem API)</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    :root {
+      --bg1:#0f172a; --bg2:#0b1220; --card:#1e293b; --borda:#334155;
+      --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --danger:#ef4444; --toast:#111827;
     }
-    h1 {
-      margin-bottom: 20px;
-    }
-    .box {
-      width: 90%;
-      max-width: 600px;
-      height: 250px;              /* altura fixa */
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 10px;
-      overflow-y: auto;           /* rolagem só dentro do box */
-      white-space: pre-wrap;
-    }
-    .buttons {
-      margin: 20px 0;
-      display: flex;
-      gap: 10px;
-    }
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .start { background: #22c55e; color: #052e16; }
-    .stop { background: #ef4444; color: #fff; }
-    .clear { background: #334155; color: #f1f5f9; }
+    *{box-sizing:border-box}
+    body{margin:0; background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--txt);
+         font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:20px;
+         display:flex; flex-direction:column; align-items:center; gap:16px;}
+    h1{margin:0; font-size:20px}
+    .panel{width:92%; max-width:640px; background:var(--card); border:1px solid var(--borda);
+           border-radius:12px; padding:14px 12px;}
+    .buttons{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+    button{appearance:none; border:0; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer}
+    .start{background:var(--ok); color:#052e16}
+    .stop{background:var(--danger); color:#fff}
+    .clear{background:transparent; color:var(--txt); border:1px solid var(--borda)}
+    label{display:block; font-size:12px; color:var(--muted); margin:6px 0}
+    #box{height:260px; background:#0b1020; border:1px dashed var(--borda); border-radius:10px;
+         padding:10px; overflow-y:auto; white-space:pre-wrap; line-height:1.45}
+    .row{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin-top:6px}
+    .dot{width:8px; height:8px; border-radius:50%; background:#64748b}
+    .dot.on{background:#10b981; box-shadow:0 0 0 4px rgba(16,185,129,.18)}
+    /* Toasts */
+    .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:9999}
+    @media (max-width:540px){ .toasts{right:50%; transform:translateX(50%);} }
+    .toast{background:var(--toast); border:1px solid rgba(255,255,255,.12); border-left:5px solid var(--ok);
+           color:var(--txt); padding:12px 14px; border-radius:10px; max-width:92vw; width:320px;
+           opacity:0; transform:translateY(6px) scale(.98); animation:pop .2s ease-out forwards}
+    .toast h4{margin:0 0 4px 0; font-size:14px}
+    .toast p{margin:0; font-size:13px; color:#d1d5db}
+    @keyframes pop{to{opacity:1; transform:translateY(0) scale(1)}}
+    .blink{animation:blink 1s steps(2,start) 2}
+    @keyframes blink{to{visibility:hidden}}
   </style>
 </head>
 <body>
   <h1>🎙️ Transcrição em tempo real</h1>
-  <div class="buttons">
-    <button class="start" id="btnStart">Iniciar</button>
-    <button class="stop" id="btnStop">Parar</button>
-    <button class="clear" id="btnClear">Limpar</button>
+
+  <div class="panel">
+    <div class="buttons">
+      <button class="start" id="btnStart">Iniciar</button>
+      <button class="stop" id="btnStop">Parar</button>
+      <button class="clear" id="btnClear">Limpar</button>
+      <div class="row"><span class="dot" id="dot"></span><span id="status">Parado</span></div>
+    </div>
+
+    <label>Transcrição</label>
+    <div id="box"></div>
+
+    <label style="margin-top:10px">Palavras-chave que disparam toasts (exemplos):</label>
+    <div style="font-size:12px; color:var(--muted)">
+      <code>cliente</code>, <code>investimento</code>, <code>cartão</code>, <code>crédito</code>, <code>seguro</code>
+    </div>
   </div>
-  <div class="box" id="transcricao"></div>
+
+  <div class="toasts" id="toasts"></div>
 
   <script>
-    let recognition;
-    let listening = false;
-    const box = document.getElementById("transcricao");
+    const box = document.getElementById("box");
+    const dot = document.getElementById("dot");
+    const statusTxt = document.getElementById("status");
+    const toasts = document.getElementById("toasts");
+    let recognition = null, listening = false;
 
-    if ('webkitSpeechRecognition' in window) {
-      recognition = new webkitSpeechRecognition();
-      recognition.lang = "pt-BR";
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      recognition.onresult = (event) => {
-        let texto = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          texto += event.results[i][0].transcript;
-        }
-        box.textContent = texto;
-        // Mantém rolagem interna sempre no fim
-        box.scrollTop = box.scrollHeight;
-      };
-
-      recognition.onerror = (event) => {
-        box.textContent += "\n[Erro]: " + event.error;
-      };
-    } else {
-      box.textContent = "Seu navegador não suporta reconhecimento de voz.";
+    // --- utilidades UI ---
+    function setStatus(on){ if(on){dot.classList.add("on"); statusTxt.textContent="Gravando";} else {dot.classList.remove("on"); statusTxt.textContent="Parado";} }
+    function toast(title, body){
+      const el=document.createElement("div");
+      el.className="toast blink";
+      el.innerHTML = `<h4>${title}</h4><p>${body}</p>`;
+      toasts.appendChild(el);
+      setTimeout(()=>{ el.style.opacity=.0; el.style.transform='translateY(6px)';
+        setTimeout(()=>el.remove(),300); }, 4500);
     }
 
-    document.getElementById("btnStart").onclick = () => {
-      if (!listening) {
-        recognition.start();
-        listening = true;
+    // --- gatilhos locais com cooldown por termo ---
+    const triggers = [
+      { re:/\b(cart(ã|a)o|cartao|cartão|cartões)\b/i, tip:"Cheque limites, anuidade e benefícios antes de oferecer upgrade." },
+      { re:/\b(invest(imento|ir|e))\b/i,            tip:"Pergunte prazo, liquidez e objetivo para encaixar o produto certo." },
+      { re:/\b(cr[eé]dito|empr[eé]stimo)\b/i,       tip:"Valide renda, parcelas e seguros; faça simulação consultiva." },
+      { re:/\b(seguro(s)?)\b/i,                     tip:"Gancho de proteção familiar e eventos imprevistos." },
+      { re:/\b(cliente|senhor|senhora|voc[êe])\b/i, tip:"Use pergunta aberta para confirmar necessidade antes da oferta." }
+    ];
+    const lastToastByIdx = new Map();
+    const TOAST_COOLDOWN_MS = 5000;
+
+    function runTriggersOn(finalPhrase){
+      const now = Date.now();
+      for(let i=0;i<triggers.length;i++){
+        const t = triggers[i];
+        if(t.re.test(finalPhrase)){
+          const last = lastToastByIdx.get(i) || 0;
+          if(now - last > TOAST_COOLDOWN_MS){
+            toast("💡 Insight rápido", t.tip);
+            lastToastByIdx.set(i, now);
+          }
+          break; // dispara só um por frase
+        }
+      }
+    }
+
+    // --- transcrição ---
+    function setupRecognition(){
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR){
+        box.textContent = "Seu navegador não suporta reconhecimento de voz (use Chrome no desktop/Android).";
+        return null;
+      }
+      const rec = new SR();
+      rec.lang = "pt-BR";
+      rec.continuous = true;
+      rec.interimResults = true;
+
+      rec.onstart = ()=>{ listening=true; setStatus(true); };
+      rec.onend   = ()=>{ listening=false; setStatus(false); };
+
+      // atualiza texto e roda gatilhos somente em resultados finais
+      rec.onresult = (ev)=>{
+        let parcial = "";
+        for(let i=ev.resultIndex; i<ev.results.length; i++){
+          const r = ev.results[i];
+          const t = (r[0] && r[0].transcript) ? r[0].transcript : "";
+          if(r.isFinal){
+            appendLine(t.trim());
+            runTriggersOn(t);
+          } else {
+            parcial = t;
+          }
+        }
+        // mostra parcial na última linha sem empurrar a página
+        if(parcial){
+          showPartial(parcial);
+        }
+      };
+
+      rec.onerror = (e)=>{
+        appendLine(`[Erro]: ${e.error || "desconhecido"}`);
+      };
+
+      return rec;
+    }
+
+    // mantém o box fixo com rolagem interna
+    function appendLine(text){
+      if(!text) return;
+      const current = box.textContent;
+      const sep = current && !current.endsWith("\n") ? "\n" : "";
+      box.textContent = (current || "") + sep + text + "\n";
+      box.scrollTop = box.scrollHeight; // rola só dentro do box
+    }
+    // renderiza parcial substituindo a última linha
+    function showPartial(parcial){
+      const lines = box.textContent.split("\n");
+      if(lines[lines.length-1].trim() === "") lines.pop();
+      const base = lines.slice(0, -1).join("\n");
+      const lastFull = lines.length ? lines[lines.length-1] : "";
+      const merged = (base ? base + "\n" : "") + (lastFull ? lastFull + "\n" : "") + parcial;
+      box.textContent = merged;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // botões
+    document.getElementById("btnStart").onclick = ()=>{
+      if(listening) return;
+      if(!recognition) recognition = setupRecognition();
+      if(recognition){
+        try{ recognition.start(); }catch(_){}
       }
     };
-
-    document.getElementById("btnStop").onclick = () => {
-      if (listening) {
-        recognition.stop();
-        listening = false;
-      }
+    document.getElementById("btnStop").onclick = ()=>{
+      if(!listening || !recognition) return;
+      try{ recognition.stop(); }catch(_){}
     };
-
-    document.getElementById("btnClear").onclick = () => {
-      box.textContent = "";
-    };
+    document.getElementById("btnClear").onclick = ()=>{ box.textContent = ""; };
   </script>
 </body>
 </html>
