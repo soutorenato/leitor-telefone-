@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Transcrição + Gatilhos robustos</title>
+<title>Transcrição + 100 Gatilhos (sem API)</title>
 <style>
   :root { --bg1:#0f172a; --bg2:#0b1220; --card:#1e293b; --borda:#334155; --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --danger:#ef4444; --toast:#111827; }
   *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--txt);
+       font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
   h1{margin:0;font-size:20px}
-  .panel{width:92%;max-width:680px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px 12px}
+  .panel{width:92%;max-width:760px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px 12px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
   button{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
@@ -17,14 +18,13 @@
   .stop{background:var(--danger);color:#fff}
   .clear{background:transparent;color:var(--txt);border:1px solid var(--borda)}
   .test{background:#3b82f6;color:#fff}
-  label{display:block;font-size:12px;color:var(--muted);margin:6px 0}
-  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  input[type="number"]{width:100%;padding:10px 12px;border-radius:10px;background:#0b1020;border:1px solid rgba(255,255,255,.12);color:var(--txt)}
   .chip{display:inline-flex;gap:6px;align-items:center;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px}
   .dot{width:8px;height:8px;border-radius:50%;background:#64748b}
   .dot.on{background:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.18)}
+  label{display:block;font-size:12px;color:var(--muted);margin:6px 0}
   #box{height:260px;background:#0b1020;border:1px dashed var(--borda);border-radius:10px;padding:10px;overflow-y:auto;white-space:pre-wrap;line-height:1.45}
-  #debug{font-size:12px;color:#cbd5e1;background:#0b1020;border:1px dashed var(--borda);border-radius:10px;padding:10px;display:none;white-space:pre-wrap}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  input[type="number"]{width:100%;padding:10px 12px;border-radius:10px;background:#0b1020;border:1px solid rgba(255,255,255,.12);color:var(--txt)}
   #toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:999999}
   @media (max-width:540px){ #toasts{right:50%;transform:translateX(50%);} }
   .toast{background:#111827;border:1px solid rgba(255,255,255,.12);border-left:5px solid #22c55e;color:#e5e7eb;
@@ -34,7 +34,7 @@
 </style>
 </head>
 <body>
-  <h1>🎙️ Transcrição + Gatilhos robustos (sem API)</h1>
+  <h1>🎙️ Transcrição + 100 Gatilhos</h1>
 
   <div class="panel">
     <div class="row" style="justify-content:space-between">
@@ -54,28 +54,24 @@
       </div>
       <div class="row" style="gap:12px">
         <label style="margin:0"><input type="checkbox" id="partialOn" checked> Disparar também em parcial (debounce)</label>
-        <label style="margin:0"><input type="checkbox" id="showDebug"> Mostrar debug</label>
       </div>
     </div>
 
     <label style="margin-top:6px">Transcrição</label>
     <div id="box"></div>
 
-    <label style="margin-top:8px">Debug</label>
-    <div id="debug"></div>
-
-    <label style="margin-top:10px">Palavras-chave:</label>
+    <label style="margin-top:10px">Exemplos de termos (100 no total, agrupados):</label>
     <div style="font-size:12px;color:var(--muted)">
-      cliente(s), investimento(s)/investir, cartão/cartões, crédito(s)/empréstimo(s), seguro(s)
+      Relacionamento (cliente, senhor, família…) • Cartões (cartão, limite, fatura…) • Crédito (empréstimo, parcelas, juros…) • Investimentos (cdb, lci, ações…) • Seguros (vida, residencial, automóvel…) • Empresa (mei, getnet, faturamento…) • Digital (app, pix, senha…) • Objeções (caro, urgente, confiança…) • Emoções (satisfeito, preocupado…) • Ação (meta, campanha, promoção…)
     </div>
   </div>
 
   <div id="toasts"></div>
 
 <script>
-  // ========= Util/UI =========
+  // ===== Util/UI =====
   const $ = s => document.querySelector(s);
-  const box = $("#box"), debug = $("#debug"), dot = $("#dot"), statusTxt = $("#status"), toasts = $("#toasts");
+  const box = $("#box"), dot = $("#dot"), statusTxt = $("#status"), toasts = $("#toasts");
   function setStatus(on){ if(on){dot.classList.add("on"); statusTxt.textContent="Gravando";} else {dot.classList.remove("on"); statusTxt.textContent="Parado";} }
   function showToast(title, body){
     const el = document.createElement('div');
@@ -86,62 +82,88 @@
   }
   $("#btnTest").onclick = ()=> showToast('✅ Toast OK', 'O componente de notificação está funcionando.');
 
-  // ========= Normalização (remove acentos, minúsculas) =========
-  function normalize(s){
-    return (s||"")
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // remove diacríticos
-  }
+  // ===== Normalização =====
+  const normalize = s => (s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const tokenize = s => normalize(s).split(/[^a-z0-9]+/).filter(Boolean);
 
-  // ========= Gatilhos (arrays de sinônimos) =========
-  const triggers = [
-    { words:['cliente','clientes'], tip:'Use pergunta aberta para confirmar necessidade antes da oferta.' },
-    { words:['investimento','investimentos','investir'], tip:'Pergunte prazo, liquidez e objetivo para encaixar o produto certo.' },
-    { words:['cartao','cartoes','cartão','cartões'], tip:'Cheque limites, anuidade e benefícios antes de oferecer upgrade.' },
-    { words:['credito','creditos','emprestimo','emprestimos'], tip:'Valide renda, parcelas e seguros; faça simulação consultiva.' },
-    { words:['seguro','seguros'], tip:'Gancho de proteção familiar e eventos imprevistos.' }
+  // ===== 100 gatilhos (agrupados) =====
+  // Cada grupo compartilha 1 insight. Palavras cobrem singular/plural e variações comuns.
+  const groups = [
+    // 👥 Relacionamento / Cliente (10)
+    { words:['cliente','clientes','senhor','senhora','voce','familia','filho','esposa','aposentado','estudante','empresario'],
+      tip:'Comece por necessidade e contexto do cliente antes de oferecer soluções.' },
+
+    // 💳 Cartões / Pagamentos (10)
+    { words:['cartao','cartoes','credito','debito','limite','fatura','parcelado','anuidade','black','platinum','virtual'],
+      tip:'Valide limite, benefícios e isenção de anuidade; ofereça opção adequada ao perfil.' },
+
+    // 💰 Crédito / Empréstimos (10)
+    { words:['emprestimo','consignado','pessoal','financiamento','carro','imovel','parcelas','juros','prazo','renegociacao'],
+      tip:'Confirme valor, prazo e parcela confortável; ofereça simulação com e sem seguro.' },
+
+    // 📈 Investimentos (10)
+    { words:['investimento','investir','poupanca','cdb','lci','lca','fundo','previdencia','acoes','bolsa'],
+      tip:'Pergunte objetivo, prazo e liquidez; apresente 2-3 opções alinhadas ao perfil.' },
+
+    // 🛡️ Seguros / Proteção (10)
+    { words:['seguro','vida','residencial','automovel','saude','viagem','protecao','cobertura','indenizacao','risco'],
+      tip:'Conecte a proteção ao momento de vida e custos imprevistos; mostre cenários simples.' },
+
+    // 📊 Negócios / Empresa (10)
+    { words:['empresa','mei','pj','maquininha','getnet','faturamento','boleto','nota','fornecedor','fluxo'],
+      tip:'Explore recebimentos, custos e fluxo de caixa; proponha conta PJ e soluções Getnet.' },
+
+    // 🌐 Serviços Digitais (10)
+    { words:['app','internet','online','senha','token','pix','qrcode','qr','transferencia','extrato','comprovante'],
+      tip:'Oriente o uso do app: segurança, limites e atalhos (Pix, comprovante, extrato).' },
+
+    // 💡 Objeções / Necessidades (10)
+    { words:['caro','barato','necessidade','urgente','problema','duvida','confianca','confiavel','demora','risco'],
+      tip:'Agradeça a objeção, valide o motivo e ofereça alternativa com benefício claro.' },
+
+    // 😀 Emoções / Sensações (10)
+    { words:['feliz','satisfeito','insatisfeito','preocupado','tranquilo','seguro','ansioso','confiante','chateado','animado'],
+      tip:'Acolha a emoção do cliente e ajuste o tom: investigue antes de orientar.' },
+
+    // 🚀 Ação / Oportunidade (10)
+    { words:['oportunidade','meta','resultado','bonus','desconto','campanha','promocao','beneficio','vantagem','prioridade'],
+      tip:'Crie próximo passo concreto: proposta, simulação ou agendamento com prazo.' }
   ];
+  // Garante ~100 palavras (alguns grupos têm 11 pelo “qrcode/qr”)
 
-  // Cooldown por palavra
+  // Monta um mapa palavra→tip para lookup rápido
+  const wordToTip = new Map();
+  groups.forEach(g => g.words.forEach(w => wordToTip.set(w, g.tip)));
+
+  // ===== Disparo (final e parcial) com cooldown por palavra =====
   const lastByWord = new Map();
+  const COALESCE_MS = 650; // debounce parcial
+  let partialTimer = null;
+
   function runTriggers(text){
-    const cdMs = Math.max(0, Number($("#cooldown").value||4) * 1000);
+    const cdMs = Math.max(0, Number($("#cooldown").value||4)*1000);
     const now = Date.now();
-    const norm = normalize(text);
-    const tokens = norm.split(/[^a-z0-9]+/).filter(Boolean); // quebra por não alfa-num
-    const joined = ' ' + tokens.join(' ') + ' '; // ajuda a simular bordas de palavra
+    const tokens = tokenize(text);
+    if(tokens.length === 0) return;
 
-    // Mostra debug opcional
-    if($("#showDebug").checked){
-      debug.style.display = 'block';
-      debug.textContent =
-        "Original: " + text + "\n" +
-        "Normalizado: " + norm + "\n" +
-        "Tokens: " + tokens.join(', ');
-    } else {
-      debug.style.display = 'none';
-      debug.textContent = '';
-    }
-
-    // Procura por qualquer palavra de cada conjunto
-    for(const t of triggers){
-      for(const w of t.words){
-        const needle = ' ' + w + ' ';
-        if(joined.includes(needle)){
+    // Dispara apenas 1 por trecho, priorizando ordem dos grupos
+    for(const g of groups){
+      for(const w of g.words){
+        if(tokens.includes(w)){
           const last = lastByWord.get(w) || 0;
           if(now - last > cdMs){
-            showToast('💡 Insight', t.tip);
+            showToast('💡 Insight', wordToTip.get(w));
             lastByWord.set(w, now);
           }
-          return; // dispara só um por vez
+          return;
         }
       }
     }
   }
 
-  // ========= Transcrição =========
+  // ===== Transcrição (Web Speech API) =====
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null, listening = false, partialTimer = null;
+  let recognition = null, listening = false;
 
   function setupRec(){
     if(!SR){
@@ -176,7 +198,7 @@
         showPartial(parcial);
         if($("#partialOn").checked){
           if(partialTimer) clearTimeout(partialTimer);
-          partialTimer = setTimeout(()=> runTriggers(parcial), 650); // PARCIAL (debounce)
+          partialTimer = setTimeout(()=> runTriggers(parcial), COALESCE_MS); // PARCIAL
         }
       }
     };
@@ -198,7 +220,7 @@
     box.scrollTop = box.scrollHeight;
   }
 
-  // ========= Controles =========
+  // ===== Controles =====
   $("#btnStart").onclick = ()=>{
     if(listening) return;
     if(!recognition) recognition = setupRec();
@@ -208,7 +230,7 @@
     if(!listening || !recognition) return;
     try{ recognition.stop(); }catch{}
   };
-  $("#btnClear").onclick = ()=>{ box.textContent = ""; debug.textContent=""; };
+  $("#btnClear").onclick = ()=>{ box.textContent = ""; };
 </script>
 </body>
 </html>
