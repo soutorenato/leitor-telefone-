@@ -1,191 +1,116 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Transcrição + Toast (teste)</title>
-  <style>
-    :root { --bg1:#0f172a; --bg2:#0b1220; --card:#1e293b; --borda:#334155; --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --danger:#ef4444; --toast:#111827; }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--txt);
-         font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
-    h1{margin:0;font-size:20px}
-    .panel{width:92%;max-width:640px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px 12px}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-    button{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-    .start{background:var(--ok);color:#052e16}
-    .stop{background:var(--danger);color:#fff}
-    .clear{background:transparent;color:var(--txt);border:1px solid var(--borda)}
-    .test{background:#3b82f6;color:#fff}
-    .pill{display:inline-flex;gap:8px;align-items:center;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px}
-    .dot{width:8px;height:8px;border-radius:50%;background:#64748b}
-    .dot.on{background:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.18)}
-    label{display:block;font-size:12px;color:var(--muted);margin:6px 0}
-    #box{height:260px;background:#0b1020;border:1px dashed var(--borda);border-radius:10px;padding:10px;overflow-y:auto;white-space:pre-wrap;line-height:1.45}
-    #last{font-size:12px;color:#cbd5e1}
-    .toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:9999}
-    @media (max-width:540px){ .toasts{right:50%;transform:translateX(50%);} }
-    .toast{background:var(--toast);border:1px solid rgba(255,255,255,.12);border-left:5px solid var(--ok);color:var(--txt);
-           padding:12px 14px;border-radius:10px;max-width:92vw;width:320px;opacity:0;transform:translateY(6px) scale(.98);animation:pop .2s ease-out forwards}
-    .toast h4{margin:0 0 4px 0;font-size:14px}
-    .toast p{margin:0;font-size:13px;color:#d1d5db}
-    @keyframes pop{to{opacity:1;transform:translateY(0) scale(1)}}
-    .blink{animation:blink 1s steps(2,start) 2}
-    @keyframes blink{to{visibility:hidden}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teste de Toast + Transcrição</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --warn:#f59e0b; }
+  *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0f172a,#0b1220);color:var(--txt);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:18px; display:flex; flex-direction:column; align-items:center; gap:16px}
+  h1{margin:0;font-size:20px}
+  .card{width:92%; max-width:720px; background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  button{appearance:none; border:0; padding:14px 16px; border-radius:10px; font-weight:800; cursor:pointer}
+  .primary{background:#3b82f6; color:#fff}
+  .start{background:var(--ok); color:#052e16}
+  .stop{background:#ef4444; color:#fff}
+  .muted{font-size:12px; color:var(--muted)}
+  #box{height:200px; background:#0b1020; border:1px dashed rgba(255,255,255,.2); border-radius:10px; padding:10px; overflow-y:auto; white-space:pre-wrap; line-height:1.45}
+  /* TOASTS */
+  #toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:999999}
+  @media (max-width:540px){ #toasts{right:50%; transform:translateX(50%);} }
+  .toast{background:#111827; border:1px solid rgba(255,255,255,.12); border-left:6px solid #22c55e;
+    color:#e5e7eb; padding:12px 14px; border-radius:10px; width:320px; max-width:92vw;
+    opacity:0; transform:translateY(8px) scale(.98); animation:pop .2s ease-out forwards}
+  .toast h4{margin:0 0 4px 0; font-size:14px} .toast p{margin:0; font-size:13px; color:#d1d5db}
+  @keyframes pop{to{opacity:1; transform:translateY(0) scale(1)}}
+</style>
 </head>
 <body>
-  <h1>🎙️ Transcrição com Toast (sem API)</h1>
+  <h1>🔔 Teste de Toast + 🎙️ Transcrição</h1>
 
-  <div class="panel">
+  <div class="card">
     <div class="row" style="justify-content:space-between">
-      <div class="buttons">
-        <button class="start" id="btnStart">Iniciar</button>
-        <button class="stop" id="btnStop">Parar</button>
-        <button class="clear" id="btnClear">Limpar</button>
-        <button class="test" id="btnTest">Testar toast</button>
-      </div>
-      <span class="pill"><span id="dot" class="dot"></span><span id="status">Parado</span></span>
+      <button id="btnTest" class="primary" style="flex:1; min-width:260px">TESTAR TOAST (deve aparecer abaixo à direita)</button>
+      <div class="muted">Build: v-test</div>
     </div>
-
-    <div class="row" id="supportRow"></div>
-
-    <label>Transcrição</label>
-    <div id="box"></div>
-    <div id="last">Última frase final: <em>(aguardando)</em></div>
-
-    <label style="margin-top:10px">Palavras-chave que disparam toasts:</label>
-    <div style="font-size:12px;color:var(--muted)">
-      <code>cliente</code>, <code>investimento</code>, <code>cartão</code>, <code>crédito</code>, <code>seguro</code>
-      <br/>Dica: faça uma pequena pausa para gerar <em>resultado final</em>. Nesta versão, também disparamos em parcial (com debounce).
-    </div>
+    <p class="muted" style="margin:10px 0 0">Ao clicar no botão acima, deve surgir uma notificação (toast) no canto inferior direito. Em telas estreitas, ela centraliza embaixo.</p>
   </div>
 
-  <div class="toasts" id="toasts"></div>
+  <div class="card" style="margin-top:8px">
+    <div class="row">
+      <button id="btnStart" class="start">Iniciar transcrição</button>
+      <button id="btnStop"  class="stop">Parar</button>
+      <span id="support" class="muted"></span>
+    </div>
+    <div id="box" style="margin-top:10px"></div>
+    <p class="muted" style="margin-top:8px">Dica: a transcrição funciona no Chrome (desktop/Android). iOS Safari não suporta Web Speech API.</p>
+  </div>
 
-  <script>
-    // ====== UI util ======
-    const $ = s => document.querySelector(s);
-    const box = $("#box"), dot = $("#dot"), statusTxt = $("#status"), toasts = $("#toasts"), lastEl = $("#last");
-    function setStatus(on){ if(on){dot.classList.add("on"); statusTxt.textContent="Gravando";} else {dot.classList.remove("on"); statusTxt.textContent="Parado";} }
-    function toast(title, body){
-      const el=document.createElement("div");
-      el.className="toast blink";
-      el.innerHTML=`<h4>${title}</h4><p>${body}</p>`;
-      toasts.appendChild(el);
-      setTimeout(()=>{ el.style.opacity=.0; el.style.transform='translateY(6px)'; setTimeout(()=>el.remove(),300); }, 4500);
-    }
-    $("#btnTest").onclick = ()=> toast("🔔 Teste", "Se você está vendo isto, os toasts estão funcionando.");
+  <div id="toasts"></div>
 
-    // ====== Suporte do navegador ======
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const supported = !!SR;
-    const supportRow = $("#supportRow");
-    supportRow.innerHTML = supported
-      ? `<span class="pill">Web Speech API: <strong>suportado</strong></span>`
-      : `<span class="pill" style="border-color:#f59e0b">Web Speech API: <strong style="color:#f59e0b">NÃO suportado (use Chrome desktop/Android)</strong></span>`;
-    if (!supported) { $("#btnStart").disabled = true; }
+<script>
+  // === TOASTS ===
+  const toasts = document.getElementById('toasts');
+  function showToast(title, body){
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = `<h4>${title}</h4><p>${body}</p>`;
+    toasts.appendChild(el);
+    setTimeout(()=>{ el.style.opacity=.0; el.style.transform='translateY(6px)';
+      setTimeout(()=>el.remove(), 300); }, 4500);
+  }
+  document.getElementById('btnTest').onclick = () => {
+    showToast('✅ Toast OK', 'Se você está vendo isso, o componente de notificação está funcionando.');
+  };
 
-    // ====== Reconhecimento ======
-    let recognition = null, listening = false, partialDebounceTimer = null;
+  // === TRANSCRIÇÃO (opcional) ===
+  const box = document.getElementById('box');
+  const support = document.getElementById('support');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR){ support.textContent = 'Web Speech API: suportado'; }
+  else  { support.textContent = 'Web Speech API: NÃO suportado (use Chrome desktop/Android)'; }
 
-    function setupRecognition(){
-      if(!supported) return null;
-      const rec = new SR();
-      rec.lang = "pt-BR";
-      rec.continuous = true;
-      rec.interimResults = true;
+  let recognition = null, listening = false;
+  function setupRec(){
+    if(!SR) return null;
+    const rec = new SR();
+    rec.lang = 'pt-BR'; rec.continuous = true; rec.interimResults = true;
+    rec.onstart = ()=>{ listening=true; showToast('🎙️ Transcrição', 'Capturando áudio…'); };
+    rec.onend   = ()=>{ listening=false; showToast('🛑 Transcrição', 'Parado.'); };
+    rec.onerror = (e)=>{ showToast('⚠️ Erro de transcrição', String(e.error||'desconhecido')); };
 
-      rec.onstart = ()=>{ listening=true; setStatus(true); };
-      rec.onend   = ()=>{ listening=false; setStatus(false); };
-
-      rec.onerror = (e)=>{ appendLine(`[Erro]: ${e.error || "desconhecido"}`); };
-
-      rec.onresult = (ev)=>{
-        // Vamos capturar tanto finais quanto parciais
-        let partial = "";
-        for(let i=ev.resultIndex; i<ev.results.length; i++){
-          const r = ev.results[i];
-          const t = (r[0] && r[0].transcript) ? r[0].transcript : "";
-          if(r.isFinal){
-            const phrase = t.trim();
-            if(phrase){
-              appendLine(phrase);
-              lastEl.innerHTML = "Última frase final: <strong>"+escapeHtml(phrase)+"</strong>";
-              runTriggers(phrase);      // dispara em final
-            }
-          } else {
-            partial = t;
-          }
-        }
-        if(partial){
-          showPartial(partial);
-          // dispara triggers também em parcial, com debounce para não spammar
-          if(partialDebounceTimer) clearTimeout(partialDebounceTimer);
-          partialDebounceTimer = setTimeout(()=> runTriggers(partial), 700);
-        }
-      };
-      return rec;
-    }
-
-    // ====== Área fixa com rolagem interna ======
-    function appendLine(text){
-      if(!text) return;
-      const cur = box.textContent;
-      const sep = cur && !cur.endsWith("\n") ? "\n" : "";
-      box.textContent = (cur||"") + sep + text + "\n";
-      box.scrollTop = box.scrollHeight;
-    }
-    function showPartial(parcial){
-      const lines = box.textContent.split("\n");
-      if(lines[lines.length-1].trim()==="") lines.pop();
-      const base = lines.join("\n");
-      box.textContent = (base ? base+"\n" : "") + parcial;
-      box.scrollTop = box.scrollHeight;
-    }
-    function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
-
-    // ====== Gatilhos (regex robustas) + cooldown ======
-    const triggers = [
-      { re:/\b(cart(ã|a)o|cartao|cartão|cartões)\b/i, tip:"Cheque limites, anuidade e benefícios antes de oferecer upgrade." },
-      { re:/\b(invest(imento|ir|e)s?)\b/i,           tip:"Pergunte prazo, liquidez e objetivo para encaixar o produto certo." },
-      { re:/\b(cr[eé]dito(s)?|empr[eé]stimo(s)?)\b/i,tip:"Valide renda, parcelas e seguros; faça simulação consultiva." },
-      { re:/\b(seguro(s)?)\b/i,                      tip:"Gancho de proteção familiar e eventos imprevistos." },
-      { re:/\b(cliente(s)?|senhor(a)?|voc[êe])\b/i,  tip:"Use pergunta aberta para confirmar necessidade antes da oferta." }
-    ];
-    const lastToastAt = new Map();
-    const COOLDOWN_MS = 4000;
-
-    function runTriggers(text){
-      const now = Date.now();
-      const lower = text.toLowerCase();
-      for(let i=0;i<triggers.length;i++){
-        const t = triggers[i];
-        if(t.re.test(lower)){
-          const last = lastToastAt.get(i) || 0;
-          if(now - last > COOLDOWN_MS){
-            toast("💡 Insight", t.tip);
-            lastToastAt.set(i, now);
-          }
-          break; // apenas um por trecho
+    rec.onresult = (ev)=>{
+      let parcial = '';
+      for(let i=ev.resultIndex; i<ev.results.length; i++){
+        const r = ev.results[i], t = (r[0] && r[0].transcript) ? r[0].transcript : '';
+        if(r.isFinal){
+          const cur = box.textContent; const sep = cur && !cur.endsWith('\n') ? '\n' : '';
+          box.textContent = (cur||'') + sep + t.trim() + '\n';
+        } else {
+          parcial = t;
         }
       }
-    }
-
-    // ====== Controles ======
-    $("#btnStart").onclick = ()=>{
-      if(listening) return;
-      if(!recognition) recognition = setupRecognition();
-      if(recognition){
-        try{ recognition.start(); }catch{}
+      if(parcial){
+        const lines = box.textContent.split('\n');
+        if(lines[lines.length-1].trim()==='') lines.pop();
+        const base = lines.join('\n');
+        box.textContent = (base ? base+'\n' : '') + parcial;
       }
+      box.scrollTop = box.scrollHeight;
     };
-    $("#btnStop").onclick = ()=>{
-      if(!listening || !recognition) return;
-      try{ recognition.stop(); }catch{}
-    };
-    $("#btnClear").onclick = ()=>{ box.textContent = ""; lastEl.innerHTML = "Última frase final: <em>(aguardando)</em>"; };
-  </script>
+    return rec;
+  }
+  document.getElementById('btnStart').onclick = ()=>{
+    if(listening) return;
+    if(!recognition) recognition = setupRec();
+    if(recognition){ try{ recognition.start(); }catch{} }
+  };
+  document.getElementById('btnStop').onclick = ()=>{
+    if(!listening || !recognition) return;
+    try{ recognition.stop(); }catch{}
+  };
+</script>
 </body>
 </html>
