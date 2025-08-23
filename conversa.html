@@ -3,114 +3,212 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Teste de Toast + Transcrição</title>
+<title>Transcrição + Gatilhos robustos</title>
 <style>
-  :root { --bg:#0f172a; --card:#1e293b; --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --warn:#f59e0b; }
-  *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0f172a,#0b1220);color:var(--txt);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:18px; display:flex; flex-direction:column; align-items:center; gap:16px}
+  :root { --bg1:#0f172a; --bg2:#0b1220; --card:#1e293b; --borda:#334155; --txt:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --danger:#ef4444; --toast:#111827; }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
   h1{margin:0;font-size:20px}
-  .card{width:92%; max-width:720px; background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  button{appearance:none; border:0; padding:14px 16px; border-radius:10px; font-weight:800; cursor:pointer}
-  .primary{background:#3b82f6; color:#fff}
-  .start{background:var(--ok); color:#052e16}
-  .stop{background:#ef4444; color:#fff}
-  .muted{font-size:12px; color:var(--muted)}
-  #box{height:200px; background:#0b1020; border:1px dashed rgba(255,255,255,.2); border-radius:10px; padding:10px; overflow-y:auto; white-space:pre-wrap; line-height:1.45}
-  /* TOASTS */
-  #toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:999999}
-  @media (max-width:540px){ #toasts{right:50%; transform:translateX(50%);} }
-  .toast{background:#111827; border:1px solid rgba(255,255,255,.12); border-left:6px solid #22c55e;
-    color:#e5e7eb; padding:12px 14px; border-radius:10px; width:320px; max-width:92vw;
-    opacity:0; transform:translateY(8px) scale(.98); animation:pop .2s ease-out forwards}
-  .toast h4{margin:0 0 4px 0; font-size:14px} .toast p{margin:0; font-size:13px; color:#d1d5db}
-  @keyframes pop{to{opacity:1; transform:translateY(0) scale(1)}}
+  .panel{width:92%;max-width:680px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px 12px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  button{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .start{background:var(--ok);color:#052e16}
+  .stop{background:var(--danger);color:#fff}
+  .clear{background:transparent;color:var(--txt);border:1px solid var(--borda)}
+  .test{background:#3b82f6;color:#fff}
+  label{display:block;font-size:12px;color:var(--muted);margin:6px 0}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  input[type="number"]{width:100%;padding:10px 12px;border-radius:10px;background:#0b1020;border:1px solid rgba(255,255,255,.12);color:var(--txt)}
+  .chip{display:inline-flex;gap:6px;align-items:center;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#64748b}
+  .dot.on{background:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.18)}
+  #box{height:260px;background:#0b1020;border:1px dashed var(--borda);border-radius:10px;padding:10px;overflow-y:auto;white-space:pre-wrap;line-height:1.45}
+  #debug{font-size:12px;color:#cbd5e1;background:#0b1020;border:1px dashed var(--borda);border-radius:10px;padding:10px;display:none;white-space:pre-wrap}
+  #toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:999999}
+  @media (max-width:540px){ #toasts{right:50%;transform:translateX(50%);} }
+  .toast{background:#111827;border:1px solid rgba(255,255,255,.12);border-left:5px solid #22c55e;color:#e5e7eb;
+         padding:12px 14px;border-radius:10px;max-width:92vw;width:320px;opacity:0;transform:translateY(6px) scale(.98);animation:pop .2s ease-out forwards}
+  .toast h4{margin:0 0 4px 0;font-size:14px} .toast p{margin:0;font-size:13px;color:#d1d5db}
+  @keyframes pop{to{opacity:1;transform:translateY(0) scale(1)}}
 </style>
 </head>
 <body>
-  <h1>🔔 Teste de Toast + 🎙️ Transcrição</h1>
+  <h1>🎙️ Transcrição + Gatilhos robustos (sem API)</h1>
 
-  <div class="card">
+  <div class="panel">
     <div class="row" style="justify-content:space-between">
-      <button id="btnTest" class="primary" style="flex:1; min-width:260px">TESTAR TOAST (deve aparecer abaixo à direita)</button>
-      <div class="muted">Build: v-test</div>
+      <div class="buttons">
+        <button class="start" id="btnStart">Iniciar</button>
+        <button class="stop" id="btnStop">Parar</button>
+        <button class="clear" id="btnClear">Limpar</button>
+        <button class="test" id="btnTest">Testar toast</button>
+      </div>
+      <span class="chip"><span id="dot" class="dot"></span><span id="status">Parado</span></span>
     </div>
-    <p class="muted" style="margin:10px 0 0">Ao clicar no botão acima, deve surgir uma notificação (toast) no canto inferior direito. Em telas estreitas, ela centraliza embaixo.</p>
-  </div>
 
-  <div class="card" style="margin-top:8px">
-    <div class="row">
-      <button id="btnStart" class="start">Iniciar transcrição</button>
-      <button id="btnStop"  class="stop">Parar</button>
-      <span id="support" class="muted"></span>
+    <div class="controls">
+      <div>
+        <label for="cooldown">Cooldown por palavra (segundos)</label>
+        <input id="cooldown" type="number" min="0" step="0.5" value="4" />
+      </div>
+      <div class="row" style="gap:12px">
+        <label style="margin:0"><input type="checkbox" id="partialOn" checked> Disparar também em parcial (debounce)</label>
+        <label style="margin:0"><input type="checkbox" id="showDebug"> Mostrar debug</label>
+      </div>
     </div>
-    <div id="box" style="margin-top:10px"></div>
-    <p class="muted" style="margin-top:8px">Dica: a transcrição funciona no Chrome (desktop/Android). iOS Safari não suporta Web Speech API.</p>
+
+    <label style="margin-top:6px">Transcrição</label>
+    <div id="box"></div>
+
+    <label style="margin-top:8px">Debug</label>
+    <div id="debug"></div>
+
+    <label style="margin-top:10px">Palavras-chave:</label>
+    <div style="font-size:12px;color:var(--muted)">
+      cliente(s), investimento(s)/investir, cartão/cartões, crédito(s)/empréstimo(s), seguro(s)
+    </div>
   </div>
 
   <div id="toasts"></div>
 
 <script>
-  // === TOASTS ===
-  const toasts = document.getElementById('toasts');
+  // ========= Util/UI =========
+  const $ = s => document.querySelector(s);
+  const box = $("#box"), debug = $("#debug"), dot = $("#dot"), statusTxt = $("#status"), toasts = $("#toasts");
+  function setStatus(on){ if(on){dot.classList.add("on"); statusTxt.textContent="Gravando";} else {dot.classList.remove("on"); statusTxt.textContent="Parado";} }
   function showToast(title, body){
     const el = document.createElement('div');
     el.className = 'toast';
     el.innerHTML = `<h4>${title}</h4><p>${body}</p>`;
     toasts.appendChild(el);
-    setTimeout(()=>{ el.style.opacity=.0; el.style.transform='translateY(6px)';
-      setTimeout(()=>el.remove(), 300); }, 4500);
+    setTimeout(()=>{ el.style.opacity=.0; el.style.transform='translateY(6px)'; setTimeout(()=>el.remove(), 300); }, 4500);
   }
-  document.getElementById('btnTest').onclick = () => {
-    showToast('✅ Toast OK', 'Se você está vendo isso, o componente de notificação está funcionando.');
-  };
+  $("#btnTest").onclick = ()=> showToast('✅ Toast OK', 'O componente de notificação está funcionando.');
 
-  // === TRANSCRIÇÃO (opcional) ===
-  const box = document.getElementById('box');
-  const support = document.getElementById('support');
+  // ========= Normalização (remove acentos, minúsculas) =========
+  function normalize(s){
+    return (s||"")
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // remove diacríticos
+  }
+
+  // ========= Gatilhos (arrays de sinônimos) =========
+  const triggers = [
+    { words:['cliente','clientes'], tip:'Use pergunta aberta para confirmar necessidade antes da oferta.' },
+    { words:['investimento','investimentos','investir'], tip:'Pergunte prazo, liquidez e objetivo para encaixar o produto certo.' },
+    { words:['cartao','cartoes','cartão','cartões'], tip:'Cheque limites, anuidade e benefícios antes de oferecer upgrade.' },
+    { words:['credito','creditos','emprestimo','emprestimos'], tip:'Valide renda, parcelas e seguros; faça simulação consultiva.' },
+    { words:['seguro','seguros'], tip:'Gancho de proteção familiar e eventos imprevistos.' }
+  ];
+
+  // Cooldown por palavra
+  const lastByWord = new Map();
+  function runTriggers(text){
+    const cdMs = Math.max(0, Number($("#cooldown").value||4) * 1000);
+    const now = Date.now();
+    const norm = normalize(text);
+    const tokens = norm.split(/[^a-z0-9]+/).filter(Boolean); // quebra por não alfa-num
+    const joined = ' ' + tokens.join(' ') + ' '; // ajuda a simular bordas de palavra
+
+    // Mostra debug opcional
+    if($("#showDebug").checked){
+      debug.style.display = 'block';
+      debug.textContent =
+        "Original: " + text + "\n" +
+        "Normalizado: " + norm + "\n" +
+        "Tokens: " + tokens.join(', ');
+    } else {
+      debug.style.display = 'none';
+      debug.textContent = '';
+    }
+
+    // Procura por qualquer palavra de cada conjunto
+    for(const t of triggers){
+      for(const w of t.words){
+        const needle = ' ' + w + ' ';
+        if(joined.includes(needle)){
+          const last = lastByWord.get(w) || 0;
+          if(now - last > cdMs){
+            showToast('💡 Insight', t.tip);
+            lastByWord.set(w, now);
+          }
+          return; // dispara só um por vez
+        }
+      }
+    }
+  }
+
+  // ========= Transcrição =========
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(SR){ support.textContent = 'Web Speech API: suportado'; }
-  else  { support.textContent = 'Web Speech API: NÃO suportado (use Chrome desktop/Android)'; }
+  let recognition = null, listening = false, partialTimer = null;
 
-  let recognition = null, listening = false;
   function setupRec(){
-    if(!SR) return null;
+    if(!SR){
+      box.textContent = "Web Speech API não suportada (use Chrome desktop/Android).";
+      return null;
+    }
     const rec = new SR();
-    rec.lang = 'pt-BR'; rec.continuous = true; rec.interimResults = true;
-    rec.onstart = ()=>{ listening=true; showToast('🎙️ Transcrição', 'Capturando áudio…'); };
-    rec.onend   = ()=>{ listening=false; showToast('🛑 Transcrição', 'Parado.'); };
-    rec.onerror = (e)=>{ showToast('⚠️ Erro de transcrição', String(e.error||'desconhecido')); };
+    rec.lang = 'pt-BR';
+    rec.continuous = true;
+    rec.interimResults = true;
+
+    rec.onstart = ()=>{ listening=true; setStatus(true); };
+    rec.onend   = ()=>{ listening=false; setStatus(false); };
+    rec.onerror = (e)=>{ appendLine(`[Erro]: ${e.error || 'desconhecido'}`); };
 
     rec.onresult = (ev)=>{
       let parcial = '';
-      for(let i=ev.resultIndex; i<ev.results.length; i++){
-        const r = ev.results[i], t = (r[0] && r[0].transcript) ? r[0].transcript : '';
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        const r = ev.results[i];
+        const t = (r[0] && r[0].transcript) ? r[0].transcript : '';
         if(r.isFinal){
-          const cur = box.textContent; const sep = cur && !cur.endsWith('\n') ? '\n' : '';
-          box.textContent = (cur||'') + sep + t.trim() + '\n';
+          const phrase = t.trim();
+          if(phrase){
+            appendLine(phrase);
+            runTriggers(phrase); // FINAL
+          }
         } else {
           parcial = t;
         }
       }
       if(parcial){
-        const lines = box.textContent.split('\n');
-        if(lines[lines.length-1].trim()==='') lines.pop();
-        const base = lines.join('\n');
-        box.textContent = (base ? base+'\n' : '') + parcial;
+        showPartial(parcial);
+        if($("#partialOn").checked){
+          if(partialTimer) clearTimeout(partialTimer);
+          partialTimer = setTimeout(()=> runTriggers(parcial), 650); // PARCIAL (debounce)
+        }
       }
-      box.scrollTop = box.scrollHeight;
     };
     return rec;
   }
-  document.getElementById('btnStart').onclick = ()=>{
+
+  function appendLine(text){
+    if(!text) return;
+    const cur = box.textContent;
+    const sep = cur && !cur.endsWith('\n') ? '\n' : '';
+    box.textContent = (cur||'') + sep + text + '\n';
+    box.scrollTop = box.scrollHeight;
+  }
+  function showPartial(parcial){
+    const lines = box.textContent.split('\n');
+    if(lines[lines.length-1]?.trim()==='') lines.pop();
+    const base = lines.join('\n');
+    box.textContent = (base ? base+'\n' : '') + parcial;
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ========= Controles =========
+  $("#btnStart").onclick = ()=>{
     if(listening) return;
     if(!recognition) recognition = setupRec();
     if(recognition){ try{ recognition.start(); }catch{} }
   };
-  document.getElementById('btnStop').onclick = ()=>{
+  $("#btnStop").onclick = ()=>{
     if(!listening || !recognition) return;
     try{ recognition.stop(); }catch{}
   };
+  $("#btnClear").onclick = ()=>{ box.textContent = ""; debug.textContent=""; };
 </script>
 </body>
 </html>
