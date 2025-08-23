@@ -1,280 +1,105 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Transcrição + Insights (Teste Rápido)</title>
-<style>
-  :root { --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22c55e; --warn:#f59e0b; }
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,#0b1220,#0e1526);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text)}
-  header{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-  h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
-  .wrap{max-width:960px;margin:24px auto;padding:0 16px;display:grid;gap:16px}
-  .row{display:grid;grid-template-columns:1fr;gap:12px}
-  @media(min-width:860px){.row{grid-template-columns:2fr 1fr}}
-  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px}
-  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
-  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;background:#0b1020;border:1px solid rgba(255,255,255,.12);color:var(--text);outline:none}
-  textarea{min-height:86px;resize:vertical}
-  .btns{display:flex;gap:10px;flex-wrap:wrap}
-  button{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
-  .solid{background:var(--accent);color:#052e16}
-  .ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.18)}
-  .danger{background:#ef4444;color:#fff}
-  .muted{color:var(--muted);font-size:12px}
-  .pill{display:inline-flex;gap:8px;align-items:center;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px}
-  #statusDot{width:8px;height:8px;border-radius:50%;background:#888;display:inline-block}
-  #statusDot.on{background:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.18)}
-  #transcricao{min-height:180px;white-space:pre-wrap;line-height:1.4;background:#0b1020;border:1px dashed rgba(255,255,255,.15);padding:12px;border-radius:10px}
-  #log{min-height:120px;background:#0b1020;border:1px dashed rgba(255,255,255,.15);padding:12px;border-radius:10px;font-size:12px;color:#cbd5e1;overflow:auto;max-height:220px}
-  /* Notificações */
-  .toast{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
-  .note{background:#111827;border:1px solid rgba(255,255,255,.12);border-left:5px solid var(--accent);
-        color:#e5e7eb;border-radius:10px;padding:12px 14px;max-width:320px;opacity:0;transform:translateY(8px) scale(.98);
-        animation:pop .2s ease-out forwards}
-  .note.warn{border-left-color:var(--warn)}
-  .note h4{margin:0 0 4px 0;font-size:14px}
-  .note p{margin:0;font-size:13px;color:#cfd8e3}
-  @keyframes pop{to{opacity:1;transform:translateY(0) scale(1)}}
-  .blink{animation:blink 1s steps(2,start) 2}
-  @keyframes blink{to{visibility:hidden}}
-  code.inline{background:#0b1020;border:1px solid rgba(255,255,255,.12);padding:2px 6px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Teste de Transcrição</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .box {
+      width: 90%;
+      max-width: 600px;
+      height: 250px;              /* altura fixa */
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;           /* rolagem só dentro do box */
+      white-space: pre-wrap;
+    }
+    .buttons {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .start { background: #22c55e; color: #052e16; }
+    .stop { background: #ef4444; color: #fff; }
+    .clear { background: #334155; color: #f1f5f9; }
+  </style>
 </head>
 <body>
-<header>
-  <h1>🎙️ Transcrição + Insights em tempo real <span class="pill"><span id="statusDot"></span> <span id="statusText">Parado</span></span></h1>
-</header>
-
-<div class="wrap">
-  <div class="row">
-    <!-- Coluna esquerda -->
-    <div class="card">
-      <div class="btns" style="margin-bottom:10px">
-        <button id="btnStart" class="solid">Iniciar</button>
-        <button id="btnStop" class="ghost">Parar</button>
-        <button id="btnClear" class="ghost">Limpar</button>
-      </div>
-
-      <div style="display:grid;gap:10px;margin-bottom:12px">
-        <div class="pill">Idioma da transcrição: <strong style="margin-left:6px">pt-BR</strong></div>
-        <div class="muted">Dica: fale frases completas. O envio para a IA ocorre quando a frase é detectada como <em>final</em> pela API de voz.</div>
-      </div>
-
-      <label>Transcrição (ao vivo)</label>
-      <div id="transcricao"></div>
-    </div>
-
-    <!-- Coluna direita -->
-    <div class="card">
-      <label for="apiKey">OpenAI API Key (teste rápido — inseguro no front-end)</label>
-      <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-        <div>
-          <label for="model">Modelo</label>
-          <select id="model">
-            <option value="gpt-4o-mini" selected>gpt-4o-mini (rápido/econ.)</option>
-            <option value="gpt-4o">gpt-4o</option>
-            <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-            <option value="gpt-4.1">gpt-4.1</option>
-          </select>
-        </div>
-        <div>
-          <label for="cooldown">Cooldown (seg) entre chamadas</label>
-          <input id="cooldown" type="number" min="0" step="0.5" value="2" />
-        </div>
-      </div>
-
-      <label style="margin-top:10px">Prompt do analista (pode editar)</label>
-      <textarea id="systemPrompt">Você é um assistente de vendas em tempo real.
-Receba trechos de fala do atendente (português do Brasil) e devolva um insight curto que ajude a conversa a avançar.
-Regras:
-- Máx. 160 caracteres.
-- Seja específico e acionável (perguntas, objeções, próximos passos).
-- Se não houver contexto útil, responda: "Sem insight agora".</textarea>
-
-      <label style="margin-top:10px">Log</label>
-      <div id="log"></div>
-      <div class="muted" style="margin-top:8px">Sem backend? Ainda assim você terá <strong>gatilhos locais</strong> (palavras-chave) gerando notificações instantâneas.</div>
-    </div>
+  <h1>🎙️ Transcrição em tempo real</h1>
+  <div class="buttons">
+    <button class="start" id="btnStart">Iniciar</button>
+    <button class="stop" id="btnStop">Parar</button>
+    <button class="clear" id="btnClear">Limpar</button>
   </div>
-</div>
+  <div class="box" id="transcricao"></div>
 
-<!-- Notificações -->
-<div class="toast" id="toast"></div>
+  <script>
+    let recognition;
+    let listening = false;
+    const box = document.getElementById("transcricao");
 
-<script>
-/* ================== Utilidades UI ================== */
-const $ = (sel)=>document.querySelector(sel);
-const logEl = $("#log"), transEl = $("#transcricao"), toast = $("#toast"), dot = $("#statusDot"), stxt = $("#statusText");
-function log(line){ const time=new Date().toLocaleTimeString(); logEl.innerText = `[${time}] ${line}\n` + logEl.innerText; }
-function setStatus(on){ if(on){dot.classList.add('on'); stxt.textContent="Gravando";} else {dot.classList.remove('on'); stxt.textContent="Parado";}}
-function toastNote(title, body, kind="ok"){
-  const n = document.createElement("div");
-  n.className = "note blink" + (kind==="warn" ? " warn" : "");
-  n.innerHTML = `<h4>${title}</h4><p>${body}</p>`;
-  toast.appendChild(n);
-  setTimeout(()=>{ n.style.opacity=.0; n.style.transform='translateY(6px)'; setTimeout(()=>n.remove(), 300); }, 4800);
-}
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = "pt-BR";
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-/* ================== Web Speech API (Chrome) ================== */
-let recognition = null;
-let listening = false;
-let lastFinalSentAt = 0;
-let cooldownMs = 2000;
-let pendingBuffer = ""; // mostra texto parcial
-
-function setupRecognition(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){
-    toastNote("Microfone", "Seu navegador não suporta Web Speech API. Use Chrome desktop.", "warn");
-    log("Web Speech API não suportada.");
-    return null;
-  }
-  const rec = new SR();
-  rec.lang = "pt-BR";
-  rec.continuous = true;
-  rec.interimResults = true;
-
-  rec.onstart = ()=>{ listening = true; setStatus(true); log("Transcrição iniciada."); };
-  rec.onend   = ()=>{ listening = false; setStatus(false); log("Transcrição parada."); };
-
-  rec.onerror = (e)=>{ log("Erro de transcrição: "+ (e.error||"desconhecido")); toastNote("Transcrição", "Erro: " + e.error, "warn"); };
-
-  rec.onresult = (event)=>{
-    let liveText = pendingBuffer;
-    for(let i=event.resultIndex; i<event.results.length; i++){
-      const r = event.results[i];
-      const t = r[0]?.transcript || "";
-      if(r.isFinal){
-        const phrase = t.trim();
-        if(phrase){
-          showLive(phrase, true);
-          processPhrase(phrase);
+      recognition.onresult = (event) => {
+        let texto = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          texto += event.results[i][0].transcript;
         }
-      }else{
-        liveText = t;
+        box.textContent = texto;
+        // Mantém rolagem interna sempre no fim
+        box.scrollTop = box.scrollHeight;
+      };
+
+      recognition.onerror = (event) => {
+        box.textContent += "\n[Erro]: " + event.error;
+      };
+    } else {
+      box.textContent = "Seu navegador não suporta reconhecimento de voz.";
+    }
+
+    document.getElementById("btnStart").onclick = () => {
+      if (!listening) {
+        recognition.start();
+        listening = true;
       }
-    }
-    if(liveText) showLive(liveText, false);
-  };
+    };
 
-  return rec;
-}
+    document.getElementById("btnStop").onclick = () => {
+      if (listening) {
+        recognition.stop();
+        listening = false;
+      }
+    };
 
-function showLive(text, isFinal){
-  if(isFinal){
-    transEl.innerText += (transEl.innerText.endsWith("\n")||transEl.innerText==="") ? text+"\n" : " "+text+"\n";
-    pendingBuffer = "";
-  }else{
-    pendingBuffer = text;
-    // Render parcial: última linha substituída
-    const lines = transEl.innerText.split("\n");
-    if(lines[lines.length-1].trim()==="") lines.pop();
-    const base = lines.join("\n");
-    transEl.innerText = (base ? base+"\n" : "") + text;
-  }
-}
-
-/* ================== Gatilhos locais (fallback offline) ================== */
-const localTriggers = [
-  {kw:/\b(cart(ã|a)o|cartao|cartão|cartões)\b/i, tip:"Cheque limites, anuidade e benefícios antes de oferecer upgrade."},
-  {kw:/\b(invest(imento|ir|e))\b/i, tip:"Pergunte prazo, liquidez e objetivo para encaixar o produto certo."},
-  {kw:/\b(credito|crédito|empr(é|e)stimo)\b/i, tip:"Valide renda, parcelas e seguros; ofereça simulação consultiva."},
-  {kw:/\b(seguro(s)?)\b/i, tip:"Puxe gancho de proteção familiar e custos imprevistos."},
-  {kw:/\b(cliente|senhor|senhora|voc(ê|e))\b/i, tip:"Confirme necessidade com pergunta aberta antes da oferta."}
-];
-
-function runLocalTriggers(phrase){
-  for(const t of localTriggers){
-    if(t.kw.test(phrase)){
-      toastNote("💡 Insight rápido", t.tip);
-      break;
-    }
-  }
-}
-
-/* ================== OpenAI ================== */
-async function askOpenAI(phrase){
-  const apiKey = $("#apiKey").value.trim();
-  if(!apiKey){ log("Sem API Key — usando apenas gatilhos locais."); return null; }
-  const model = $("#model").value;
-  const system = $("#systemPrompt").value;
-
-  try{
-    const res = await fetch("https://api.openai.com/v1/chat/completions",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":`Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.4,
-        messages: [
-          {role:"system", content: system},
-          {role:"user", content: `Trecho do atendente: "${phrase}"\nProduza 1 insight curto.`}
-        ]
-      })
-    });
-    if(!res.ok){
-      const errTxt = await res.text();
-      throw new Error(`HTTP ${res.status}: ${errTxt}`);
-    }
-    const data = await res.json();
-    const tip = data?.choices?.[0]?.message?.content?.trim() || "";
-    return tip || null;
-  }catch(err){
-    log("Falha ao chamar OpenAI: " + err.message);
-    toastNote("OpenAI", "Erro ao gerar insight (veja o log).", "warn");
-    return null;
-  }
-}
-
-/* ================== Orquestração ================== */
-async function processPhrase(phrase){
-  const now = Date.now();
-  cooldownMs = Math.max(0, Number($("#cooldown").value||2)*1000);
-  runLocalTriggers(phrase);
-
-  if(now - lastFinalSentAt < cooldownMs){
-    log("Cooldown ativo — pulando chamada à IA.");
-    return;
-  }
-  lastFinalSentAt = now;
-
-  log('Enviando para IA: "'+phrase+'"');
-  const tip = await askOpenAI(phrase);
-  if(tip && tip.toLowerCase()!=="sem insight agora"){
-    toastNote("🤖 Insight da IA", tip);
-    log("Insight: " + tip);
-  }else{
-    log("IA: sem insight agora.");
-  }
-}
-
-/* ================== Controles ================== */
-$("#btnStart").addEventListener("click", ()=>{
-  if(listening) return;
-  if(!recognition) recognition = setupRecognition();
-  if(recognition){
-    try{ recognition.start(); }catch(e){ /* Chrome pode lançar se já estiver em start */ }
-  }
-});
-$("#btnStop").addEventListener("click", ()=>{
-  if(!listening || !recognition) return;
-  try{ recognition.stop(); }catch(e){}
-});
-$("#btnClear").addEventListener("click", ()=>{
-  transEl.innerText = "";
-  logEl.innerText = "";
-});
-
-/* Info inicial */
-log("Pronto para testar. Clique em Iniciar, fale frases completas.");
-log("Para testar sem API, use palavras como 'cliente', 'investimento', 'cartão' e veja as notificações.");
-</script>
+    document.getElementById("btnClear").onclick = () => {
+      box.textContent = "";
+    };
+  </script>
 </body>
 </html>
