@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão Financeira</title>
+
+  <!-- CSS do projeto -->
+  <link rel="stylesheet" href="style_Projeto.css" />
+
+  <!-- Fonte Inter + ícones (Velzon-like) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="navbar-header">
+    <div class="d-flex">
+      <!-- LOGO -->
+      <div class="navbar-brand-box horizontal-logo">
+        <a class="logo" href="index.html">
+          <span class="logo-sm">
+            <img src="https://companieslogo.com/img/orig/BSBR_BIG.D-908fe6bc.png?t=1720244491" alt="logo" />
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center">
+      <!-- Notificações -->
+      <div id="notifDropdown" class="dropdown topbar-head-dropdown ms-1 header-item" data-dropdown>
+        <button type="button" class="btn btn-topbar" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" aria-controls="notif-menu">
+          <i class="ri-notification-3-line fs-22"></i>
+          <span id="notif-badge" class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">0</span>
+        </button>
+
+        <!-- Painel de Notificações -->
+        <div id="notif-menu" class="dropdown-menu dropdown-menu-end dropdown-panel">
+          <!-- Cabeçalho -->
+          <div class="dropdown-head">
+            <div class="dropdown-head-left">
+              <div class="dropdown-title">Notificações</div>
+              <div class="dropdown-sub">Central de alertas e insights</div>
+            </div>
+            <span id="notif-badge-total" class="badge-soft">0 novas</span>
+          </div>
+
+          <!-- Abas -->
+          <div class="dropdown-tabs" role="tablist" aria-label="Filtros de notificações">
+            <button class="dropdown-tab active" data-tab="all" aria-selected="true">
+              Todas (<span id="notif-count-all">0</span>)
+            </button>
+            <button class="dropdown-tab" data-tab="diag" aria-selected="false">
+              Diagnósticos (<span id="notif-count-diag">0</span>)
+            </button>
+            <button class="dropdown-tab" data-tab="insights" aria-selected="false">
+              Insights (<span id="notif-count-insights">0</span>)
+            </button>
+          </div>
+
+          <!-- Conteúdo -->
+          <div class="dropdown-body">
+            <div class="tab-pane active" data-pane="all">
+              <ul id="notif-list-all" class="list-group-like"></ul>
+            </div>
+            <div class="tab-pane" data-pane="diag">
+              <ul id="notif-list-diag" class="list-group-like"></ul>
+            </div>
+            <div class="tab-pane" data-pane="insights">
+              <ul id="notif-list-insights" class="list-group-like"></ul>
+            </div>
+          </div>
+
+          <!-- Rodapé -->
+          <div class="dropdown-foot">
+            <button type="button" class="btn btn-soft-info">Ver todas <i class="ri-arrow-right-line align-middle ms-1"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usuário -->
+      <div id="userDropdown" class="dropdown topbar-user ms-1 header-item" data-dropdown>
+        <button type="button" class="btn btn-topbar" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" aria-controls="user-menu">
+          <i class="ri-user-3-line fs-22"></i>
+        </button>
+
+        <div id="user-menu" class="dropdown-menu dropdown-menu-end dropdown-panel">
+          <div class="dropdown-head">
+            <div class="dropdown-head-left">
+              <div class="dropdown-title">Minha conta</div>
+              <div class="dropdown-sub">Perfil e preferências</div>
+            </div>
+          </div>
+          <div class="dropdown-body p-0">
+            <ul class="menu-list">
+              <li><a class="dropdown-item" href="#!"><i class="ri-user-3-line me-2"></i>Perfil</a></li>
+              <li><a class="dropdown-item" href="#!"><i class="ri-settings-3-line me-2"></i>Configurações</a></li>
+              <li><a class="dropdown-item" href="#!"><i class="ri-lock-line me-2"></i>Privacidade</a></li>
+              <li class="dropdown-divider"></li>
+              <li><a id="action-logout" class="dropdown-item text-danger" href="#!"><i class="ri-logout-box-r-line me-2"></i>Sair</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- /Usuário -->
+    </div>
+  </div>
+</header>
+
+<!-- WIDGETS DO TOPO -->
+<section class="stats-row">
+  <!-- Receitas -->
+  <div class="stat-card clickable-card" role="button" tabindex="0" onclick="abrirModal('receitas')" aria-label="Abrir modal de receitas">
+    <h5 class="stat-title">
+      Receitas
+      <i class="ri-arrow-up-circle-line stat-trend up" aria-hidden="true"></i>
+    </h5>
+    <div class="stat-body">
+      <div class="stat-icon"><i class="ri-wallet-3-line" aria-hidden="true"></i></div>
+      <div class="stat-number">
+        <span id="stat-receitas" class="counter-value">R$ 0,00</span>
+        <div class="stat-sub">Atualizado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Despesas -->
+  <div class="stat-card clickable-card" role="button" tabindex="0" onclick="abrirModal('despesas')" aria-label="Abrir modal de despesas">
+    <h5 class="stat-title">
+      Despesas
+      <i class="ri-arrow-down-circle-line stat-trend down" aria-hidden="true"></i>
+    </h5>
+    <div class="stat-body">
+      <div class="stat-icon"><i class="ri-coin-line" aria-hidden="true"></i></div>
+      <div class="stat-number">
+        <span id="stat-despesas" class="counter-value">R$ 0,00</span>
+        <div class="stat-sub">Atualizado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patrimônio -->
+  <div class="stat-card clickable-card" role="button" tabindex="0" onclick="abrirModal('patrimonio')" aria-label="Abrir modal de patrimônio">
+    <h5 class="stat-title">
+      Patrimônio
+      <i class="ri-arrow-up-circle-line stat-trend up" aria-hidden="true"></i>
+    </h5>
+    <div class="stat-body">
+      <div class="stat-icon"><i class="ri-home-3-line" aria-hidden="true"></i></div>
+      <div class="stat-number">
+        <span id="stat-patrimonio" class="counter-value">R$ 0,00</span>
+        <div class="stat-sub">Atualizado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagnósticos -->
+  <div class="stat-card">
+    <h5 class="stat-title">
+      Diagnósticos
+      <i class="ri-information-line stat-trend" aria-hidden="true"></i>
+    </h5>
+    <div class="stat-body">
+      <div class="stat-icon"><i class="ri-pulse-line" aria-hidden="true"></i></div>
+      <div class="stat-number">
+        <span id="stat-diagnosticos" class="counter-int">0</span>
+        <div class="stat-sub">Ativos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LINHA: COMPOSIÇÕES -->
+<div class="row-like">
+  <!-- Composição das Receitas -->
+  <div class="col-12 col-md-6 col-xxl-3">
+    <section class="card card-compact receitas-card" role="button" tabindex="0" aria-label="Abrir modal de receitas (composição)">
+      <div class="card-header-like">
+        <h4 class="card-title">Composição das Receitas</h4>
+        <div class="header-actions">
+          <div class="dropdown-like">
+            <button id="btnReceitasFiltro" class="btn btn-icon btn-filter" type="button" aria-label="Filtrar receitas" title="Filtrar receitas">
+              <i class="mdi mdi-dots-vertical align-middle"></i>
+            </button>
+            <div class="dropdown-like-menu">
+              <button class="dropdown-like-item receitas-filter-item" data-filter="todas" type="button">Todas</button>
+              <button class="dropdown-like-item receitas-filter-item" data-filter="fixas" type="button">Fixas</button>
+              <button class="dropdown-like-item receitas-filter-item" data-filter="variaveis" type="button">Variáveis</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body-like">
+        <div class="chart-wrap">
+          <canvas id="donut-receitas" class="chart-canvas"></canvas>
+        </div>
+        <div class="list-scroll">
+          <ul id="lista-receitas" class="list-group-like border-dashed mb-0 mt-3 pt-2"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Composição das Despesas -->
+  <div class="col-12 col-md-6 col-xxl-3">
+    <section id="card-despesas-donut" class="card card-compact" role="button" tabindex="0" aria-label="Abrir modal de despesas (composição)">
+      <div class="card-header-like">
+        <h4 class="card-title">Composição das Despesas</h4>
+        <div class="header-actions">
+          <div class="dropdown-like">
+            <button id="btnDespesasFiltro" class="btn btn-icon btn-filter" type="button" aria-label="Filtrar despesas" title="Filtrar despesas">
+              <i class="mdi mdi-dots-vertical align-middle"></i>
+            </button>
+            <div class="dropdown-like-menu">
+              <button class="dropdown-like-item despesas-filter-item" data-filter="todas" type="button">Todas</button>
+              <button class="dropdown-like-item despesas-filter-item" data-filter="essenciais" type="button">Essenciais</button>
+              <button class="dropdown-like-item despesas-filter-item" data-filter="variaveis" type="button">Variáveis</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body-like">
+        <div class="chart-wrap">
+          <canvas id="donut-despesas" class="chart-canvas"></canvas>
+        </div>
+        <div class="list-scroll">
+          <ul id="lista-despesas" class="list-group-like border-dashed mb-0 mt-3 pt-2"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Composição do Patrimônio -->
+  <div class="col-12 col-md-6 col-xxl-3">
+    <section id="card-patrimonio-donut" class="card card-compact clickable-card" role="button" tabindex="0" aria-label="Abrir modal de patrimônio (composição)">
+      <div class="card-header-like">
+        <h4 class="card-title">Composição do Patrimônio</h4>
+        <div class="dropdown-like header-actions">
+          <button id="btnPatrimonioFiltro" class="btn btn-filter" type="button" aria-haspopup="true" aria-expanded="false" title="Filtrar">
+            <i class="mdi mdi-dots-vertical align-middle"></i>
+          </button>
+          <div class="dropdown-like-menu" aria-labelledby="btnPatrimonioFiltro">
+            <button class="dropdown-like-item patrimonio-filter-item" data-filter="todas" type="button">Todas</button>
+            <button class="dropdown-like-item patrimonio-filter-item" data-filter="bens" type="button">Bens</button>
+            <button class="dropdown-like-item patrimonio-filter-item" data-filter="investimentos" type="button">Investimentos</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body-like">
+        <div class="chart-wrap">
+          <canvas id="donut-patrimonio" class="chart-canvas"></canvas>
+        </div>
+        <div class="list-scroll">
+          <ul id="lista-patrimonio" class="list-group-like border-dashed mb-0 mt-3 pt-2"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div style="text-align:center; margin-bottom:20px;">
+  <button onclick="enviarEmail()">Enviar por E-mail</button>
+</div>
+
+<!-- Botão que abre o painel lateral -->
+<button id="btn-rightside" type="button" class="btn btn-soft-info btn-icon layout-rightside-btn" aria-controls="rightside-panel" aria-expanded="false" title="Abrir painel">
+  <i class="ri-pulse-line" aria-hidden="true"></i>
+</button>
+
+<!-- MODAL DE BOAS-VINDAS (fullscreen quadrado) -->
+<div id="welcome-modal" class="modal modal--fullscreen" role="dialog" aria-modal="true" hidden>
+  <div class="modal-content modal-content--fullscreen">
+    <button type="button" class="close" aria-label="Fechar" data-close-welcome>&times;</button>
+    <h3 style="margin-bottom:12px;">Bem-vindo(a)</h3>
+    <p class="text-muted" style="margin-bottom:16px;">
+      Preencha suas Receitas, Despesas e Patrimônio para começar a análise.
+    </p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button type="button" class="btn btn-soft-info" data-close-welcome>Começar</button>
+      <button type="button" class="btn" id="welcome-reset-all">Limpar e começar do zero</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contêiner dos modais dinâmicos (formulários) -->
+<div id="modal-container"></div>
+
+<!-- libs e app -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script_Projeto.js" defer></script>
+</body>
+</html>
