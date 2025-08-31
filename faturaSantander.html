@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Analisador de Fatura Santander – por Categoria</title>
+<!-- PDF.js da CDN (apenas leitura de texto); continua sendo um único arquivo seu. -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1221;
+    --card:#171a2e;
+    --muted:#9aa3b2;
+    --text:#eef2ff;
+    --accent:#5b8def;
+    --ok:#35c48b;
+    --warn:#ffb020;
+    --bad:#ff5f7a;
+    --chip:#232842;
+    --bar:#2a2f52;
+    --line:#2c3156;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial}
+  header{padding:20px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0}
+  header .hint{color:var(--muted)}
+  main{padding:18px;display:grid;gap:18px;grid-template-columns:1.1fr 2fr}
+  @media (max-width:1000px){ main{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px dashed var(--line)}
+  .card .hd h2{margin:0;font-size:15px}
+  .card .bd{padding:14px 16px}
+  .drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
+  .drop input{display:none}
+  .drop .inner{text-align:center}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
+  .btn:hover{border-color:var(--accent)}
+  .btn.secondary{background:transparent}
+  .btnbar{display:flex;gap:8px;flex-wrap:wrap}
+  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:600px){.statgrid{grid-template-columns:1fr}}
+  .stat{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .stat .k{font-size:12px;color:var(--muted)}
+  .stat .v{font-size:18px;margin-top:4px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap}
+  .tag{background:var(--chip);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+  th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .money{font-variant-numeric:tabular-nums}
+  .barwrap{height:10px;background:var(--bar);border-radius:999px;overflow:hidden}
+  .bar{height:100%;background:linear-gradient(90deg,var(--accent),#9aa9ff)}
+  .pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .muted{color:var(--muted)}
+  .flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .right{margin-left:auto}
+  .srch{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:8px;padding:8px 10px}
+  .footnote{color:var(--muted);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔎 Analisador de Fatura Santander (PDF → Categorias)</h1>
+  <div class="hint">Envie suas faturas (.pdf). O app identifica despesas, categoriza e mostra o ranking.</div>
+</header>
+
+<main>
+  <!-- Coluna esquerda -->
+  <section class="card">
+    <div class="hd">
+      <h2>Upload de Faturas</h2>
+      <div class="btnbar">
+        <button class="btn" id="btnPick">Selecionar PDFs</button>
+        <button class="btn secondary" id="btnClear" title="Limpa dados carregados">Limpar</button>
+        <button class="btn secondary" id="btnExport" title="Exporta CSV">Exportar CSV</button>
+      </div>
+    </div>
+    <div class="bd">
+      <label class="drop" id="dropzone">
+        <input id="fileInput" type="file" accept="application/pdf" multiple />
+        <div class="inner">
+          <div style="font-size:15px;margin-bottom:6px">Arraste os PDFs aqui ou clique em <b>Selecionar PDFs</b></div>
+          <div class="muted">Aceita várias faturas de uma vez</div>
+        </div>
+      </label>
+      <div id="filesInfo" class="footnote"></div>
+      <hr style="border:none;border-top:1px dashed var(--line);margin:14px 0">
+      <div class="tags" id="quickStats"></div>
+      <div class="footnote">Observação: leitura feita por texto do PDF; não carrega nem exibe as páginas.</div>
+    </div>
+  </section>
+
+  <!-- Coluna direita -->
+  <section class="card">
+    <div class="hd">
+      <h2>Resumo & Ranking</h2>
+      <div class="flex right">
+        <select id="categoryFilter" class="srch">
+          <option value="">Todas as categorias</option>
+        </select>
+        <input id="searchBox" class="srch" type="search" placeholder="Buscar estabelecimento..." />
+      </div>
+    </div>
+    <div class="bd">
+      <div class="statgrid" id="statGrid">
+        <div class="stat"><div class="k">Total analisado</div><div class="v money" id="kTotal">—</div></div>
+        <div class="stat"><div class="k">Transações</div><div class="v" id="kCount">—</div></div>
+        <div class="stat"><div class="k">Maior categoria</div><div class="v" id="kTopCat">—</div></div>
+      </div>
+
+      <h3 style="margin:16px 0 8px">Ranking por categoria</h3>
+      <table id="tblCats">
+        <thead><tr><th>Categoria</th><th style="width:45%">Participação</th><th>Total</th><th>Qtd</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h3 style="margin:18px 0 8px">Transações (detalhe)</h3>
+      <table id="tblTx">
+        <thead>
+          <tr>
+            <th>Data</th><th>Estabelecimento</th><th>Categoria</th><th class="money">Valor (R$)</th><th>Origem</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="footnote">Origem: “Despesas” (compra avulsa) ou “Parcelamentos” (parcelas/crediário). Créditos/pagamentos são ignorados.</div>
+    </div>
+  </section>
+</main>
+
+<footer style="padding:18px;color:var(--muted);border-top:1px solid var(--line)">
+  Regras de categorização inspiradas no layout e nos lançamentos típicos das suas faturas (padarias, restaurantes, Uber, Abastece Aí, Estapar, Petz, Apple/Netflix/Google etc.). Você pode ajustar os termos no bloco <span class="mono">categoryRules</span> dentro do arquivo.
+</footer>
+
+<script>
+/* ===========================
+   Utilidades
+=========================== */
+const $$ = sel => document.querySelector(sel);
+const $$$ = sel => document.querySelectorAll(sel);
+
+const BRL = n => n.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+const pct = (v,tot) => tot>0 ? (v*100/tot) : 0;
+
+function parseBRLToNumber(s){
+  if(typeof s !== 'string') return NaN;
+  // remove espaços, pontos de milhar e troca vírgula por ponto
+  return Number(s.replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
+}
+
+function download(filename, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'text/csv;charset=utf-8;'}));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ===========================
+   Regras de categorização
+   (ajuste termos conforme seu uso)
+=========================== */
+const categoryRules = [
+  { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|FORCA AEREA LT|ABASTEC)/i },
+  { cat:"Pedágio/Tag & Vias", rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|23M-|0 PINHEIROS|BANDEIRANTES|SAO JOSE|CACAPAVA)/i },
+  { cat:"Transporte (Uber/Apps)", rx: /\bUBER\b|\bTRIP\b/i },
+  { cat:"Estacionamento", rx: /(ESTAPAR|GARAGEM|ESTACIONAMENTO|SEMPREPARK|RANK ESTACIONAMENTO)/i },
+  { cat:"Supermercado", rx: /(SUPERMERCADO|ATACADISTA|REDE ROFATTO|JDM COMERCIO DE ALIM|CINCO M COM ATACADISTA|DU BAIRRO)/i },
+  { cat:"Padaria/Lanches", rx: /(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|SABORES|CABANA DO ACAI|PUMILA|PASTEL|ADRIANA PAES|PADOCADAPRACA|ORQUIDEA PUMILA)/i },
+  { cat:"Restaurantes", rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER KING|SOCRATESPIZZABAR|TENTACAO DO ACAI|SR CAIPIRA|TENNESSEE|OISHIIPASTEIS|ZIG\*CANA|RASCAL|SABOR GRILL)/i },
+  { cat:"Saúde/Farmácia", rx: /(DROGASIL|DROGARIA|REMEDIOPOPULAR|RAIA|SEPHORA)/i },
+  { cat:"Pets", rx: /(PETZ)/i },
+  { cat:"Assinaturas/Apps", rx: /(APPLE COM\/BILL|AMAZON MUSIC|DL\*GOOGLE|GOOGLE ONE|NETFLIX|GLOBO PREMIERE|AMAZON DIGITAL)/i },
+  { cat:"Educação/Livros", rx: /(ED TECH|LIVRARIA|HEDRA)/i },
+  { cat:"Compras Online", rx: /(AMAZON BR|AMAZONMKTPLC|MERCADOPAGO)/i },
+  { cat:"Beleza/Estética", rx: /(SPA MORUMBI|CAPELLI CONCETTO)/i },
+  { cat:"Auto/Serviços", rx: /(MICARLAVARAPIDO|AUTOMOTIVO)/i },
+  { cat:"Viagem/Hospedagem", rx: /(AIRBNB|LOCALIZA|UNIDAS)/i },
+  { cat:"Serviços Online", rx: /(HOSTGATOR)/i },
+  { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDIARIO)/i },
+  { cat:"Tarifas/Anuidade", rx: /(ANUIDADE DIFERENCIADA|TARIFA)/i },
+  { cat:"Bancos/Serviços", rx: /(SCP PLUS)/i },
+  { cat:"Outros", rx: /.*/i }
+];
+
+function categorize(desc){
+  const rule = categoryRules.find(r => r.rx.test(desc));
+  return rule ? rule.cat : "Outros";
+}
+
+/* ===========================
+   Leitura de PDF com pdf.js
+=========================== */
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+
+/** Extrai as linhas de texto preservando ordem visual (grupo por Y, ordena por X) */
+async function extractLinesFromPDF(arrayBuffer){
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+  const lines = [];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    // group by Y (aprox)
+    const rows = new Map();
+    for(const item of content.items){
+      const str = item.str ?? "";
+      const tr = item.transform || item.matrix || [1,0,0,1,0,0];
+      const x = tr[4], y = tr[5];
+      const yKey = Math.round(y); // agrupar por linha visual
+      if(!rows.has(yKey)) rows.set(yKey, []);
+      rows.get(yKey).push({x, str});
+    }
+    // ordena por y desc (pdf coords) => invertido para leitura natural
+    const yKeys = Array.from(rows.keys()).sort((a,b)=>b-a);
+    for(const y of yKeys){
+      const arr = rows.get(y).sort((a,b)=>a.x-b.x);
+      const text = arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
+      if(text) lines.push(text);
+    }
+  }
+  return lines;
+}
+
+/* ===========================
+   Parser de lançamentos
+=========================== */
+/* Regex de linhas (com data dd/mm no início); 
+   aceita prefixos “2” ou “3” que aparecem nas faturas como marcadores */
+const rxDespesa = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(\.\d{3})*,\d{2})(?:\s+\d{1,3}(\.\d{3})*,\d{2})?\s*$/i;
+// Parcelamentos: contém coluna "Parcela 10/12" antes do valor
+const rxParc = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(\.\d{3})*,\d{2})\s*$/i;
+// Créditos negativos (ex.: -0,03) devem ser ignorados
+const rxNegativo = /(^|[\s(])-\d/;
+
+function parseFromLines(lines){
+  const tx = [];
+  let contexto = null; // "DESPESAS" ou "PARCELAMENTOS"
+  for(const raw of lines){
+    const line = raw.replace(/\u00A0/g,' ').trim();
+
+    // Muda contexto a partir de cabeçalhos
+    if(/^\s*Despesas\s*$/i.test(line)) { contexto = "DESPESAS"; continue; }
+    if(/^\s*Parcelamentos\s*$/i.test(line)) { contexto = "PARCELAMENTOS"; continue; }
+    if(/^\s*Pagamento e Demais Créditos\s*$/i.test(line)) { contexto = "CREDITOS"; continue; }
+
+    // Ignora pagamentos/créditos e cabeçalhos
+    if(contexto === "CREDITOS") continue;
+    if(/^(Compra|VALOR TOTAL|Detalhamento da Fatura|Resumo da Fatura|Pagamento|Histórico|Juros|COTAÇÃO DOLAR|IOF|DEMONSTRATIVO|ANUIDADE|Opções de Pagamento|Total a Pagar|Vencimento|Melhor Data|Posição|Seu Limite|Limite|Central de Atendimento|Ouvidoria|SAC|Explore descontos)/i.test(line)) continue;
+
+    // Tenta casar como despesa ou parcelamento
+    let m = null, origem = null;
+    if(contexto === "DESPESAS"){
+      m = line.match(rxDespesa);
+      origem = "Despesas";
+    } else if(contexto === "PARCELAMENTOS"){
+      m = line.match(rxParc);
+      origem = "Parcelamentos";
+    } else {
+      // fora de bloco, ainda assim tentamos despesa padrão
+      m = line.match(rxDespesa); origem = "Despesas";
+    }
+    if(!m) continue;
+
+    const valorStr = m.groups?.valor || "";
+    if(rxNegativo.test(valorStr)) continue; // ignora créditos
+
+    const data = m.groups?.data || "";
+    const desc = (m.groups?.desc || "").trim();
+    const valor = parseBRLToNumber(valorStr);
+    if(!isFinite(valor) || valor<=0) continue;
+
+    const cat = categorize(desc);
+    tx.push({ data, desc, valor, cat, origem });
+  }
+  return tx;
+}
+
+/* ===========================
+   Estado e renderização
+=========================== */
+let ALL_TX = [];
+
+function updateUI(){
+  // Filtro
+  const filterCat = $$("#categoryFilter").value;
+  const q = $$("#searchBox").value.trim().toLowerCase();
+
+  const view = ALL_TX.filter(t =>
+    (!filterCat || t.cat === filterCat) &&
+    (!q || t.desc.toLowerCase().includes(q))
+  );
+
+  const total = view.reduce((s,t)=>s+t.valor,0);
+  $$("#kTotal").textContent = BRL(total);
+  $$("#kCount").textContent = view.length.toString();
+
+  // Totais por categoria
+  const byCat = {};
+  for(const t of view){
+    byCat[t.cat] ??= { total:0, count:0 };
+    byCat[t.cat].total += t.valor;
+    byCat[t.cat].count += 1;
+  }
+  const rows = Object.entries(byCat).map(([cat,v])=>({cat,...v}))
+     .sort((a,b)=>b.total-a.total);
+
+  $$("#kTopCat").textContent = rows[0] ? `${rows[0].cat} (${BRL(rows[0].total)})` : "—";
+
+  // Ranking tabela
+  const tbody = $$("#tblCats tbody");
+  tbody.innerHTML = "";
+  for(const r of rows){
+    const tr = document.createElement('tr');
+    const perc = pct(r.total, total);
+    tr.innerHTML = `
+      <td><span class="pill">${r.cat}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="barwrap" style="flex:1"><div class="bar" style="width:${perc.toFixed(2)}%"></div></div>
+          <div class="muted">${perc.toFixed(1)}%</div>
+        </div>
+      </td>
+      <td class="money">${BRL(r.total)}</td>
+      <td>${r.count}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Transações tabela
+  const tbTx = $$("#tblTx tbody");
+  tbTx.innerHTML = "";
+  for(const t of view.sort((a,b)=> a.data.localeCompare(b.data) || a.desc.localeCompare(b.desc))){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="mono">${t.data}</td>
+      <td>${t.desc}</td>
+      <td><span class="pill">${t.cat}</span></td>
+      <td class="money">${BRL(t.valor)}</td>
+      <td class="muted">${t.origem}</td>
+    `;
+    tbTx.appendChild(tr);
+  }
+
+  // Chips rápidas
+  const quick = $$("#quickStats");
+  quick.innerHTML = "";
+  if(ALL_TX.length){
+    const totAll = ALL_TX.reduce((s,t)=>s+t.valor,0);
+    const top3 = Object.entries(ALL_TX.reduce((acc,t)=>{
+      acc[t.cat]= (acc[t.cat]||0) + t.valor; return acc;
+    },{})).map(([cat,tot])=>({cat,tot})).sort((a,b)=>b.tot-a.tot).slice(0,3);
+    const span1 = document.createElement('span');
+    span1.className="tag"; span1.textContent = `Total geral: ${BRL(totAll)}`;
+    quick.appendChild(span1);
+    top3.forEach(({cat,tot})=>{
+      const s = document.createElement('span');
+      s.className="tag"; s.textContent = `${cat}: ${BRL(tot)}`;
+      quick.appendChild(s);
+    });
+  }
+}
+
+function refreshFilters(){
+  const cats = Array.from(new Set(ALL_TX.map(t=>t.cat))).sort();
+  const sel = $$("#categoryFilter");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">Todas as categorias</option>` +
+    cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(cats.includes(cur)) sel.value = cur;
+}
+
+/* ===========================
+   CSV Export
+=========================== */
+function toCSV(rows){
+  const esc = v => `"${String(v).replace(/"/g,'""')}"`;
+  const header = ["data","descricao","categoria","valor","origem"];
+  const lines = [header.join(";")];
+  for(const r of rows){
+    lines.push([r.data, r.desc, r.cat, r.valor.toFixed(2), r.origem].map(esc).join(";"));
+  }
+  return lines.join("\n");
+}
+
+/* ===========================
+   Handlers de UI
+=========================== */
+const input = $$("#fileInput");
+const drop = $$("#dropzone");
+const btnPick = $$("#btnPick");
+const btnClear = $$("#btnClear");
+const btnExport = $$("#btnExport");
+
+btnPick.addEventListener('click', ()=> input.click());
+btnClear.addEventListener('click', ()=>{
+  input.value = "";
+  ALL_TX = [];
+  $$("#filesInfo").textContent = "";
+  refreshFilters();
+  updateUI();
+});
+btnExport.addEventListener('click', ()=>{
+  if(!ALL_TX.length){ alert("Nada para exportar ainda."); return; }
+  download(`transacoes-fatura-${new Date().toISOString().slice(0,10)}.csv`, toCSV(ALL_TX));
+});
+
+input.addEventListener('change', async (e)=>{
+  await handleFiles(e.target.files);
+});
+
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e=>{
+  e.preventDefault(); e.stopPropagation(); drop.style.borderColor = 'var(--ok)';
+}));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e=>{
+  e.preventDefault(); e.stopPropagation(); drop.style.borderColor = 'var(--accent)';
+}));
+drop.addEventListener('drop', async e=>{
+  const files = [...(e.dataTransfer?.files||[])].filter(f=>/pdf$/i.test(f.name));
+  if(files.length) await handleFiles(files);
+});
+
+async function handleFiles(files){
+  if(!files?.length) return;
+  $$("#filesInfo").textContent = `Lendo ${files.length} arquivo(s)...`;
+  let parsed = [];
+  for(const f of files){
+    try{
+      const buf = await f.arrayBuffer();
+      const lines = await extractLinesFromPDF(buf);
+      const tx = parseFromLines(lines);
+      parsed = parsed.concat(tx);
+    }catch(err){
+      console.error(err);
+      alert(`Falha ao ler "${f.name}": ${err.message||err}`);
+    }
+  }
+  ALL_TX = parsed;
+  $$("#filesInfo").textContent = `${files.length} arquivo(s) processado(s). Lançamentos encontrados: ${ALL_TX.length}.`;
+  refreshFilters();
+  updateUI();
+}
+
+$$("#categoryFilter").addEventListener('change', updateUI);
+$$("#searchBox").addEventListener('input', updateUI);
+
+</script>
+</body>
+</html>
