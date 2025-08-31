@@ -42,7 +42,7 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
 <body>
 <header>
   <h1>Fatura Santander — Despesas x Parcelamentos</h1>
-  <div class="muted">Leitura por coluna • só R$ • categorias • ranking • prompt automático</div>
+  <div class="muted">Leitura por coluna • só R$ • categorias + subcategorias • ranking • prompt automático</div>
 </header>
 
 <main>
@@ -146,37 +146,36 @@ const categoryRules = [
   { cat:"Impostos/Exterior",     rx: /(IOF DESPESA NO EXTERIOR)/i },
   { cat:"Juros/Parcelamento",    rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|ENCARGOS|JUROS)/i },
   { cat:"Outros",                rx: /.*/i }
-  { cat:"Amazon/Online", rx: /(AMAZON BR|AMAZONMKTPLC|MERCADOPAGO)/i },
-  { cat:"Alimentação fora", rx: /(FEIJOADA|PIZZABAR|LANCHES SABORES|CESAR AUGUSTO)/i },
-  { cat:"Comércio variado", rx: /(OBDE|JDM|JERONIMO|LUCI MARA|VEND PERTO)/i },
-  { cat:"Serviços locais", rx: /(GARAGEM|ESTACIONAMENTO|PINHEIROS)/i },
-  { cat:"Presentes/Floricultura", rx: /(FLOR DO PARAISO|FLORICULTURA)/i },
-  { cat:"Produtos Consumo", rx: /(PRODUTOS GLOBO)/i },
-  { cat:"Tecnologia", rx: /(HOSTGATOR|SERVIDOR|SITE)/i },
-  { cat:"Beleza/Essências", rx: /(NATAL ESSENCIAS|PERFUME|ESSENCIA)/i },
-  { cat:"Serviços Profissionais", rx: /(PROPIG|CONSULTORIA)/i },
-  { cat:"Transferência/PF", rx: /(PRISCILA DE BRITO|PAGAMENTO PESSOA)/i }
 ];
 
-/* Função ajustada */
+/* ====== Subcategorias para “Outros” (por texto) ====== */
+const subCategoryRules = [
+  { cat:"Amazon/Online",           rx: /(AMAZON BR|AMAZONMKTPLC|MERCADOPAGO|VEND PERTO|MARKETPLACE)/i },
+  { cat:"Alimentação fora",        rx: /(FEIJOADA|PIZZABAR|LANCHES SABORES|CESAR AUGUSTO|JERONIMO|SOCRATES)/i },
+  { cat:"Comércio variado",        rx: /(OBDE|JDM|LUCI MARA|LOJA|COMERCIO|BOUTIQUE|VARIEDADES)/i },
+  { cat:"Serviços locais",         rx: /(GARAGEM|ESTACIONAMENTO|PINHEIROS)/i },
+  { cat:"Presentes/Floricultura",  rx: /(FLOR DO PARAISO|FLORICULTURA|PRESENTE)/i },
+  { cat:"Produtos de consumo",     rx: /(PRODUTOS GLOBO|UTILIDADES|DESCART[AÁ]VEIS|HIGIENE)/i },
+  { cat:"Tecnologia/Serviços web", rx: /(HOSTGATOR|SERVIDOR|SITE|HOSPEDAGEM)/i },
+  { cat:"Beleza/Essências",        rx: /(NATAL ESSENCIAS|PERFUME|ESS[EÊ]NCIA)/i },
+  { cat:"Serviços profissionais",  rx: /(PROPIG|CONSULTORIA|PROFISSIONAL|PRESTA[CÇ][AÃ]O)/i },
+  { cat:"Transferência/PF",        rx: /(PRISCILA DE BRITO|PAGAMENTO PESSOA|PESSOA F[ÍI]SICA)/i }
+];
+
+/* ====== Categorizar com fallback em subcategoria ====== */
 function categorize(desc){
-  // 1ª camada: regras principais
   let cat = (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
-  // 2ª camada: se ficou em "Outros", tentar subcategorizar
   if(cat==="Outros"){
     const sub = subCategoryRules.find(r=>r.rx.test(desc));
-    if(sub) cat = sub.cat;
+    if(sub) cat = sub.cat; // substitui “Outros” pela subcategoria encontrada
   }
   return cat;
 }
 
-/* ================= PDF.js ================= */
-/* IMPORTANTE: desativa o worker para rodar via file:// sem erro de origem */
+/* ================= PDF.js (sem worker p/ rodar via file://) ================= */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* === Extrai tokens, separa por coluna e só depois monta linhas === */
 async function extractByColumns(arrayBuffer){
-  // desativa o worker para evitar erro “Failed to construct 'Worker'” quando abrir o HTML local
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer, disableWorker:true}).promise;
   const all=[];
   for(let p=1;p<=pdf.numPages;p++){
@@ -188,7 +187,7 @@ async function extractByColumns(arrayBuffer){
     }).filter(t=>t.str);
     if(!toks.length) continue;
 
-    // 2-means simples em X
+    // 2-means simples em X para achar o corte das duas colunas
     let c0=Math.min(...toks.map(t=>t.x)), c1=Math.max(...toks.map(t=>t.x));
     for(let i=0;i<8;i++){
       const L=[], R=[]; toks.forEach(t=> (Math.abs(t.x-c0)<=Math.abs(t.x-c1)?L:R).push(t));
@@ -218,7 +217,6 @@ async function extractByColumns(arrayBuffer){
 }
 
 /* ================= Regras de parsing ================= */
-/* captura somente o 1º valor (R$); um 2º (US$) no fim é ignorado */
 const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 
@@ -232,7 +230,7 @@ const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
 const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
 
 const RX_IGNORE = [
-  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // somatório
+  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i,
   /^VALOR\s+TOTAL\b/i,
   /^\*?\s*Juros\s*=\s*[\d\.,]+\s*\/\s*IOF\s*=\s*[\d\.,]+/i,
   /CET\s*[:\d,\.%]/i,
@@ -258,7 +256,7 @@ function parseFatura(lines, fileName){
     if(ctx==="CRED" || ctx==="RESU") continue;
     if(RX_IGNORE.some(r=>r.test(line))) continue;
 
-    // IOF em R$ (entra como Despesa)
+    // IOF exterior (valor em R$) entra como despesa
     let m=line.match(RX_IOF_EXT);
     if(m){
       const v=parseBRL(m[1]);
@@ -280,7 +278,7 @@ function parseFatura(lines, fileName){
       pending=null; continue;
     }
 
-    // linha quebrada (data+desc) -> valor na próxima
+    // linha quebrada (data+desc) -> valor na próxima linha
     const hasDate=/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
     if(hasDate && !RX_ANY_MONEY.test(line)){
       const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
@@ -300,7 +298,7 @@ function parseFatura(lines, fileName){
       }
     }
 
-    // dentro do bloco com R$ que não casou => miss
+    // possuía R$ mas não casou — registrar para auditoria
     if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
       (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
     }
@@ -309,7 +307,7 @@ function parseFatura(lines, fileName){
 }
 
 /* ================= Estado ================= */
-let DESP=[], PARC=[], MISS_D=[], MISS_P=[];
+let DESP=[], PARC=[], MISS_D=[], MISS_P[];
 
 /* ================= Renderização ================= */
 function renderRows(tbody, rows){
@@ -464,7 +462,7 @@ async function handleFiles(files){
       MISS_D=MISS_D.concat(missDesp); MISS_P=MISS_P.concat(missParc);
     }catch(err){ console.error(err); alert(`Erro lendo "${f.name}": ${err.message||err}`); }
   }
-  // ordena por data e descrição
+  // ordenar por data e descrição
   const ord=(a,b)=> (a.data||"").localeCompare(b.data||"") || a.desc.localeCompare(b.desc);
   DESP.sort(ord); PARC.sort(ord);
 
