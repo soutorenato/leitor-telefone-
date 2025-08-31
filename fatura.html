@@ -3,221 +3,161 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fatura Santander – Parser robusto (2 colunas, só R$, com patch)</title>
+<title>Fatura Santander — Despesas x Parcelamentos (só R$)</title>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
-:root{--bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;--ok:#35c48b;--warn:#ffb020;--chip:#232842;--line:#2c3156}
-*{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+:root{
+  --bg:#0f1221; --card:#171a2e; --ink:#eef2ff; --muted:#9aa3b2;
+  --line:#2c3156; --chip:#232842; --accent:#5b8def; --ok:#35c48b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:500 14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
 header{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-h1{font-size:18px;margin:0}.muted{color:var(--muted)}
-main{padding:16px;display:grid;gap:16px;grid-template-columns:1.05fr 2fr}
-@media(max-width:1100px){main{grid-template-columns:1fr}}
+h1{margin:0;font-size:18px} .muted{color:var(--muted)}
+main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .hd{padding:12px 16px;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center}
 .hd h2{margin:0;font-size:15px}
 .bd{padding:14px 16px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
 .drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
 .drop input{display:none}.drop .inner{text-align:center}
-.btn{appearance:none;border:1px solid var(--line);background:#232842;color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
-.btn:hover{border-color:var(--accent)} .btn.secondary{background:transparent}
-.btnbar{display:flex;gap:8px;flex-wrap:wrap}
-.srch{border:1px solid var(--line);background:#232842;color:var(--text);border-radius:8px;padding:8px 10px}
-.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.right{margin-left:auto}
-.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:950px){.statgrid{grid-template-columns:1fr 1fr}}
-.stat{background:#232842;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.stat .k{font-size:12px;color:var(--muted)} .stat .v{font-size:18px;margin-top:4px}
-.money{font-variant-numeric:tabular-nums}
-.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.tag{background:#232842;border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
-.pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
-.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px}
-table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.kpi{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.kpi .k{font-size:12px;color:var(--muted)} .kpi .v{font-size:18px;margin-top:2px}
+.grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+@media(max-width:1024px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-h3{margin:16px 0 8px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
-canvas{width:100%;height:240px;display:block;background:#12162b;border:1px solid var(--line);border-radius:10px}
-.badge-ok{color:#0f1;display:inline-block;margin-left:6px}
-.badge-warn{color:#ffb020;display:inline-block;margin-left:6px}
-.mono{font-family:ui-monospace,SFMono,Consolas,monospace}
+tfoot td{font-weight:700}
+.money{font-variant-numeric:tabular-nums}
 .small{font-size:12px}
+.alert{margin-top:10px;background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:12px;margin-left:6px}
 </style>
 </head>
 <body>
 <header>
-  <h1>🔎 Fatura Santander – Parser robusto</h1>
-  <div class="muted">2 colunas • só R$ • ignora textos explicativos • reconciliação com Resumo • <b>cabeçalhos [DESPESAS]/[PARCELAMENTOS]</b>.</div>
+  <h1>Fatura Santander — Despesas x Parcelamentos</h1>
+  <div class="muted">Lê PDFs, separa em duas tabelas, e soma apenas valores em <b>R$</b>.</div>
 </header>
 
 <main>
-  <!-- Coluna 1: Upload & KPIs -->
   <section class="card">
     <div class="hd">
-      <h2>Upload de Faturas</h2>
-      <div class="btnbar">
-        <button class="btn" id="btnPick">Selecionar PDFs</button>
-        <button class="btn secondary" id="btnClear">Limpar</button>
-        <button class="btn secondary" id="btnExport">Exportar CSV</button>
-      </div>
+      <h2>Arquivos</h2>
+      <button class="btn" id="btnPick">Selecionar PDFs</button>
     </div>
     <div class="bd">
-      <label class="drop" id="dropzone">
+      <label class="drop">
         <input id="fileInput" type="file" accept="application/pdf" multiple/>
         <div class="inner">
-          <div style="font-size:15px;margin-bottom:6px">Arraste PDFs aqui ou clique em <b>Selecionar PDFs</b></div>
-          <div class="muted">Processamento local: nada sai do navegador.</div>
+          <div style="font-size:15px;margin-bottom:6px">Arraste aqui ou clique em <b>Selecionar PDFs</b></div>
+          <div class="muted">Tudo acontece no seu navegador.</div>
         </div>
       </label>
-      <div id="filesInfo" class="muted" style="margin-top:8px"></div>
+      <div id="filesInfo" class="small muted" style="margin-top:8px"></div>
 
-      <div class="statgrid" style="margin-top:10px">
-        <div class="stat"><div class="k">Total analisado (R$)</div><div class="v money" id="kTotal">—</div></div>
-        <div class="stat"><div class="k">Transações</div><div class="v" id="kCount">—</div></div>
-        <div class="stat"><div class="k">Maior categoria</div><div class="v" id="kTopCat">—</div></div>
-        <div class="stat"><div class="k">Assinaturas detectadas</div><div class="v" id="kSubs">—</div></div>
+      <div class="kpis">
+        <div class="kpi"><div class="k">Itens de Despesa</div><div class="v" id="kDespCount">—</div></div>
+        <div class="kpi"><div class="k">Total Despesas (R$)</div><div class="v money" id="kDespTotal">—</div></div>
+        <div class="kpi"><div class="k">Itens de Parcelamento</div><div class="v" id="kParcCount">—</div></div>
+        <div class="kpi"><div class="k">Total Parcelamentos (R$)</div><div class="v money" id="kParcTotal">—</div></div>
+        <div class="kpi"><div class="k">Total Geral (R$)</div><div class="v money" id="kGeral">—</div></div>
       </div>
-
-      <h3>Reconciliação por arquivo</h3>
-      <table id="tblRecon">
-        <thead>
-          <tr>
-            <th>Arquivo</th>
-            <th>Despesas capturadas (R$)</th>
-            <th>Despesas do Resumo (R$)</th>
-            <th>Diferença</th>
-            <th>Saldo desta fatura (Resumo)</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="tags" id="chipsRecon"></div>
-      <div id="missList" class="small" style="margin-top:8px"></div>
     </div>
   </section>
 
-  <!-- Coluna 2: Gráficos & Tabelas -->
-  <section class="card">
-    <div class="hd">
-      <h2>Visão Analítica</h2>
-      <div class="flex right">
-        <select id="categoryFilter" class="srch"><option value="">Todas as categorias</option></select>
-        <input id="searchBox" class="srch" type="search" placeholder="Buscar estabelecimento..."/>
+  <section class="grid">
+    <div class="card">
+      <div class="hd"><h2>Despesas <span class="badge" id="badgeDespesas">—</span></h2></div>
+      <div class="bd">
+        <table id="tblDespesas">
+          <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Total Despesas</td><td class="money" id="sumDespesas">—</td></tr></tfoot>
+        </table>
+        <div id="missDesp" class="alert" style="display:none"></div>
       </div>
     </div>
-    <div class="bd">
-      <div class="grid-2">
-        <div>
-          <h3>Participação por categoria (Rosca)</h3>
-          <canvas id="chDonut"></canvas>
-        </div>
-        <div>
-          <h3>Pareto 80/20 (Categorias)</h3>
-          <canvas id="chPareto"></canvas>
-        </div>
+
+    <div class="card">
+      <div class="hd"><h2>Parcelamentos <span class="badge" id="badgeParcelamentos">—</span></h2></div>
+      <div class="bd">
+        <table id="tblParcel">
+          <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Total Parcelamentos</td><td class="money" id="sumParcel">—</td></tr></tfoot>
+        </table>
+        <div id="missParc" class="alert" style="display:none"></div>
       </div>
-
-      <h3 style="margin-top:16px">Ranking por categoria</h3>
-      <table id="tblCats">
-        <thead><tr><th>Categoria</th><th>Total</th><th>%</th><th>Qtd</th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <h3 style="margin-top:16px">Transações</h3>
-      <table id="tblTx">
-        <thead><tr><th>Arquivo</th><th>Data</th><th>Estabelecimento</th><th>Categoria</th><th class="money">Valor (R$)</th><th>Origem</th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <h3 style="margin-top:16px">Plano de economia sugerido</h3>
-      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades com números.</div>
     </div>
   </section>
 </main>
 
 <script>
-/* ===== Utils ===== */
+/* ========= Utils ========= */
 const $$ = s => document.querySelector(s);
 const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
-const sum = (arr,k) => arr.reduce((acc,o)=>acc+(k?o[k]:o),0);
+const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
 
-/* ===== Categorias ===== */
-const categoryRules = [
-  { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC)/i },
-  { cat:"Pedágio/Tag & Vias", rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
-  { cat:"Transporte (Apps)", rx: /\bUBER\b|\b99\b/i },
-  { cat:"Estacionamento", rx: /(ESTAPAR|ESTACIONAMENTO|PARK)/i },
-  { cat:"Supermercado", rx: /(SUPERMERCADO|ATACADISTA|ATACAREJO|REDE ROFATTO|CINCO M COM ATACADISTA|DU BAIRRO)/i },
-  { cat:"Padaria/Lanches", rx: /(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|PASTEL|ACA[IÍ]|PUMILA|CABANA DO ACAI|LAUFRUTAS)/i },
-  { cat:"Restaurantes", rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|RASCAL|TENNESSEE|ZIG\*CANA|SABOR)/i },
-  { cat:"Saúde/Farmácia", rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA|REMEDIOPOPULAR)/i },
-  { cat:"Pets", rx: /(PETZ|PET SHOP)/i },
-  { cat:"Assinaturas/Apps", rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE)/i },
-  { cat:"Educação/Livros", rx: /(LIVRARIA|CURSO|ESCOLA|HEDRA)/i },
-  { cat:"Compras Online", rx: /(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i },
-  { cat:"Beleza/Estética", rx: /(SAL[AÃ]O|BELEZA|SPA|CAPELLI|CONCETTO)/i },
-  { cat:"Auto/Serviços", rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|AUTO POSTO)/i },
-  { cat:"Viagem/Hospedagem", rx: /(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i },
-  { cat:"Serviços Online", rx: /(HOSTGATOR|DOM[IÍ]NIO|HOSPEDAGEM)/i },
-  { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|JUROS|ENCARGOS)/i },
-  { cat:"Tarifas/Anuidade", rx: /(ANUIDADE|TARIFA)/i },
-  { cat:"Impostos/Exterior", rx: /(COTA[ÇC][AÃ]O D[ÓO]LAR|IOF DESPESA NO EXTERIOR)/i },
-  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
-  { cat:"Outros", rx: /.*/i }
-];
-const subscriptionRules = /(APPLE COM\/BILL|AMAZON (?:MUSIC|PRIME|DIGITAL)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE|PREMIERE)/i;
-
-/* ===== pdf.js ===== */
+/* ========= pdf.js ========= */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* === Extração com consciência de colunas === */
+/* Lê entendendo 2 colunas (separa por X médio) e preserva ordem vertical */
 async function extractColAwareLines(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-  const all=[];
+  const out=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
     const content=await page.getTextContent();
     const rows=new Map();
     for(const it of content.items){
-      const str=it.str??"";
       const tr=it.transform||it.matrix||[1,0,0,1,0,0];
-      const x=tr[4], y=tr[5];
-      const yKey=Math.round(y);
-      (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str});
+      const x=tr[4], y=tr[5], yKey=Math.round(y);
+      (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str:it.str??""});
     }
-    const yKeys=[...rows.keys()].sort((a,b)=>b-a);
     const lines=[];
-    for(const y of yKeys){
+    [...rows.keys()].sort((a,b)=>b-a).forEach(y=>{
       const arr=rows.get(y).sort((a,b)=>a.x-b.x);
       const text=arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
-      if(!text) continue;
-      const xAvg = arr.reduce((s,o)=>s+o.x,0)/arr.length;
-      lines.push({text, xAvg, y, page:p});
-    }
-    if(lines.length){
-      const xs=lines.map(l=>l.xAvg).sort((a,b)=>a-b);
-      const mid=(xs[Math.floor(xs.length/2)] + xs[Math.ceil(xs.length/2)-1])/2;
-      const left = lines.filter(l=>l.xAvg<=mid);
-      const right= lines.filter(l=>l.xAvg> mid);
-      left.sort((a,b)=>b.y-a.y); right.sort((a,b)=>b.y-a.y);
-      all.push(...left, ...right);
-    }
+      if(!text) return;
+      const xAvg=arr.reduce((s,o)=>s+o.x,0)/arr.length;
+      lines.push({text,xAvg,y,page:p});
+    });
+    if(!lines.length){continue;}
+    const xs=lines.map(l=>l.xAvg).sort((a,b)=>a-b);
+    const mid=(xs[Math.floor(xs.length/2)] + xs[Math.ceil(xs.length/2)-1])/2;
+    const left = lines.filter(l=>l.xAvg<=mid).sort((a,b)=>b.y-a.y);
+    const right= lines.filter(l=>l.xAvg> mid).sort((a,b)=>b.y-a.y);
+    out.push(...left,...right);
   }
-  return all;
+  return out; // [{text,xAvg,y,page}]
 }
 
-/* ===== Parsers ===== */
-const rxDespesaLine = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
-const rxParcLine    = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
-const rxBRLOnly     = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
-const rxMoneyAny    = /\d{1,3}(?:\.\d{3})*,\d{2}/;
-const rxNeg         = /(^|[\s(])-\d/;
+/* ========= Regras ========= */
+// (1) Linhas completas (somente a 1ª coluna em R$ — ignora US$)
+const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
+const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
+// (2) Apenas valor em BRL (quando a linha vem quebrada)
+const RX_BRL_ONLY = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
+// (3) Qualquer número R$ (para “suspeitas”)
+const RX_ANY_MONEY = /\d{1,3}(?:\.\d{3})*,\d{2}/;
+// (4) Negativos (créditos/estornos — não somam nas despesas)
+const RX_NEG = /(^|[\s(])-\d/;
 
-// IGNORAR apenas o somatório do bloco e textos explicativos (patch):
-const rxIgnoreLines = [
-  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // ex: "[DESPESAS] VALOR TOTAL 1.956,05 0,00"
+// Cabeçalhos (ambos formatos)
+const IS_DESP = l => /^Despesas$/i.test(l) || /^\[Despesas\]/i.test(l);
+const IS_PARC = l => /^Parcelamentos$/i.test(l) || /^\[Parcelamentos\]/i.test(l);
+const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
+const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
+
+// Ignorar textos explicativos/somatórios
+const RX_IGNORE = [
+  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // somatório do bloco
   /^VALOR\s+TOTAL\b/i,
   /^\*?\s*Juros\s*=\s*[\d\.,]+\s*\/\s*IOF\s*=\s*[\d\.,]+/i,
   /CET\s*[:\d,\.%]/i,
@@ -225,311 +165,145 @@ const rxIgnoreLines = [
   /^\(\+\)|^\(-\)|^Saldo Anterior\b|^Saldo Desta Fatura\b/i
 ];
 
-// Cabeçalhos “normais”
-const isDespesas      = l => /^Despesas$/i.test(l);
-const isParcelamentos = l => /^Parcelamentos$/i.test(l);
-const isCreditos      = l => /^Pagamento e Demais Créditos$/i.test(l);
-const isResumo        = l => /^Resumo da Fatura$/i.test(l);
+// Itens do exterior em R$ (são despesas válidas)
+const RX_COTACAO = /^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i;
+const RX_IOF_EXT = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
 
-// Itens de exterior em R$
-const rxCotacaoDolar = /^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i;
-const rxIOFExterior  = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
+/* ========= Parser ========= */
+function parseFatura(lines, fileName){
+  const despesas=[], parcelamentos=[], missDesp=[], missParc=[];
+  let ctx=""; let pending=null; // pending = {tipo:'DESP'|'PARC', data, desc}
 
-function categorize(desc){ const r=categoryRules.find(r=>r.rx.test(desc)); return r? r.cat : "Outros"; }
+  for(const {text:raw} of lines){
+    const line=raw.replace(/\u00A0/g,' ').trim();
+    if(!line) continue;
 
-/* Parser tolerante (colunas + quebras + patch de [DESPESAS]) */
-function parseTransacoes(colLines, fileName){
-  const tx=[]; const misses=[];
-  let ctx=""; // DESPESAS | PARCELAMENTOS | CREDITOS | RESUMO | ""
-  let pending=null;
+    // cabeçalhos
+    if(IS_DESP(line)){ ctx="DESP"; pending=null; continue; }
+    if(IS_PARC(line)){ ctx="PARC"; pending=null; continue; }
+    if(IS_CRED(line)){ ctx="CRED"; pending=null; continue; }
+    if(IS_RESU(line)){ ctx="RESU"; pending=null; continue; }
 
-  for(const {text:lineRaw} of colLines){
-    let line=lineRaw.replace(/\u00A0/g,' ').trim();
+    // ignorar blocos não contabilizáveis + linhas explicativas / somatórios
+    if(ctx==="CRED" || ctx==="RESU") continue;
+    if(RX_IGNORE.some(re=>re.test(line))) continue;
 
-    // PATCH 1: cabeçalho entre colchetes define contexto
-    const mHdr = line.match(/^\[(DESPESAS|PARCELAMENTOS)\]\b/i);
-    if(mHdr){
-      ctx = mHdr[1].toUpperCase(); // "DESPESAS" ou "PARCELAMENTOS"
-      pending=null; 
-      continue;
-    }
+    // incluir 2 linhas específicas (em R$)
+    let m=line.match(RX_COTACAO);
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) despesas.push({data:"",desc:"COTAÇÃO DÓLAR",valor:v}); continue; }
+    m=line.match(RX_IOF_EXT);
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v}); continue; }
 
-    // cabeçalhos “normais”
-    if(isDespesas(line)){ ctx="DESPESAS"; pending=null; continue; }
-    if(isParcelamentos(line)){ ctx="PARCELAMENTOS"; pending=null; continue; }
-    if(isCreditos(line)){ ctx="CREDITOS"; pending=null; continue; }
-    if(isResumo(line)){ ctx="RESUMO"; pending=null; continue; }
-
-    // IGNORAR: créditos/resumo/linhas explicativas/somatórios
-    if(ctx==="CREDITOS" || ctx==="RESUMO") continue;
-    if(rxIgnoreLines.some(re=>re.test(line))) continue;
-
-    // incluir “COTAÇÃO DÓLAR R$ …” e “IOF DESPESA NO EXTERIOR …”
-    let m=line.match(rxCotacaoDolar);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
-      tx.push({file:fileName,data:"",desc:"COTAÇÃO DÓLAR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
-      continue;
-    }
-    m=line.match(rxIOFExterior);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
-      tx.push({file:fileName,data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
-      continue;
-    }
-
-    // linha completa (parcelamento ou despesa)
-    let mm=null, origem=null;
-    mm = line.match(rxParcLine);
-    if(mm){ origem="Parcelamentos"; }
-    else { mm = line.match(rxDespesaLine); origem="Despesas"; }
+    // linha completa (prioridade)
+    let mm=null, tipo=null;
+    if((mm=line.match(RX_PARC))){ tipo="PARC"; }
+    else if((mm=line.match(RX_DESP))){ tipo="DESP"; }
 
     if(mm){
-      const valorStr=mm.groups?.valor||"";
-      if(rxNeg.test(valorStr)) continue;
-      const valor=parseBRL(valorStr); if(!isFinite(valor)||valor<=0) continue;
-      const data=mm.groups?.data||""; const desc=(mm.groups?.desc||"").trim();
-      tx.push({file:fileName,data,desc,valor,cat:categorize(desc),origem,sub:subscriptionRules.test(desc)});
-      pending=null; 
+      const vStr=mm.groups?.valor||""; if(RX_NEG.test(vStr)) continue;
+      const valor=parseBRL(vStr); if(!isFinite(valor)||valor<=0) continue;
+      const row={data:mm.groups?.data||"",desc:(mm.groups?.desc||"").trim(),valor};
+      (tipo==="PARC"?parcelamentos:despesas).push(row);
+      pending=null;
       continue;
     }
 
-    // quebrou em 2 linhas (data+desc agora, valor na próxima)
-    const startWithDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
-    if(startWithDate && !rxMoneyAny.test(line)){
-      const data = (line.match(/\d{2}\/\d{2}/)||[""])[0];
-      const desc = line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
-      pending = {data,desc,origem: (ctx==="PARCELAMENTOS"?"Parcelamentos":"Despesas")};
+    // linha 1 de 2 (data + descrição, sem valor)
+    const startsWithDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
+    if(startsWithDate && !RX_ANY_MONEY.test(line)){
+      const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
+      const desc=line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
+      pending={tipo:(ctx==="PARC"?"PARC":"DESP"), data, desc};
       continue;
     }
-    if(pending && rxBRLOnly.test(line)){
-      const vStr=line.match(rxBRLOnly)[1]; 
-      if(!rxNeg.test(vStr)){
+
+    // linha 2 de 2 (apenas valor)
+    if(pending && RX_BRL_ONLY.test(line)){
+      const vStr=line.match(RX_BRL_ONLY)[1];
+      if(!RX_NEG.test(vStr)){
         const valor=parseBRL(vStr);
         if(isFinite(valor)&&valor>0){
-          tx.push({file:fileName,data:pending.data,desc:pending.desc,valor,cat:categorize(pending.desc),origem:pending.origem,sub:subscriptionRules.test(pending.desc)});
-          pending=null; 
+          const row={data:pending.data,desc:pending.desc,valor};
+          (pending.tipo==="PARC"?parcelamentos:despesas).push(row);
+          pending=null;
           continue;
         }
       }
     }
 
-    // dentro do bloco, linha com R$ que não casou => suspeita (pra debug)
-    if((ctx==="DESPESAS"||ctx==="PARCELAMENTOS") && rxMoneyAny.test(line)){
-      misses.push({file:fileName, ctx, line});
+    // dentro do bloco, linha com R$ que não casou => suspeita
+    if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
+      (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
     }
   }
-  return {tx, misses};
+  return {despesas, parcelamentos, missDesp, missParc};
 }
 
-/* Parser do Resumo da Fatura */
-function parseResumo(colLines, fileName){
-  const out={file:fileName,saldoAnterior:0,jurosRemu:0,iof:0,jurosMora:0,multa:0,despesasBR:0,despesasEX:0,pagamentos:0,creditos:0,saldoFatura:0};
-  let inside=false;
-  for(const {text:raw} of colLines){
-    const line=raw.replace(/\u00A0/g,' ').trim();
-    if(/^Resumo da Fatura$/i.test(line)){ inside=true; continue; }
-    if(!inside) continue;
-    if(/^Detalhamento|^Central|^Ouvidoria|^SAC|^Compra/i.test(line)) break;
-    const g=(re)=>{const m=line.match(re); return m?parseBRL(m[1]):null;};
-    let v;
-    if((v=g(/Saldo Anterior\s+([\d\.,]+)/i))!=null) out.saldoAnterior=v;
-    if((v=g(/Juros Remunerat[óo]rios\s+([\d\.,]+)/i))!=null) out.jurosRemu=v;
-    if((v=g(/IOF\s+([\d\.,]+)/i))!=null) out.iof=v;
-    if((v=g(/Juros de Mora\s+([\d\.,]+)/i))!=null) out.jurosMora=v;
-    if((v=g(/Multa por Atraso\s+([\d\.,]+)/i))!=null) out.multa=v;
-    if((v=g(/Total Despesas\/D[eé]bitos no Brasil\s+([\d\.,]+)/i))!=null) out.despesasBR=v;
-    if((v=g(/Total Despesas\/D[eé]bitos no Exterior\s+([\d\.,]+)/i))!=null) out.despesasEX=v;
-    if((v=g(/Total de pagamentos\s+([\d\.,]+)/i))!=null) out.pagamentos=v;
-    if((v=g(/Total de cr[eé]ditos\s+([\d\.,]+)/i))!=null) out.creditos=v;
-    if((v=g(/Saldo Desta Fatura\s+([\d\.,]+)/i))!=null) out.saldoFatura=v;
+/* ========= Render ========= */
+function renderRows(tbody, rows){
+  tbody.innerHTML="";
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="mono">${r.data}</td><td>${r.desc}</td><td class="money">${BRL(r.valor)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function updateSums(desp, parc){
+  const sDesp=sum(desp,'valor'), sParc=sum(parc,'valor');
+  $$("#sumDespesas").textContent=BRL(sDesp);
+  $$("#sumParcel").textContent=BRL(sParc);
+  $$("#kDespTotal").textContent=BRL(sDesp);
+  $$("#kParcTotal").textContent=BRL(sParc);
+  $$("#kGeral").textContent=BRL(sDesp+sParc);
+  $$("#kDespCount").textContent=desp.length;
+  $$("#kParcCount").textContent=parc.length;
+  $$("#badgeDespesas").textContent=`${desp.length} itens`;
+  $$("#badgeParcelamentos").textContent=`${parc.length} itens`;
+}
+function renderMiss(box, misses){
+  if(!misses.length){ box.style.display="none"; box.innerHTML=""; return; }
+  box.style.display="block";
+  const byFile=misses.reduce((m,o)=>{(m[o.file]=m[o.file]||[]).push(o);return m;}, {});
+  let html="<b>Linhas com R$ não capturadas</b><br/>Se alguma é lançamento válido, me diga a linha para eu ajustar o padrão:";
+  for(const f in byFile){
+    html+=`<div style="margin-top:6px"><b>${f}</b><ul class="small">`;
+    byFile[f].slice(0,20).forEach(x=> html+=`<li><span class="mono">${x.line}</span></li>`);
+    if(byFile[f].length>20) html+=`<li>… (+${byFile[f].length-20})</li>`;
+    html+="</ul></div>";
   }
-  return out;
+  box.innerHTML=html;
 }
 
-/* ===== Estado ===== */
-let ALL_TX=[]; let RECON=[]; let MISSES=[];
-
-/* ===== UI & Fluxo ===== */
-const input=$$("#fileInput"), drop=$$("#dropzone");
-$$("#btnPick").addEventListener('click',()=>input.click());
-["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#35c48b'}));
-["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)'}));
-drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name))));
-input.addEventListener('change',e=>handleFiles([...e.target.files]));
-
-$$("#btnClear").addEventListener('click',()=>{
-  input.value=""; ALL_TX=[]; RECON=[]; MISSES=[];
-  $$("#filesInfo").textContent=""; renderRecon(); refreshFilters(); renderAll();
-});
-$$("#btnExport").addEventListener('click',()=>{
-  if(!ALL_TX.length) return alert("Nada para exportar.");
-  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
-  const header=["arquivo","data","descricao","categoria","valor","origem","assinatura"];
-  const rows=[header.join(";")];
-  ALL_TX.forEach(r=>rows.push([r.file,r.data,r.desc,r.cat,r.valor.toFixed(2),r.origem,r.sub?"sim":"não"].map(esc).join(";")));
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([rows.join("\n")],{type:'text/csv;charset=utf-8'}));
-  a.download=`transacoes-${new Date().toISOString().slice(0,10)}.csv`; a.click();
-});
+/* ========= Fluxo ========= */
+const input=$$("#fileInput"); $$("#btnPick").addEventListener('click',()=>input.click());
+input.addEventListener('change', e=>handleFiles([...e.target.files]));
+document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name)));});
+['dragover','dragenter'].forEach(ev=>document.querySelector('.drop').addEventListener(ev,e=>e.preventDefault()));
 
 async function handleFiles(files){
   if(!files?.length) return;
-  $$("#filesInfo").textContent=`Lendo ${files.length} fatura(s)...`;
-  let all=[], recon=[], missesTotal=[];
+  $$("#filesInfo").textContent=`Lendo ${files.length} arquivo(s)…`;
+  let allDesp=[], allParc=[], missD=[], missP=[];
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
-      const colLines=await extractColAwareLines(buf);
-      const {tx,misses}=parseTransacoes(colLines, f.name);
-      const r=parseResumo(colLines, f.name);
-      all=all.concat(tx); recon.push(r); missesTotal=missesTotal.concat(misses);
-    }catch(err){ console.error(err); alert(`Falha ao ler "${f.name}": ${err.message||err}`); }
+      const lines=await extractColAwareLines(buf);
+      const {despesas,parcelamentos,missDesp,missParc}=parseFatura(lines, f.name);
+      allDesp=allDesp.concat(despesas);
+      allParc=allParc.concat(parcelamentos);
+      missD=missD.concat(missDesp); missP=missP.concat(missParc);
+    }catch(err){ console.error(err); alert(`Erro lendo "${f.name}": ${err.message||err}`); }
   }
-  ALL_TX=all; RECON=recon; MISSES=missesTotal;
-  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Lançamentos capturados: ${ALL_TX.length}.`;
-  renderRecon(); refreshFilters(); renderAll();
-}
+  // ordena por data (dd/mm) e descrição
+  const ord=(a,b)=> (a.data||"").localeCompare(b.data||"") || a.desc.localeCompare(b.desc);
+  allDesp.sort(ord); allParc.sort(ord);
 
-/* ===== Reconciliação ===== */
-function renderRecon(){
-  const tb=$$("#tblRecon tbody"); tb.innerHTML="";
-  const chips=$$("#chipsRecon"); chips.innerHTML="";
-  const missBox=$$("#missList"); missBox.innerHTML="";
-
-  const sumByFile = {}; ALL_TX.forEach(t => { sumByFile[t.file]=(sumByFile[t.file]||0)+t.valor; });
-
-  const totalAnalise = sum(ALL_TX,'valor');
-  $$("#kTotal").textContent = BRL(totalAnalise);
-  $$("#kCount").textContent = ALL_TX.length;
-  const top = byCategory(ALL_TX)[0];
-  $$("#kTopCat").textContent = top ? `${top.cat} (${BRL(top.total)})` : "—";
-  $$("#kSubs").textContent = ALL_TX.filter(t=>t.sub).length;
-
-  RECON.forEach(r=>{
-    const cap = sumByFile[r.file] || 0;
-    const resumoDespesas = (r.despesasBR||0) + (r.despesasEX||0);
-    const diff = +(cap - resumoDespesas).toFixed(2);
-    const ok = Math.abs(diff) < 0.05;
-
-    const tr=document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.file} ${ok?'<span class="badge-ok">✔️</span>':'<span class="badge-warn">⚠️</span>'}</td>
-      <td class="money">${BRL(cap)}</td>
-      <td class="money">${BRL(resumoDespesas)}</td>
-      <td class="money" style="color:${ok?'#35c48b':'#ffb020'}">${BRL(diff)}</td>
-      <td class="money">${BRL(r.saldoFatura||0)}</td>
-    `;
-    tb.appendChild(tr);
-
-    const chip=document.createElement('span'); chip.className='tag';
-    chip.textContent=`${r.file}: capturadas ${BRL(cap)} • resumo ${BRL(resumoDespesas)} • diff ${BRL(diff)}`;
-    chips.appendChild(chip);
-  });
-
-  if(MISSES.length){
-    const byFile = MISSES.reduce((m,o)=>{ (m[o.file]=m[o.file]||[]).push(o); return m; }, {});
-    let html = `<div class="alert"><b>Linhas suspeitas não lidas</b> (têm R$ no bloco, mas não casaram — ajusto o padrão com base nisso):</div>`;
-    for(const file in byFile){
-      html += `<div style="margin-top:8px"><b>${file}</b><ul class="small">`;
-      byFile[file].slice(0,25).forEach(m => { html += `<li>[${m.ctx}] <span class="mono">${m.line}</span></li>`; });
-      if(byFile[file].length>25) html += `<li>… (+${byFile[file].length-25})</li>`;
-      html += `</ul></div>`;
-    }
-    missBox.innerHTML = html;
-  }
-}
-
-/* ===== Agregações & Render ===== */
-function byCategory(arr){
-  const m=new Map();
-  arr.forEach(t=>{
-    const a=m.get(t.cat)||{cat:t.cat,total:0,count:0};
-    a.total+=t.valor; a.count++; m.set(t.cat,a);
-  });
-  return [...m.values()].sort((a,b)=>b.total-a.total);
-}
-function refreshFilters(){
-  const cats=[...new Set(ALL_TX.map(t=>t.cat))].sort();
-  const sel=$$("#categoryFilter"); const cur=sel.value;
-  sel.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
-  if(cats.includes(cur)) sel.value=cur;
-}
-$$("#categoryFilter").addEventListener('change',()=>renderAll());
-$$("#searchBox").addEventListener('input',()=>renderAll());
-
-function renderAll(){
-  const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
-  const view=ALL_TX.filter(t=>(!cat||t.cat===cat)&&(!q||t.desc.toLowerCase().includes(q)));
-
-  const tbC=$$("#tblCats tbody"); tbC.innerHTML="";
-  const total=sum(view,'valor');
-  byCategory(view).forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="pill">${r.cat}</span></td>
-      <td class="money">${BRL(r.total)}</td>
-      <td>${(100*r.total/(total||1)).toFixed(1)}%</td>
-      <td>${r.count}</td>`;
-    tbC.appendChild(tr);
-  });
-
-  const tbT=$$("#tblTx tbody"); tbT.innerHTML="";
-  view.forEach(t=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="mono small">${t.file}</td>
-      <td class="mono">${t.data}</td>
-      <td>${t.desc}</td>
-      <td><span class="pill">${t.cat}</span></td>
-      <td class="money">${BRL(t.valor)}</td>
-      <td class="muted">${t.origem}</td>`;
-    tbT.appendChild(tr);
-  });
-
-  const cats=byCategory(view).map(r=>({k:r.cat,v:r.total}));
-  drawDonut($$("#chDonut").getContext('2d'), cats);
-  drawPareto($$("#chPareto").getContext('2d'), cats);
-
-  const top=byCategory(view);
-  const cut1=(top[0]?.total||0)*0.15, cut2=(top[1]?.total||0)*0.10, cutRest=top.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
-  const monthly = cut1+cut2+cutRest;
-  $$("#adviceBox").innerHTML = `Potencial mensal: <b style="color:#35c48b">${BRL(monthly)}</b> (15% em <b>${top[0]?.cat||"—"}</b>, 10% em <b>${top[1]?.cat||"—"}</b>, 7% em ${top.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')||'—'}).`;
-}
-
-/* ===== Gráficos ===== */
-function clearCanvas(ctx){const {width:w,height:h}=ctx.canvas; ctx.clearRect(0,0,w,h);}
-function drawDonut(ctx, data){
-  clearCanvas(ctx);
-  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
-  const r=Math.min(w,h)*0.32, cx=w/2, cy=h/2, hole=r*0.60;
-  const tot=data.reduce((s,d)=>s+d.v,0)||1; let a0=-Math.PI/2;
-  data.forEach((d,i)=>{
-    const a=a0+2*Math.PI*(d.v/tot);
-    ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
-    ctx.arc(cx,cy,r,a0,a); ctx.arc(cx,cy,hole,a,a0,true); ctx.fill();
-    a0=a;
-  });
-  ctx.fillStyle="#cfd6ff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.font="700 26px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), cx, cy-10);
-  ctx.font="500 14px ui-sans-serif"; ctx.fillText("Total", cx, cy+12);
-}
-function drawPareto(ctx,data){
-  clearCanvas(ctx);
-  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
-  const pad=50, plotW=w-2*pad, plotH=h-2*pad, x0=pad, y0=h-pad;
-  const tot=data.reduce((s,d)=>s+d.v,0)||1; const max=Math.max(...data.map(d=>d.v),1);
-  ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
-  let acc=0;
-  data.forEach((d,i)=>{
-    const step=plotW/data.length, x=x0+i*step+6, bw=step-12;
-    const hBar=(d.v/max)*plotH;
-    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`; ctx.fillRect(x,y0-hBar,bw,hBar);
-    acc+=d.v; const xC=x0+(i+0.5)*step, yC=y0-(acc/tot)*plotH;
-    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,6.283); ctx.fill();
-    if(i){const xP=x0+(i-0.5)*step, yP=y0-((acc-d.v)/tot)*plotH; ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();}
-  });
-  ctx.setLineDash([6,6]); ctx.strokeStyle="#ffb020aa";
-  const y80=y0-0.8*plotH; ctx.beginPath(); ctx.MoveTo; ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
-  ctx.setLineDash([]);
+  renderRows($$("#tblDespesas tbody"), allDesp);
+  renderRows($$("#tblParcel tbody"), allParc);
+  updateSums(allDesp, allParc);
+  renderMiss($$("#missDesp"), missD);
+  renderMiss($$("#missParc"), missP);
+  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Despesas: ${allDesp.length} • Parcelamentos: ${allParc.length}`;
 }
 </script>
 </body>
