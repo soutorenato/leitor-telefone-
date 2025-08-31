@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fatura Santander — Despesas x Parcelamentos (colunas corrigidas)</title>
+<title>Fatura Santander — Despesas x Parcelamentos (só R$)</title>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
 :root{--bg:#0f1221;--card:#171a2e;--ink:#eef2ff;--muted:#9aa3b2;--line:#2c3156;--chip:#232842;--accent:#5b8def}
@@ -38,7 +38,7 @@ tfoot td{font-weight:700}
 <body>
 <header>
   <h1>Fatura Santander — Despesas x Parcelamentos</h1>
-  <div class="muted">Leitura por coluna (corrige mistura de lados). Só soma a coluna em <b>R$</b>.</div>
+  <div class="muted">Somando só valores na coluna <b>R$</b>; leitura por coluna para não misturar lados.</div>
 </header>
 
 <main>
@@ -73,8 +73,8 @@ tfoot td{font-weight:700}
       <div class="bd">
         <table id="tblDespesas">
           <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
-        <tbody></tbody>
-        <tfoot><tr><td colspan="2">Total Despesas</td><td class="money" id="sumDespesas">—</td></tr></tfoot>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Total Despesas</td><td class="money" id="sumDespesas">—</td></tr></tfoot>
         </table>
         <div id="missDesp" class="alert" style="display:none"></div>
       </div>
@@ -85,8 +85,8 @@ tfoot td{font-weight:700}
       <div class="bd">
         <table id="tblParcel">
           <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
-        <tbody></tbody>
-        <tfoot><tr><td colspan="2">Total Parcelamentos</td><td class="money" id="sumParcel">—</td></tr></tfoot>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Total Parcelamentos</td><td class="money" id="sumParcel">—</td></tr></tfoot>
         </table>
         <div id="missParc" class="alert" style="display:none"></div>
       </div>
@@ -101,82 +101,72 @@ const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
 
-/* ===== PDF.js worker ===== */
+/* ===== PDF.js ===== */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* === Nova extração (colunas antes das linhas) === */
+/* --- Extrai tokens e separa por coluna ANTES de montar linhas --- */
 async function extractByColumns(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
   const all=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
     const {items}=await page.getTextContent();
-
-    // 1) Colete os tokens
     const toks=items.map(it=>{
       const m=it.transform||it.matrix||[1,0,0,1,0,0];
-      return {x:m[4], y:m[5], str: (it.str??"").trim()};
+      return {x:m[4], y:m[5], str:(it.str??"").trim()};
     }).filter(t=>t.str);
 
     if(!toks.length) continue;
 
-    // 2) 2-means em X (centros iniciais: minX e maxX)
+    // 2-means simples em X (define "corte" entre colunas)
     let c0=Math.min(...toks.map(t=>t.x)), c1=Math.max(...toks.map(t=>t.x));
     for(let i=0;i<8;i++){
       const L=[], R=[];
-      toks.forEach(t=> (Math.abs(t.x-c0) <= Math.abs(t.x-c1) ? L : R).push(t));
-      const nc0=L.length? L.reduce((s,t)=>s+t.x,0)/L.length : c0;
-      const nc1=R.length? R.reduce((s,t)=>s+t.x,0)/R.length : c1;
+      toks.forEach(t=> (Math.abs(t.x-c0)<=Math.abs(t.x-c1)?L:R).push(t));
+      const nc0=L.length?L.reduce((s,t)=>s+t.x,0)/L.length:c0;
+      const nc1=R.length?R.reduce((s,t)=>s+t.x,0)/R.length:c1;
       if(Math.abs(nc0-c0)<0.5 && Math.abs(nc1-c1)<0.5) break;
       c0=nc0; c1=nc1;
     }
     const cut=(Math.min(c0,c1)+Math.max(c0,c1))/2;
+    const left=toks.filter(t=>t.x<=cut), right=toks.filter(t=>t.x>cut);
 
-    // 3) Separe tokens por coluna
-    const left = toks.filter(t=>t.x<=cut);
-    const right= toks.filter(t=>t.x> cut);
-
-    const makeLines = (arr) => {
-      // agrupa por Y (tolerância) e monta textos ordenando por X
+    const makeLines = arr=>{
       const rows=new Map();
-      arr.forEach(t=>{
-        const yKey=Math.round(t.y); // arredonda para juntar pequenas variações
-        (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push(t);
-      });
+      arr.forEach(t=>{ const y=Math.round(t.y); (rows.get(y)??rows.set(y,[]).get(y)).push(t); });
       const lines=[];
       [...rows.keys()].sort((a,b)=>b-a).forEach(y=>{
         const r=rows.get(y).sort((a,b)=>a.x-b.x);
         const text=r.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
-        if(text){ lines.push({text,y,page:p}); }
+        if(text) lines.push({text,y,page:p});
       });
       return lines;
     };
 
-    const Llines=makeLines(left), Rlines=makeLines(right);
-    // concatena coluna esquerda primeiro, depois direita (ordem natural de leitura)
-    all.push(...Llines, ...Rlines);
+    all.push(...makeLines(left), ...makeLines(right));
   }
   return all; // [{text,y,page}]
 }
 
 /* ===== Regras de parsing ===== */
-// Linha completa (só a 1ª coluna em R$ — ignora US$)
-const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
-const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
-// Linha 2/2 (só valor em R$)
-const RX_BRL_ONLY = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
-// Qualquer valor (para marcar “suspeitas”)
-const RX_ANY_MONEY = /\d{1,3}(?:\.\d{3})*,\d{2}/;
-// Negativos (créditos)
-const RX_NEG = /(^|[\s(])-\d/;
+// CAPTURA SÓ O 1º VALOR (R$); 2º (US$) é opcional e ignorado
+const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
+const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 
-// Cabeçalhos (com e sem colchetes)
+// Linha 2/2 contendo apenas o valor em R$
+const RX_BRL_ONLY = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
+
+// Detecção auxiliar
+const RX_ANY_MONEY=/\d{1,3}(?:\.\d{3})*,\d{2}/;
+const RX_NEG=/(^|[\s(])-\d/;
+
+// Cabeçalhos
 const IS_DESP = l => /^Despesas$/i.test(l) || /^\[Despesas\]/i.test(l);
 const IS_PARC = l => /^Parcelamentos$/i.test(l) || /^\[Parcelamentos\]/i.test(l);
 const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
 const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
 
-// Ignorar textos explicativos/somatórios
+// Linhas a ignorar (somatórios e textos explicativos)
 const RX_IGNORE = [
   /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i,
   /^VALOR\s+TOTAL\b/i,
@@ -186,14 +176,13 @@ const RX_IGNORE = [
   /^\(\+\)|^\(-\)|^Saldo Anterior\b|^Saldo Desta Fatura\b/i
 ];
 
-// Itens do exterior em R$ (devem entrar)
-const RX_COTACAO = /^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i;
+// Somar apenas IOF exterior (em R$). NÃO somar “COTAÇÃO DÓLAR …”
 const RX_IOF_EXT = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
 
 /* ===== Parser ===== */
 function parseFatura(lines, fileName){
   const despesas=[], parcelamentos=[], missDesp=[], missParc=[];
-  let ctx="", pending=null; // pending={tipo:'DESP'|'PARC',data,desc}
+  let ctx="", pending=null; // pending={tipo:'DESP'|'PARC', data, desc}
 
   for(const {text:raw} of lines){
     const line=raw.replace(/\u00A0/g,' ').trim();
@@ -205,30 +194,33 @@ function parseFatura(lines, fileName){
     if(IS_CRED(line)){ ctx="CRED"; pending=null; continue; }
     if(IS_RESU(line)){ ctx="RESU"; pending=null; continue; }
 
-    if(ctx==="CRED" || ctx==="RESU") continue;           // fora do escopo
-    if(RX_IGNORE.some(r=>r.test(line))) continue;        // textos/somatórios
+    if(ctx==="CRED" || ctx==="RESU") continue;
+    if(RX_IGNORE.some(r=>r.test(line))) continue;
 
-    // cotações/IOF exterior (vêm em R$, ficam em Despesas)
-    let m=line.match(RX_COTACAO);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0){ despesas.push({data:"",desc:"COTAÇÃO DÓLAR",valor:v}); } continue; }
-    m=line.match(RX_IOF_EXT);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0){ despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v}); } continue; }
+    // IOF em R$ (entra como despesa)
+    let m=line.match(RX_IOF_EXT);
+    if(m){
+      const v=parseBRL(m[1]);
+      if(isFinite(v)&&v>0) despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v});
+      continue;
+    }
 
-    // linha completa
+    // linha completa (R$ capturado é SEMPRE o 1º número monetário)
     let mm=null, tipo=null;
     if((mm=line.match(RX_PARC))){ tipo="PARC"; }
     else if((mm=line.match(RX_DESP))){ tipo="DESP"; }
 
     if(mm){
-      const vStr=mm.groups?.valor||""; if(RX_NEG.test(vStr)) continue;
+      const vStr=mm.groups?.valor||"";
+      if(RX_NEG.test(vStr)) continue;
       const valor=parseBRL(vStr); if(!isFinite(valor)||valor<=0) continue;
       const row={data:mm.groups?.data||"",desc:(mm.groups?.desc||"").trim(),valor};
       (tipo==="PARC"?parcelamentos:despesas).push(row);
       pending=null; continue;
     }
 
-    // linha quebrada (data+desc agora, valor depois)
-    const hasDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
+    // linha quebrada: data+desc agora, valor na próxima
+    const hasDate=/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
     if(hasDate && !RX_ANY_MONEY.test(line)){
       const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
       const desc=line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
@@ -247,7 +239,7 @@ function parseFatura(lines, fileName){
       }
     }
 
-    // dentro de bloco, tem R$ e não casou => logar como “suspeita”
+    // dentro do bloco com R$ que não casou => log como “suspeita”
     if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
       (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
     }
@@ -303,7 +295,7 @@ async function handleFiles(files){
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
-      const colLines=await extractByColumns(buf);               // 💥 colunas primeiro
+      const colLines=await extractByColumns(buf);
       const {despesas,parcelamentos,missDesp,missParc}=parseFatura(colLines, f.name);
       allDesp=allDesp.concat(despesas);
       allParc=allParc.concat(parcelamentos);
