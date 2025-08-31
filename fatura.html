@@ -150,11 +150,13 @@ const categoryRules = [
 const categorize = (desc)=> (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
 
 /* ================= PDF.js ================= */
+/* IMPORTANTE: desativa o worker para rodar via file:// sem erro de origem */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
 /* === Extrai tokens, separa por coluna e só depois monta linhas === */
 async function extractByColumns(arrayBuffer){
-  const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  // desativa o worker para evitar erro “Failed to construct 'Worker'” quando abrir o HTML local
+  const pdf=await pdfjsLib.getDocument({data:arrayBuffer, disableWorker:true}).promise;
   const all=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
@@ -286,7 +288,7 @@ function parseFatura(lines, fileName){
 }
 
 /* ================= Estado ================= */
-let DESP=[], PARC=[], MISS_D=[], MISS_P[];
+let DESP=[], PARC=[], MISS_D=[], MISS_P=[];
 
 /* ================= Renderização ================= */
 function renderRows(tbody, rows){
@@ -391,7 +393,6 @@ function buildPrompt(){
 "Despesas (Data | Descrição | Categoria | R$):"
   ].join("\n");
 
-  // amostras (até 50 linhas de cada para evitar prompt gigante)
   const despLines = DESP.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
   const parcLines = PARC.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
   const rankBlock = tableToText(base);
