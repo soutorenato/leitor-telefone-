@@ -125,37 +125,72 @@ const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
 
-/* ================= Categorias (regras) ================= */
+/* ================= Categorias (regras — ampliadas) ================= */
 const categoryRules = [
-  { cat:"Combustível",           rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC|SHELL|IPIRANGA)/i },
-  { cat:"Pedágio/Tag & Vias",    rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
-  { cat:"Transporte (Apps)",     rx: /\bUBER\b|\b99\b/i },
-  { cat:"Estacionamento",        rx: /(ESTAPAR|ESTACIONAMENTO|PARK)/i },
-  { cat:"Supermercado",          rx: /(SUPERMERCADO|ATACADISTA|ATACAREJO|REDE ROFATTO|CINCO M COM ATACADISTA|DU BAIRRO)/i },
-  { cat:"Padaria/Lanches",       rx: /(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|PASTEL|ACA[IÍ]|PUMILA|CABANA DO ACAI|PADARIA INDIANA)/i },
-  { cat:"Restaurantes",          rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|TENNESSEE|ZIG\*CANA|CHICO CUCA)/i },
-  { cat:"Saúde/Farmácia",        rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA|REMEDIOPOPULAR)/i },
-  { cat:"Pets",                  rx: /(PETZ|PET SHOP)/i },
-  { cat:"Assinaturas/Apps",      rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|MICROSOFT|ADOBE|GLOBO PREMIERE)/i },
-  { cat:"Educação/Livros",       rx: /(LIVRARIA|CURSO|ESCOLA|HEDRA|HEDRA INC|ED TECH)/i },
-  { cat:"Compras Online",        rx: /(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i },
-  { cat:"Beleza/Estética",       rx: /(SAL[AÃ]O|BELEZA|SPA|CONCETTO|EST[IÍ]TICA|SEPHORA)/i },
-  { cat:"Auto/Serviços",         rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|SERVI[CÇ]OS)/i },
-  { cat:"Viagem/Hospedagem",     rx: /(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i },
-  { cat:"Bancos/Serviços",       rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
-  { cat:"Impostos/Exterior",     rx: /(IOF DESPESA NO EXTERIOR)/i },
-  { cat:"Juros/Parcelamento",    rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|ENCARGOS|JUROS)/i },
-  { cat:"Outros",                rx: /.*/i }
+  /* Combustível */
+  { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC|SHELL|IPIRANGA|FORCA AEREA\s*LT?D?)/i },
+
+  /* Pedágio/Tag & Vias */
+  { cat:"Pedágio/Tag & Vias", rx: /(SEM PARAR|CONCESSIONARIA|RODOANEL|ECOPISTA|AUTOBAN|BANDEIRANTES|23M-?\s*23 DE MAIO)/i },
+
+  /* Transporte por apps */
+  { cat:"Transporte (Apps)", rx: /\bUBER\b|\b99\b/i },
+
+  /* Estacionamento / Garagem */
+  { cat:"Estacionamento", rx: /(ESTAPAR|ESTACIONAMENTO|SEMPREPARK|RANK ESTACIONAMENTO|GARAGEM\s+ITAPRIAS)/i },
+
+  /* Supermercado / alimentos p/ casa */
+  { cat:"Supermercado", rx: /(SUPERMERCADO|ATACADISTA|ATACAREJO|CINCO M COM ATACADISTA|DU BAIRRO|COMERCIO DE ALIM)/i },
+
+  /* Padaria / lanches rápidos */
+  { cat:"Padaria/Lanches", rx: /(PADARIA|PANIFICADORA|LANCHONETE|PA(E|É)S E DOCES|CABANA DO ACAI|PUMILA|INDIANA|ORQUIDEA PUMILA|LANC(H|)ES SABORES)/i },
+
+  /* Restaurantes */
+  { cat:"Restaurantes", rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|TENNESSEE|ZIG\*CANA|SOCRATESPIZZABAR|JERONIMO(W|)|JERONIMOB?URGER)/i },
+
+  /* Saúde / farmácia */
+  { cat:"Saúde/Farmácia", rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA)/i },
+
+  /* Pets */
+  { cat:"Pets", rx: /(PETZ|PET SHOP)/i },
+
+  /* Assinaturas e apps */
+  { cat:"Assinaturas/Apps", rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|MICROSOFT|ADOBE|GLOBO PREMIERE)/i },
+
+  /* Educação / livros */
+  { cat:"Educação/Livros", rx: /(LIVRARIA|CURSO|ESCOLA|HEDRA|HEDRA INC|ED TECH|PG \*4U ED TECH)/i },
+
+  /* Compras online (marketplaces e pagamentos) */
+  { cat:"Compras Online", rx: /(AMAZONMKTPLC|AMAZON BR|MERCADOPAGO|MARKETPLACE|AMAZONMKTPLC\*|VEND PERTO MACHINES)/i },
+
+  /* Beleza / estética */
+  { cat:"Beleza/Estética", rx: /(SAL[AÃ]O|BELEZA|SPA|CONCETTO|EST[IÍ]TICA|SEPHORA|SEPHORAJK|SPA MORUMBI)/i },
+
+  /* Auto / serviços automotivos */
+  { cat:"Auto/Serviços", rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|SERVI[CÇ]OS\s+AUTOMOTIVO|AUTOMOTIVO LAGOS ANDIN)/i },
+
+  /* Viagem / hospedagem / locadora */
+  { cat:"Viagem/Hospedagem", rx: /(AIRBNB|LOCALIZA(?:\sRAC)?|UNIDAS|BOOKING|HOTEL)/i },
+
+  /* Banco / serviços financeiros do cartão */
+  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
+
+  /* Impostos/Exterior (se vier numa linha de item válida) */
+  { cat:"Impostos/Exterior", rx: /(IOF DESPESA NO EXTERIOR)/i },
+
+  /* Juros e parcelamento da fatura */
+  { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|ENCARGOS|JUROS)/i },
+
+  /* Fallback */
+  { cat:"Outros", rx: /.*/i }
 ];
 const categorize = (desc)=> (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
 
 /* ================= PDF.js ================= */
-/* IMPORTANTE: desativa o worker para rodar via file:// sem erro de origem */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
 /* === Extrai tokens, separa por coluna e só depois monta linhas === */
 async function extractByColumns(arrayBuffer){
-  // desativa o worker para evitar erro “Failed to construct 'Worker'” quando abrir o HTML local
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer, disableWorker:true}).promise;
   const all=[];
   for(let p=1;p<=pdf.numPages;p++){
@@ -197,7 +232,6 @@ async function extractByColumns(arrayBuffer){
 }
 
 /* ================= Regras de parsing ================= */
-/* captura somente o 1º valor (R$); um 2º (US$) no fim é ignorado */
 const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 
@@ -211,7 +245,7 @@ const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
 const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
 
 const RX_IGNORE = [
-  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // somatório
+  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i,
   /^VALOR\s+TOTAL\b/i,
   /^\*?\s*Juros\s*=\s*[\d\.,]+\s*\/\s*IOF\s*=\s*[\d\.,]+/i,
   /CET\s*[:\d,\.%]/i,
@@ -288,7 +322,7 @@ function parseFatura(lines, fileName){
 }
 
 /* ================= Estado ================= */
-let DESP=[], PARC=[], MISS_D=[], MISS_P=[];
+let DESP=[], PARC=[], MISS_D=[], MISS_P[];
 
 /* ================= Renderização ================= */
 function renderRows(tbody, rows){
