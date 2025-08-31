@@ -136,10 +136,10 @@ const categoryRules = [
   { cat:"Restaurantes",          rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|TENNESSEE|ZIG\*CANA|CHICO CUCA)/i },
   { cat:"Saúde/Farmácia",        rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA|REMEDIOPOPULAR)/i },
   { cat:"Pets",                  rx: /(PETZ|PET SHOP)/i },
-  { cat:"Assinaturas/Apps",      rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|MICROSOFT|ADOBE)/i },
+  { cat:"Assinaturas/Apps",      rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|MICROSOFT|ADOBE|GLOBO PREMIERE)/i },
   { cat:"Educação/Livros",       rx: /(LIVRARIA|CURSO|ESCOLA|HEDRA|HEDRA INC|ED TECH)/i },
   { cat:"Compras Online",        rx: /(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i },
-  { cat:"Beleza/Estética",       rx: /(SAL[AÃ]O|BELEZA|SPA|CONCETTO|EST[IÍ]TICA)/i },
+  { cat:"Beleza/Estética",       rx: /(SAL[AÃ]O|BELEZA|SPA|CONCETTO|EST[IÍ]TICA|SEPHORA)/i },
   { cat:"Auto/Serviços",         rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|SERVI[CÇ]OS)/i },
   { cat:"Viagem/Hospedagem",     rx: /(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i },
   { cat:"Bancos/Serviços",       rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
@@ -286,7 +286,7 @@ function parseFatura(lines, fileName){
 }
 
 /* ================= Estado ================= */
-let DESP=[], PARC=[], MISS_D=[], MISS_P=[];
+let DESP=[], PARC=[], MISS_D=[], MISS_P[];
 
 /* ================= Renderização ================= */
 function renderRows(tbody, rows){
@@ -363,6 +363,7 @@ function tableToText(rows){
 function buildPrompt(){
   const includeParc=$$("#chkIncluiParc").checked;
   const base = includeParc ? DESP.concat(PARC) : DESP.slice();
+
   const prompt = [
 "Você é meu consultor financeiro. Abaixo estão os dados da minha fatura (extraídos do meu site).",
 "Analise considerando apenas a coluna “R$”.",
@@ -373,15 +374,26 @@ function buildPrompt(){
 "3) Traga oportunidades de economia (curto/médio/longo prazo).",
 "4) Calcule economia se eu cortar 20% nas 3 maiores categorias.",
 "5) Sugira metas de gasto por categoria (% do total) e ideias de substituição.",
+"6) Analise também quais compras têm potencial de acionar o benefício “Proteção de Preço” do meu cartão Visa Infinite, respeitando a regra de até 30 dias da compra:",
+"   - Destaque apenas produtos elegíveis (ex.: eletrônicos, cosméticos, perfumes, livros, peças automotivas).",
+"   - Ignore serviços não cobertos (ex.: restaurantes, combustíveis, assinaturas, juros).",
+"   - Para cada item elegível, mostre: valor pago, categoria e onde pesquisar preço menor.",
+"   - Estime quanto eu poderia economizar se encontrar 10–20% de desconto nesses itens.",
+"7) Crie também um roteiro de apresentação em PowerPoint, estruturado em 5–8 slides, com os seguintes pontos:",
+"   - Resumo da análise de gastos (gráficos/ranking).",
+"   - Principais oportunidades de economia.",
+"   - Impacto financeiro estimado (corte de 20% nas 3 maiores categorias).",
+"   - Sugestões de uso de benefícios do cartão Unique Visa Infinite.",
+"   - Potencial de economia com Proteção de Preço.",
+"   - Plano de ação final.",
 "",
 "---",
 "Despesas (Data | Descrição | Categoria | R$):"
   ].join("\n");
 
-  // Monta pequenas amostras tabulares de despesas e parcelamentos (até 50 linhas cada para não ficar gigante)
+  // amostras (até 50 linhas de cada para evitar prompt gigante)
   const despLines = DESP.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
   const parcLines = PARC.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
-
   const rankBlock = tableToText(base);
 
   return [
