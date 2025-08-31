@@ -146,8 +146,29 @@ const categoryRules = [
   { cat:"Impostos/Exterior",     rx: /(IOF DESPESA NO EXTERIOR)/i },
   { cat:"Juros/Parcelamento",    rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|ENCARGOS|JUROS)/i },
   { cat:"Outros",                rx: /.*/i }
+  { cat:"Amazon/Online", rx: /(AMAZON BR|AMAZONMKTPLC|MERCADOPAGO)/i },
+  { cat:"Alimentação fora", rx: /(FEIJOADA|PIZZABAR|LANCHES SABORES|CESAR AUGUSTO)/i },
+  { cat:"Comércio variado", rx: /(OBDE|JDM|JERONIMO|LUCI MARA|VEND PERTO)/i },
+  { cat:"Serviços locais", rx: /(GARAGEM|ESTACIONAMENTO|PINHEIROS)/i },
+  { cat:"Presentes/Floricultura", rx: /(FLOR DO PARAISO|FLORICULTURA)/i },
+  { cat:"Produtos Consumo", rx: /(PRODUTOS GLOBO)/i },
+  { cat:"Tecnologia", rx: /(HOSTGATOR|SERVIDOR|SITE)/i },
+  { cat:"Beleza/Essências", rx: /(NATAL ESSENCIAS|PERFUME|ESSENCIA)/i },
+  { cat:"Serviços Profissionais", rx: /(PROPIG|CONSULTORIA)/i },
+  { cat:"Transferência/PF", rx: /(PRISCILA DE BRITO|PAGAMENTO PESSOA)/i }
 ];
-const categorize = (desc)=> (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
+
+/* Função ajustada */
+function categorize(desc){
+  // 1ª camada: regras principais
+  let cat = (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
+  // 2ª camada: se ficou em "Outros", tentar subcategorizar
+  if(cat==="Outros"){
+    const sub = subCategoryRules.find(r=>r.rx.test(desc));
+    if(sub) cat = sub.cat;
+  }
+  return cat;
+}
 
 /* ================= PDF.js ================= */
 /* IMPORTANTE: desativa o worker para rodar via file:// sem erro de origem */
