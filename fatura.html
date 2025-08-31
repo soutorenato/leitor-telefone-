@@ -3,14 +3,21 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Analisador PRO – Fatura Santander (com Resumo Oficial)</title>
+<title>Analisador de Fatura Santander (somando só R$)</title>
+<!-- Leitura de PDFs (somente local no navegador) -->
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
-:root{--bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;--ok:#35c48b;--warn:#ffb020;--bad:#ff5f7a;--chip:#232842;--bar:#2a2f52;--line:#2c3156}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+:root{
+  --bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;
+  --ok:#35c48b;--warn:#ffb020;--bad:#ff5f7a;--chip:#232842;--bar:#2a2f52;--line:#2c3156;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:500 14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
 header{padding:18px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-header h1{font-size:18px;margin:0}.hint{color:var(--muted)}
-main{padding:18px;display:grid;gap:18px;grid-template-columns:1.1fr 2fr}
+header h1{font-size:18px;margin:0}
+.hint{color:var(--muted)}
+main{padding:18px;display:grid;gap:18px;grid-template-columns:1.05fr 2fr}
 @media(max-width:1100px){main{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px dashed var(--line)}
@@ -19,21 +26,25 @@ main{padding:18px;display:grid;gap:18px;grid-template-columns:1.1fr 2fr}
 .drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
 .drop input{display:none}.drop .inner{text-align:center}
 .btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}.btn.secondary{background:transparent}.btnbar{display:flex;gap:8px;flex-wrap:wrap}
+.btn:hover{border-color:var(--accent)}.btn.secondary{background:transparent}
+.btnbar{display:flex;gap:8px;flex-wrap:wrap}
 .srch{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:8px;padding:8px 10px}
-.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.right{margin-left:auto}.muted{color:var(--muted)}
+.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.right{margin-left:auto}
+.muted{color:var(--muted)}
 .mono{font-family:ui-monospace,SFMono,Consolas,monospace}
-.statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-@media(max-width:1200px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:1100px){.statgrid{grid-template-columns:1fr 1fr}}
 .stat{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.stat .k{font-size:12px;color:var(--muted)}.stat .v{font-size:18px;margin-top:4px}.money{font-variant-numeric:tabular-nums}
+.stat .k{font-size:12px;color:var(--muted)} .stat .v{font-size:18px;margin-top:4px} .money{font-variant-numeric:tabular-nums}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .tag{background:var(--chip);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
 h3{margin:16px 0 10px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
 canvas{width:100%;height:240px;display:block;background:#12162b;border:1px solid var(--line);border-radius:10px}
-table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
 .alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
@@ -42,11 +53,12 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
 </head>
 <body>
 <header>
-  <h1>🔎 Analisador PRO – Fatura Santander</h1>
-  <div class="hint">Agora com o <b>Saldo desta fatura (Resumo)</b> idêntico ao valor do PDF.</div>
+  <h1>🔎 Analisador de Fatura Santander</h1>
+  <div class="hint">Somando <b>somente a coluna em Real (R$)</b> e ignorando a coluna em US$.</div>
 </header>
 
 <main>
+  <!-- Coluna esquerda: Entrada & KPIs -->
   <section class="card">
     <div class="hd">
       <h2>Upload de Faturas</h2>
@@ -62,21 +74,24 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
         <input id="fileInput" type="file" accept="application/pdf" multiple />
         <div class="inner">
           <div style="font-size:15px;margin-bottom:6px">Arraste PDFs aqui ou clique em <b>Selecionar PDFs</b></div>
-          <div class="muted">Pode carregar várias faturas</div>
+          <div class="muted">Tudo roda local, no seu navegador.</div>
         </div>
       </label>
       <div id="filesInfo" class="muted" style="margin-top:8px"></div>
+
       <div class="statgrid" style="margin-top:12px">
-        <div class="stat"><div class="k">Total analisado (Despesas+Parcelamentos)</div><div class="v money" id="kTotal">—</div></div>
+        <div class="stat"><div class="k">Total analisado (R$ das despesas + parcelamentos)</div><div class="v money" id="kTotal">—</div></div>
         <div class="stat"><div class="k">Transações</div><div class="v" id="kCount">—</div></div>
         <div class="stat"><div class="k">Maior categoria</div><div class="v" id="kTopCat">—</div></div>
         <div class="stat"><div class="k">Assinaturas detectadas</div><div class="v" id="kSubs">—</div></div>
-        <div class="stat"><div class="k">Saldo desta fatura (Resumo)</div><div class="v money" id="kSaldoResumo">—</div></div>
       </div>
-      <div class="tags" id="chipsResumos"></div>
+
+      <div class="tags" id="quickChips"></div>
+      <div class="muted" style="margin-top:6px">Dica: filtre por texto com <span class="kbd">Ctrl/⌘</span>+<span class="kbd">F</span>.</div>
     </div>
   </section>
 
+  <!-- Coluna direita: Gráficos & Tabelas -->
   <section class="card">
     <div class="hd">
       <h2>Visão Analítica</h2>
@@ -110,47 +125,54 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
       </table>
 
       <h3 style="margin-top:16px">Plano de economia sugerido</h3>
-      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades com números.</div>
+      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades de economia com números.</div>
     </div>
   </section>
 </main>
 
 <script>
-/* Utils */
-const $$=s=>document.querySelector(s);
-const BRL=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const parseBRL=s=>Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
-const pct=(v,t)=>t>0?(v*100/t):0;
+/* ===========================
+   Utilidades
+=========================== */
+const $$ = s => document.querySelector(s);
+const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct = (v,tot)=> tot>0 ? (v*100/tot) : 0;
+const parseBRLToNumber = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 
-/* Categorias (ajuste se quiser) */
-const categoryRules=[
-  {cat:"Combustível",rx:/(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC)/i},
-  {cat:"Pedágio/Tag & Vias",rx:/(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES|SAO JOSE|CACAPAVA|0 PINHEIROS)/i},
-  {cat:"Transporte (Apps)",rx:/\bUBER\b|\b99\b/i},
-  {cat:"Estacionamento",rx:/(ESTAPAR|ESTACIONAMENTO|PARK)/i},
-  {cat:"Supermercado",rx:/(SUPERMERCADO|ATACADISTA|REDE ROFATTO|CINCO M COM ATACADISTA|DU BAIRRO)/i},
-  {cat:"Padaria/Lanches",rx:/(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|PASTEL|ACA[IÍ]|PUMILA|LAUFRUTAS|CABANA DO ACAI)/i},
-  {cat:"Restaurantes",rx:/(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|RASCAL|DONA PINHA|SAOPAULOGRILLBAR|SABOR GRILL|MATSUYA|PIZZA|PASTEL)/i},
-  {cat:"Saúde/Farmácia",rx:/(DROGARIA|RAIA|DROGASIL|REMEDIOPOPULAR)/i},
-  {cat:"Pets",rx:/(PETZ|PET SHOP)/i},
-  {cat:"Assinaturas/Apps",rx:/(APPLE COM\/BILL|AMAZON (?:DIGITAL|MUSIC)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|GLOBO|SPOTIFY|MICROSOFT|ADOBE)/i},
-  {cat:"Educação/Livros",rx:/(LIVRARIA|CURSO|ESCOLA|HEDRA)/i},
-  {cat:"Compras Online",rx:/(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i},
-  {cat:"Beleza/Estética",rx:/(SAL[AÃ]O|BELEZA|SPA|CONCETTO)/i},
-  {cat:"Auto/Serviços",rx:/(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|AUTO POSTO)/i},
-  {cat:"Viagem/Hospedagem",rx:/(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i},
-  {cat:"Serviços Online",rx:/(HOSTGATOR|DOM[IÍ]NIO|HOSPEDAGEM)/i},
-  {cat:"Juros/Parcelamento",rx:/(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|JUROS|ENCARGOS)/i},
-  {cat:"Tarifas/Anuidade",rx:/(ANUIDADE|TARIFA)/i},
-  {cat:"Bancos/Serviços",rx:/(SCP PLUS|SEGURO CART[AÃ]O)/i},
-  {cat:"Outros",rx:/.*/i}
+/* ===========================
+   Categorias (edite se quiser)
+=========================== */
+const categoryRules = [
+  { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC)/i },
+  { cat:"Pedágio/Tag & Vias", rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
+  { cat:"Transporte (Apps)", rx: /\bUBER\b|\b99\b/i },
+  { cat:"Estacionamento", rx: /(ESTAPAR|ESTACIONAMENTO|PARK)/i },
+  { cat:"Supermercado", rx: /(SUPERMERCADO|ATACADISTA|ATACAREJO|REDE ROFATTO|CINCO M COM ATACADISTA|DU BAIRRO)/i },
+  { cat:"Padaria/Lanches", rx: /(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|PASTEL|ACA[IÍ]|PUMILA|CABANA DO ACAI|LAUFRUTAS)/i },
+  { cat:"Restaurantes", rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|RASCAL|TENNESSEE|ZIG\*CANA|SABOR)/i },
+  { cat:"Saúde/Farmácia", rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA|REMEDIOPOPULAR)/i },
+  { cat:"Pets", rx: /(PETZ|PET SHOP)/i },
+  { cat:"Assinaturas/Apps", rx: /(APPLE COM\/BILL|AMAZON (?:MUSIC|DIGITAL|PRIME)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE)/i },
+  { cat:"Educação/Livros", rx: /(LIVRARIA|CURSO|ESCOLA|HEDRA)/i },
+  { cat:"Compras Online", rx: /(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i },
+  { cat:"Beleza/Estética", rx: /(SAL[AÃ]O|BELEZA|SPA|CAPELLI|CONCETTO)/i },
+  { cat:"Auto/Serviços", rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA|AUTO POSTO)/i },
+  { cat:"Viagem/Hospedagem", rx: /(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i },
+  { cat:"Serviços Online", rx: /(HOSTGATOR|DOM[IÍ]NIO|HOSPEDAGEM)/i },
+  { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|JUROS|ENCARGOS)/i },
+  { cat:"Tarifas/Anuidade", rx: /(ANUIDADE|TARIFA)/i },
+  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
+  { cat:"Impostos/Exterior", rx: /(COTA[ÇC][AÃ]O D[ÓO]LAR|IOF DESPESA NO EXTERIOR)/i },
+  { cat:"Outros", rx: /.*/i }
 ];
-const subscriptionRules=/(APPLE COM\/BILL|AMAZON (?:MUSIC|PRIME|DIGITAL)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE|PREMIERE)/i;
 
-/* pdf.js */
+const subscriptionRules = /(APPLE COM\/BILL|AMAZON (?:MUSIC|PRIME|DIGITAL)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE|PREMIERE)/i;
+
+/* ===========================
+   pdf.js
+=========================== */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* Leitura texto */
 async function extractLinesFromPDF(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
   const lines=[];
@@ -159,8 +181,10 @@ async function extractLinesFromPDF(arrayBuffer){
     const content=await page.getTextContent();
     const rows=new Map();
     for(const it of content.items){
-      const str=it.str??""; const tr=it.transform||it.matrix||[1,0,0,1,0,0];
-      const x=tr[4],y=tr[5]; const yKey=Math.round(y);
+      const str=it.str??"";
+      const tr=it.transform||it.matrix||[1,0,0,1,0,0];
+      const x=tr[4],y=tr[5];
+      const yKey=Math.round(y);
       (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str});
     }
     const yKeys=[...rows.keys()].sort((a,b)=>b-a);
@@ -173,101 +197,135 @@ async function extractLinesFromPDF(arrayBuffer){
   return lines;
 }
 
-/* Parsers */
-const rxDespesa=/^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
-const rxParc   =/^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
-const rxNeg    =/(^|[\s(])-\d/;
+/* ===========================
+   PARSERS
+=========================== */
+/* ⚠️ REGEX PRINCIPAL (somente R$)
+   - captura a data e a descrição
+   - captura APENAS o PRIMEIRO valor em R$ (coluna em real)
+   - ignora qualquer outro valor na sequência (ex.: coluna em US$)
+*/
+const rxDespesa = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
 
-function categorize(desc){ const r=categoryRules.find(r=>r.rx.test(desc)); return r?r.cat:"Outros"; }
+/* Parcelamentos (também só captura o primeiro valor em R$) */
+const rxParc = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
 
-function parseTransacoes(lines){
-  const tx=[]; let ctx=null;
+const rxNegativo = /(^|[\s(])-\d/;
+
+function categorize(desc){ const r=categoryRules.find(r=>r.rx.test(desc)); return r? r.cat : "Outros"; }
+
+function parseFromLines(lines){
+  const tx=[]; let ctx=null; // DESPESAS | PARCELAMENTOS | CREDITOS
   for(const raw of lines){
     const line=raw.replace(/\u00A0/g,' ').trim();
-    if(/^\s*Despesas\s*$/i.test(line)) {ctx="DESPESAS"; continue;}
-    if(/^\s*Parcelamentos\s*$/i.test(line)) {ctx="PARCELAMENTOS"; continue;}
-    if(/^\s*Pagamento e Demais Créditos\s*$/i.test(line)) {ctx="CREDITOS"; continue;}
+
+    // Alternância de blocos
+    if(/^Despesas$/i.test(line)){ ctx="DESPESAS"; continue; }
+    if(/^Parcelamentos$/i.test(line)){ ctx="PARCELAMENTOS"; continue; }
+    if(/^Pagamento e Demais Créditos$/i.test(line)){ ctx="CREDITOS"; continue; }
     if(ctx==="CREDITOS") continue;
-    if(/^(Compra|VALOR TOTAL|Detalhamento|Resumo da Fatura|Pagamento|Histórico|COTAÇÃO|IOF|DEMONSTRATIVO|Opções|Total a Pagar|Melhor Data|Seu Limite|Central|Ouvidoria|SAC|Explore)/i.test(line)) continue;
 
-    let m=null,origem=null;
-    if(ctx==="PARCELAMENTOS"){ m=line.match(rxParc); origem="Parcelamentos"; }
-    else { m=line.match(rxDespesa); origem="Despesas"; }
-    if(!m) continue;
+    // Linhas de exterior em R$ (devem entrar)
+    let m;
+    m = line.match(/^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i);
+    if(m){
+      const v=parseBRLToNumber(m[1]);
+      if(isFinite(v) && v>0) tx.push({data:"", desc:"COTAÇÃO DÓLAR", valor:v, cat:"Impostos/Exterior", origem:"Despesas", sub:false});
+      continue;
+    }
+    m = line.match(/^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i);
+    if(m){
+      const v=parseBRLToNumber(m[1]);
+      if(isFinite(v) && v>0) tx.push({data:"", desc:"IOF DESPESA NO EXTERIOR", valor:v, cat:"Impostos/Exterior", origem:"Despesas", sub:false});
+      continue;
+    }
 
-    const vStr=m.groups?.valor||""; if(rxNeg.test(vStr)) continue;
-    const [dd,mm]=(m.groups?.data||"").split('/');
-    const desc=(m.groups?.desc||"").trim();
-    const valor=parseBRL(vStr); if(!isFinite(valor)||valor<=0) continue;
-    tx.push({data:`${dd}/${mm}`,desc,valor,cat:categorize(desc),origem,sub:subscriptionRules.test(desc)});
+    // Ignorar cabeçalhos gerais
+    if(/^(Compra|VALOR TOTAL|Detalhamento|Resumo da Fatura|Pagamento|Histórico|COTAÇÃO|IOF|DEMONSTRATIVO|Opções|Total a Pagar|Melhor Data|Seu Limite|Central|Ouvidoria|SAC|Explore|Vencimento)/i.test(line)) continue;
+
+    // Tenta casar com despesa/parcelamento
+    let mm=null, origem=null;
+    if(ctx==="PARCELAMENTOS"){ mm=line.match(rxParc); origem="Parcelamentos"; }
+    else { mm=line.match(rxDespesa); origem="Despesas"; }
+    if(!mm) continue;
+
+    const valorStr=mm.groups?.valor||"";
+    if(rxNegativo.test(valorStr)) continue; // ignora créditos/estornos
+    const valor=parseBRLToNumber(valorStr);
+    if(!isFinite(valor) || valor<=0) continue;
+
+    const data=mm.groups?.data||"";
+    const desc=(mm.groups?.desc||"").trim();
+    const cat=categorize(desc);
+    const sub=subscriptionRules.test(desc);
+
+    tx.push({data, desc, valor, cat, origem, sub});
   }
   return tx;
 }
 
-/* NOVO: parser do "Resumo da Fatura" */
-function parseResumo(lines){
-  const out={saldoAnterior:0, jurosRemu:0, iof:0, jurosMora:0, multa:0, despesasBR:0, despesasEX:0, pagamentos:0, creditos:0, saldoFatura:0};
-  let inside=false;
-  for(const raw of lines){
-    const line=raw.replace(/\u00A0/g,' ').trim();
-    if(/^Resumo da Fatura$/i.test(line)){ inside=true; continue; }
-    if(!inside) continue;
-    // Para, se chegou no fim do bloco (heurística)
-    if(/^RENATO|^LETICIA|^@ |^Detalhamento|^Central|^Ouvidoria/i.test(line)) break;
+/* ===========================
+   ESTADO & AGREGAÇÃO
+=========================== */
+let ALL_TX=[];
 
-    const grab=(re)=>{ const m=line.match(re); return m?parseBRL(m[1]):null; };
-    let v=null;
-    if((v=grab(/Saldo Anterior\s+([\d\.,]+)/i))!=null) out.saldoAnterior=v;
-    if((v=grab(/Juros Remunerat[óo]rios\s+([\d\.,]+)/i))!=null) out.jurosRemu=v;
-    if((v=grab(/IOF\s+([\d\.,]+)/i))!=null) out.iof=v;
-    if((v=grab(/Juros de Mora\s+([\d\.,]+)/i))!=null) out.jurosMora=v;
-    if((v=grab(/Multa por Atraso\s+([\d\.,]+)/i))!=null) out.multa=v;
-    if((v=grab(/Total Despesas\/D[eé]bitos no Brasil\s+([\d\.,]+)/i))!=null) out.despesasBR=v;
-    if((v=grab(/Total Despesas\/D[eé]bitos no Exterior\s+([\d\.,]+)/i))!=null) out.despesasEX=v;
-    if((v=grab(/Total de pagamentos\s+([\d\.,]+)/i))!=null) out.pagamentos=v;
-    if((v=grab(/Total de cr[eé]ditos\s+([\d\.,]+)/i))!=null) out.creditos=v;
-    if((v=grab(/Saldo Desta Fatura\s+([\d\.,]+)/i))!=null) out.saldoFatura=v;
-  }
-  return out;
+const sum=(arr,k)=>arr.reduce((s,o)=>s+(k?o[k]:o),0);
+
+function byCategory(arr){
+  const m=new Map();
+  arr.forEach(t=>{
+    const a=m.get(t.cat)||{cat:t.cat,total:0,count:0};
+    a.total+=t.valor; a.count++; m.set(t.cat,a);
+  });
+  return [...m.values()].sort((a,b)=>b.total-a.total);
+}
+function byMerchant(arr){
+  const m=new Map();
+  arr.forEach(t=>{
+    const key=t.desc.toUpperCase().replace(/\s+/g,' ').slice(0,60);
+    const a=m.get(key)||{k:key,v:0,c:0};
+    a.v+=t.valor; a.c++; m.set(key,a);
+  });
+  return [...m.values()].sort((a,b)=>b.v-a.v);
 }
 
-/* Estado */
-let ALL_TX=[];        // transações detalhadas (para gráficos)
-let RESUMOS=[];       // um resumo por PDF {file, saldoFatura, ...}
-
-/* UI */
+/* ===========================
+   UI & EXPORT
+=========================== */
 const input=$$("#fileInput"), drop=$$("#dropzone");
-$$("#btnPick").addEventListener('click',()=>input.click());
+const btnPick=$$("#btnPick"), btnClear=$$("#btnClear"), btnExport=$$("#btnExport"), btnPlan=$$("#btnPlan");
+
+btnPick.addEventListener('click',()=>input.click());
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--ok)'}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)'}));
 drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name))));
 input.addEventListener('change',e=>handleFiles([...e.target.files]));
 
-$$("#btnClear").addEventListener('click',()=>{
-  input.value=""; ALL_TX=[]; RESUMOS=[];
-  $$("#filesInfo").textContent=""; $$("#chipsResumos").innerHTML="";
+btnClear.addEventListener('click',()=>{
+  input.value=""; ALL_TX=[];
+  $$("#filesInfo").textContent="";
   refreshFilters(); updateUI(); renderCharts();
 });
-$$("#btnExport").addEventListener('click',()=>{
+
+btnExport.addEventListener('click',()=>{
   if(!ALL_TX.length) return alert("Nada para exportar.");
   const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
-  const header=["dataOriginal","descricao","categoria","valor","origem","assinatura"];
+  const header=["data","descricao","categoria","valor","origem","assinatura"];
   const lines=[header.join(";")];
   ALL_TX.forEach(r=>lines.push([r.data,r.desc,r.cat,r.valor.toFixed(2),r.origem,r.sub?"sim":"não"].map(esc).join(";")));
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([lines.join("\n")],{type:'text/csv;charset=utf-8'}));
   a.download=`transacoes-${new Date().toISOString().slice(0,10)}.csv`; a.click();
 });
-$$("#btnPlan").addEventListener('click',()=>{
+
+btnPlan.addEventListener('click',()=>{
   if(!ALL_TX.length) return alert("Carregue as faturas.");
-  const total=ALL_TX.reduce((s,t)=>s+t.valor,0);
   const cats=byCategory(ALL_TX);
-  const top=cats.slice(0,6);
-  const cut1=(top[0]?.total||0)*0.15, cut2=(top[1]?.total||0)*0.10, cutRest=top.slice(2).reduce((s,c)=>s+c.total*0.07,0);
+  const cut1=(cats[0]?.total||0)*0.15, cut2=(cats[1]?.total||0)*0.10, cutRest=cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
   const monthly=cut1+cut2+cutRest;
   const txt=`PLANO (resumo)
-Total analisado: ${BRL(total)}
-Cortes: ${top[0]?.cat||"-"} -15% (${BRL(cut1)}), ${top[1]?.cat||"-"} -10% (${BRL(cut2)}), demais -7% (${BRL(cutRest)})
+Total analisado: ${BRL(sum(ALL_TX,'valor'))}
+Cortes: ${cats[0]?.cat||"-"} -15% (${BRL(cut1)}), ${cats[1]?.cat||"-"} -10% (${BRL(cut2)}), demais -7% (${BRL(cutRest)})
 Economia mensal: ${BRL(monthly)} • 12 meses: ${BRL(monthly*12)}`;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
@@ -277,37 +335,19 @@ Economia mensal: ${BRL(monthly)} • 12 meses: ${BRL(monthly*12)}`;
 async function handleFiles(files){
   if(!files?.length) return;
   $$("#filesInfo").textContent=`Lendo ${files.length} fatura(s)...`;
-  let parsed=[], resumos=[];
+  let parsed=[];
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
       const lines=await extractLinesFromPDF(buf);
-      parsed=parsed.concat(parseTransacoes(lines));
-      const r=parseResumo(lines);
-      resumos.push({file:f.name, ...r});
+      parsed=parsed.concat(parseFromLines(lines)); // captura apenas R$
     }catch(err){ console.error(err); alert(`Falha em "${f.name}": ${err.message||err}`); }
   }
-  ALL_TX=parsed; RESUMOS=resumos;
-  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Lançamentos: ${ALL_TX.length}.`;
-  renderResumoChips();
+  ALL_TX=parsed;
+  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Lançamentos (somando só R$): ${ALL_TX.length}.`;
   refreshFilters(); updateUI(); renderCharts();
 }
 
-/* Resumo chips + KPI */
-function renderResumoChips(){
-  const box=$$("#chipsResumos"); box.innerHTML="";
-  RESUMOS.forEach(r=>{
-    const s=document.createElement('span');
-    s.className='tag';
-    const calc = r.saldoAnterior + r.jurosRemu + r.iof + r.jurosMora + r.multa + r.despesasBR + r.despesasEX - r.pagamentos - r.creditos;
-    s.textContent=`${r.file}: Saldo desta fatura ${BRL(r.saldoFatura||calc)}`;
-    box.appendChild(s);
-  });
-  const totalResumo = RESUMOS.reduce((s,r)=>s + (r.saldoFatura || (r.saldoAnterior+r.jurosRemu+r.iof+r.jurosMora+r.multa+r.despesasBR+r.despesasEX-r.pagamentos-r.creditos)),0);
-  $$("#kSaldoResumo").textContent = RESUMOS.length ? BRL(totalResumo) : "—";
-}
-
-/* Filtros & Tabelas */
 function refreshFilters(){
   const cats=[...new Set(ALL_TX.map(t=>t.cat))].sort();
   const sel=$$("#categoryFilter"); const cur=sel.value;
@@ -317,68 +357,101 @@ function refreshFilters(){
 $$("#categoryFilter").addEventListener('change',()=>{updateUI();renderCharts();});
 $$("#searchBox").addEventListener('input',()=>{updateUI();renderCharts();});
 
-function byCategory(arr){
-  const m=new Map();
-  arr.forEach(t=>{ const a=m.get(t.cat)||{cat:t.cat,total:0,count:0}; a.total+=t.valor; a.count++; m.set(t.cat,a); });
-  return [...m.values()].sort((a,b)=>b.total-a.total);
-}
-function byMerchant(arr){
-  const m=new Map();
-  arr.forEach(t=>{ const key=t.desc.toUpperCase().replace(/\s+/g,' ').slice(0,60); const a=m.get(key)||{k:key,v:0,c:0}; a.v+=t.valor; a.c++; m.set(key,a); });
-  return [...m.values()].sort((a,b)=>b.v-a.v);
-}
-
 function updateUI(){
   const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
   const view=ALL_TX.filter(t=>(!cat||t.cat===cat)&&(!q||t.desc.toLowerCase().includes(q)));
 
-  const total=view.reduce((s,t)=>s+t.valor,0);
+  const total=sum(view,'valor');
   $$("#kTotal").textContent=BRL(total);
   $$("#kCount").textContent=view.length;
   const top=byCategory(view)[0]; $$("#kTopCat").textContent=top?`${top.cat} (${BRL(top.total)})`:"—";
   $$("#kSubs").textContent=view.filter(t=>t.sub).length;
 
-  // Tabela categorias
+  // chips de top categorias
+  const chips=$$("#quickChips"); chips.innerHTML="";
+  byCategory(view).slice(0,3).forEach(r=>{
+    const s=document.createElement('span'); s.className='tag';
+    s.textContent=`${r.cat}: ${BRL(r.total)} (${(100*r.total/(total||1)).toFixed(1)}%)`;
+    chips.appendChild(s);
+  });
+
+  // tabela categorias
   const tbC=$$("#tblCats tbody"); tbC.innerHTML="";
   byCategory(view).forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="pill">${r.cat}</span></td><td class="money">${BRL(r.total)}</td><td>${(100*r.total/(total||1)).toFixed(1)}%</td><td>${r.count}</td>`;
+    tr.innerHTML=`<td><span class="pill">${r.cat}</span></td>
+      <td class="money">${BRL(r.total)}</td>
+      <td>${(100*r.total/(total||1)).toFixed(1)}%</td>
+      <td>${r.count}</td>`;
     tbC.appendChild(tr);
   });
 
-  // Tabela transações
+  // tabela transações
   const tbT=$$("#tblTx tbody"); tbT.innerHTML="";
   view.forEach(t=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="mono">${t.data}</td><td>${t.desc}</td><td><span class="pill">${t.cat}</span></td><td class="money">${BRL(t.valor)}</td><td class="muted">${t.origem}</td>`;
+    tr.innerHTML=`<td class="mono">${t.data}</td>
+      <td>${t.desc}</td>
+      <td><span class="pill">${t.cat}</span></td>
+      <td class="money">${BRL(t.valor)}</td>
+      <td class="muted">${t.origem}</td>`;
     tbT.appendChild(tr);
   });
 
-  // Plano de economia (resumo rápido)
-  const cats=byCategory(view); const cut1=(cats[0]?.total||0)*0.15, cut2=(cats[1]?.total||0)*0.10, cutRest=cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
+  // plano de economia (rápido)
+  const cats=byCategory(view);
+  const cut1=(cats[0]?.total||0)*0.15, cut2=(cats[1]?.total||0)*0.10, cutRest=cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
   const monthly=cut1+cut2+cutRest;
   $$("#adviceBox").innerHTML=`Potencial mensal: <b class="ok">${BRL(monthly)}</b> (15% em <b>${cats[0]?.cat||"—"}</b>, 10% em <b>${cats[1]?.cat||"—"}</b>, 7% em ${cats.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')||'—'}).`;
 }
 
-/* Gráficos (Canvas simples) */
+/* ===========================
+   GRÁFICOS (Canvas puro)
+=========================== */
 function clearCanvas(ctx){const {width:w,height:h}=ctx.canvas; ctx.clearRect(0,0,w,h);}
 function drawDonut(ctx, data){
-  clearCanvas(ctx); const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
-  const r=Math.min(w,h)*0.32,cx=w/2,cy=h/2,hole=r*0.6; const tot=data.reduce((s,d)=>s+d.v,0)||1; let a0=-Math.PI/2;
-  data.forEach((d,i)=>{const a=a0+2*Math.PI*(d.v/tot); ctx.beginPath(); ctx.moveTo(cx,cy); ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`; ctx.arc(cx,cy,r,a0,a); ctx.arc(cx,cy,hole,a,a0,true); ctx.fill(); a0=a;});
-  ctx.fillStyle="#cfd6ff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="700 28px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}),cx,cy-10);
-  ctx.font="500 16px ui-sans-serif"; ctx.fillText("Total",cx,cy+12);
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const r=Math.min(w,h)*0.32, cx=w/2, cy=h/2, hole=r*0.60;
+  const tot=data.reduce((s,d)=>s+d.v,0)||1; let a0=-Math.PI/2;
+  data.forEach((d,i)=>{
+    const a=a0 + 2*Math.PI*(d.v/tot);
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.fillStyle = `hsl(${(i*63)%360} 70% 55%)`;
+    ctx.arc(cx,cy,r,a0,a); ctx.arc(cx,cy,hole,a,a0,true); ctx.fill();
+    a0=a;
+  });
+  ctx.fillStyle="#cfd6ff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font="700 28px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), cx, cy-10);
+  ctx.font="500 16px ui-sans-serif"; ctx.fillText("Total", cx, cy+12);
 }
 function drawPareto(ctx,data){
-  clearCanvas(ctx); const w=ctx.canvas.width=ctx.canvas.clientWidth*2,h=ctx.canvas.height=ctx.canvas.clientHeight*2;
-  const pad=50,plotW=w-2*pad,plotH=h-2*pad,x0=pad,y0=h-pad; const tot=data.reduce((s,d)=>s+d.v,0)||1; const max=Math.max(...data.map(d=>d.v),1);
-  ctx.strokeStyle="#2c3156"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2,h=ctx.canvas.clientHeight*2;
+  const pad=50,plotW=w-2*pad,plotH=h-2*pad,x0=pad,y0=h-pad;
+  const tot=data.reduce((s,d)=>s+d.v,0)||1; const max=Math.max(...data.map(d=>d.v),1);
+  // eixos
+  ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
+  // barras e curva
   let acc=0;
-  data.forEach((d,i)=>{const bw=(plotW/data.length)-12, x=x0+i*(plotW/data.length)+6, hBar=(d.v/max)*plotH; ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`; ctx.fillRect(x,y0-hBar,bw,hBar);
-    acc+=d.v; const xC=x0+(i+0.5)*(plotW/data.length), yC=y0-(acc/tot)*plotH; ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,6.283); ctx.fill();
-    if(i){const xP=x0+(i-0.5)*(plotW/data.length), yP=y0-((acc-d.v)/tot)*plotH; ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();}
+  data.forEach((d,i)=>{
+    const step=plotW/data.length, x=x0+i*step+6, bw=step-12;
+    const hBar=(d.v/max)*plotH;
+    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
+    ctx.fillRect(x,y0-hBar,bw,hBar);
+    acc+=d.v;
+    const xC=x0+(i+0.5)*step, yC=y0-(acc/tot)*plotH;
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,6.283); ctx.fill();
+    if(i){
+      const xP=x0+(i-0.5)*step, yP=y0-((acc-d.v)/tot)*plotH;
+      ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();
+    }
   });
-  ctx.setLineDash([6,6]); ctx.strokeStyle="#ffb020aa"; const y80=y0-0.8*plotH; ctx.beginPath(); ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke(); ctx.setLineDash([]);
+  // guia 80%
+  ctx.setLineDash([6,6]); ctx.strokeStyle="#ffb020aa";
+  const y80=y0-0.8*plotH; ctx.beginPath(); ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
+  ctx.setLineDash([]);
 }
 function renderCharts(){
   const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
