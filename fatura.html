@@ -38,7 +38,7 @@ tfoot td{font-weight:700}
 textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px solid var(--line);border-radius:10px;padding:10px;font:500 13px/1.5 ui-monospace,SFMono,Consolas,monospace}
 .copy-ok{color:var(--ok);font-weight:700}
 
-/* --- dropdown multi-select --- */
+/* dropdown multi-select */
 .dropdown-like{position:relative}
 .dropdown-like-menu{
   position:absolute;right:0;top:calc(100% + 6px);min-width:260px;max-height:320px;overflow:auto;
@@ -69,7 +69,7 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
         <button class="btn" id="btnPrompt">Gerar Prompt (copiar)</button>
         <label class="small"><input type="checkbox" id="chkIncluiParc" checked> Incluir <b>Parcelamentos</b> no ranking</label>
 
-        <!-- NOVO: Filtro de categorias -->
+        <!-- Filtro de categorias -->
         <div class="dropdown-like" id="catsDropdown" aria-expanded="false">
           <button class="btn" id="btnCats" type="button" aria-haspopup="true" aria-controls="menu-cats">Filtrar categorias</button>
           <span id="activeCats" class="badge">Todas as categorias</span>
@@ -81,7 +81,6 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
             <div id="catsList" class="menu-sec"></div>
           </div>
         </div>
-        <!-- Fim filtro -->
       </div>
     </div>
     <div class="bd">
@@ -148,13 +147,13 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
 </main>
 
 <script>
-/* ================= Utils ================= */
+/* ============== Utils ============== */
 const $$ = s => document.querySelector(s);
 const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
 
-/* ================= Categorias (regras) ================= */
+/* ============== Categorias ============== */
 const categoryRules = [
   { cat:"Combustível",           rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC|SHELL|IPIRANGA)/i },
   { cat:"Pedágio/Tag & Vias",    rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
@@ -178,10 +177,9 @@ const categoryRules = [
 ];
 const categorize = (desc)=> (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
 
-/* ================= PDF.js ================= */
+/* ============== PDF.js ============== */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* === Extrai tokens, separa por coluna e só depois monta linhas === */
 async function extractByColumns(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer, disableWorker:true}).promise;
   const all=[];
@@ -199,7 +197,7 @@ async function extractByColumns(arrayBuffer){
     for(let i=0;i<8;i++){
       const L=[], R=[]; toks.forEach(t=> (Math.abs(t.x-c0)<=Math.abs(t.x-c1)?L:R).push(t));
       const nc0=L.length?L.reduce((s,t)=>s+t.x,0)/L.length:c0;
-      const nc1=R.length?R.reduce((s,t)=>s+t.x,0)/L.length:c1;
+      const nc1=R.length?R.reduce((s,t)=>s+t.x,0)/R.length:c1;
       if(Math.abs(nc0-c0)<0.5 && Math.abs(nc1-c1)<0.5) break;
       c0=nc0; c1=nc1;
     }
@@ -223,7 +221,7 @@ async function extractByColumns(arrayBuffer){
   return all;
 }
 
-/* ================= Regras de parsing ================= */
+/* ============== Regras de parsing ============== */
 const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 
@@ -246,16 +244,86 @@ const RX_IGNORE = [
 ];
 const RX_IOF_EXT = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
 
-/* ================= Estado ================= */
+/* ============== Parser (AUSENTE antes — agora incluso) ============== */
+function parseFatura(lines, fileName){
+  const despesas=[], parcelamentos=[], missDesp=[], missParc=[];
+  let ctx="", pending=null;
+
+  for(const {text:raw} of lines){
+    const line=raw.replace(/\u00A0/g,' ').trim();
+    if(!line) continue;
+
+    if(IS_DESP(line)){ ctx="DESP"; pending=null; continue; }
+    if(IS_PARC(line)){ ctx="PARC"; pending=null; continue; }
+    if(IS_CRED(line)){ ctx="CRED"; pending=null; continue; }
+    if(IS_RESU(line)){ ctx="RESU"; pending=null; continue; }
+
+    if(ctx==="CRED" || ctx==="RESU") continue;
+    if(RX_IGNORE.some(r=>r.test(line))) continue;
+
+    // IOF em R$
+    let m=line.match(RX_IOF_EXT);
+    if(m){
+      const v=parseBRL(m[1]);
+      if(isFinite(v)&&v>0) despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v,cat:categorize("IOF DESPESA NO EXTERIOR")});
+      continue;
+    }
+
+    // linha completa
+    let mm=null, tipo=null;
+    if((mm=line.match(RX_PARC))){ tipo="PARC"; }
+    else if((mm=line.match(RX_DESP))){ tipo="DESP"; }
+
+    if(mm){
+      const vStr=mm.groups?.valor||""; if(RX_NEG.test(vStr)) continue;
+      const valor=parseBRL(vStr); if(!isFinite(valor)||valor<=0) continue;
+      const data=mm.groups?.data||""; const desc=(mm.groups?.desc||"").trim();
+      const row={data,desc,valor,cat:categorize(desc)};
+      (tipo==="PARC"?parcelamentos:despesas).push(row);
+      pending=null; continue;
+    }
+
+    // linha quebrada
+    const hasDate=/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
+    if(hasDate && !RX_ANY_MONEY.test(line)){
+      const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
+      const desc=line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
+      pending={tipo:(ctx==="PARC"?"PARC":"DESP"), data, desc};
+      continue;
+    }
+    if(pending && RX_BRL_ONLY.test(line)){
+      const vStr=line.match(RX_BRL_ONLY)[1];
+      if(!RX_NEG.test(vStr)){
+        const valor=parseBRL(vStr);
+        if(isFinite(valor)&&valor>0){
+          const row={data:pending.data,desc:pending.desc,valor,cat:categorize(pending.desc)};
+          (pending.tipo==="PARC"?parcelamentos:despesas).push(row);
+          pending=null; continue;
+        }
+      }
+    }
+
+    // possível perda
+    if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
+      (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
+    }
+  }
+  return {despesas, parcelamentos, missDesp, missParc};
+}
+
+/* ============== Estado & Filtro ============== */
 let DESP=[], PARC=[], MISS_D=[], MISS_P=[];
+let ALL_CATS = [];
+let CAT_SET = new Set();   // selecionadas; vazio => todas
+let noneMode = false;      // modo “nenhuma” ativo
 
-/* === NOVO: estado do filtro de categorias === */
-let ALL_CATS = [];                 // lista completa de categorias presentes
-let CAT_SET = new Set();           // selecionadas (vazio => todas)
-const hasCatFilter = ()=> CAT_SET.size>0;
-const catAllowed = (cat)=> !hasCatFilter() || CAT_SET.has(cat);
+const hasCatFilter = ()=> !noneMode && CAT_SET.size>0;
+const catAllowed = (cat)=> {
+  if(noneMode) return false;
+  return !hasCatFilter() || CAT_SET.has(cat);
+};
 
-/* ================= Renderização ================= */
+/* ============== Render ============== */
 function renderRows(tbody, rows){
   tbody.innerHTML="";
   rows.forEach(r=>{
@@ -297,7 +365,7 @@ function renderMiss(){
   show($$("#missParc"), MISS_P);
 }
 
-/* ================= Ranking ================= */
+/* Ranking */
 function byCategory(rows){
   const m=new Map();
   rows.forEach(r=>{
@@ -322,7 +390,7 @@ function renderRank(){
   });
 }
 
-/* ================= Prompt (geração automática) ================= */
+/* Prompt */
 function tableToText(rows){
   const lines = ["Categoria | Total | % | Qtd"];
   const total = sum(rows,'valor') || 1;
@@ -347,18 +415,8 @@ function buildPrompt(){
 "3) Traga oportunidades de economia (curto/médio/longo prazo).",
 "4) Calcule economia se eu cortar 20% nas 3 maiores categorias.",
 "5) Sugira metas de gasto por categoria (% do total) e ideias de substituição.",
-"6) Analise também quais compras têm potencial de acionar o benefício “Proteção de Preço” do meu cartão Visa Infinite, respeitando a regra de até 30 dias da compra:",
-"   - Destaque apenas produtos elegíveis (ex.: eletrônicos, cosméticos, perfumes, livros, peças automotivas).",
-"   - Ignore serviços não cobertos (ex.: restaurantes, combustíveis, assinaturas, juros).",
-"   - Para cada item elegível, mostre: valor pago, categoria e onde pesquisar preço menor.",
-"   - Estime quanto eu poderia economizar se encontrar 10–20% de desconto nesses itens.",
-"7) Crie também um roteiro de apresentação em PowerPoint, estruturado em 5–8 slides, com os seguintes pontos:",
-"   - Resumo da análise de gastos (gráficos/ranking).",
-"   - Principais oportunidades de economia.",
-"   - Impacto financeiro estimado (corte de 20% nas 3 maiores categorias).",
-"   - Sugestões de uso de benefícios do cartão Unique Visa Infinite.",
-"   - Potencial de economia com Proteção de Preço.",
-"   - Plano de ação final.",
+"6) Analise também compras com potencial para “Proteção de Preço” Visa Infinite (até 30 dias).",
+"7) Monte roteiro de apresentação em 5–8 slides.",
 "",
 "---",
 "Despesas (Data | Descrição | Categoria | R$):"
@@ -366,7 +424,7 @@ function buildPrompt(){
 
   const despLines = DESP.filter(r=>catAllowed(r.cat)).map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
   const parcLines = PARC.filter(r=>catAllowed(r.cat)).map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
-  const rankBlock = tableToText((includeParc?DESP.concat(PARC):DESP).filter(r=>catAllowed(r.cat)));
+  const rankBlock = tableToText(filtered);
 
   return [
     prompt,
@@ -390,18 +448,13 @@ async function generateAndCopyPrompt(){
   }
 }
 
-/* ================== Filtro de categorias (UI) ================== */
+/* ============== Filtro de categorias (UI) ============== */
 function rebuildCatUniverse(){
-  // categorias presentes nos dados (mantém ordem: regras conhecidas primeiro)
-  const seen = new Set();
-  const present = Array.from(new Set(
-    DESP.concat(PARC).map(r=>r.cat)
-  ));
+  const present = Array.from(new Set(DESP.concat(PARC).map(r=>r.cat)));
   const ruleOrder = categoryRules.map(r=>r.cat).filter(c=>present.includes(c));
   const extras = present.filter(c=>!ruleOrder.includes(c));
-  ALL_CATS = [...ruleOrder, ...extras].filter(c=>{
-    if(seen.has(c)) return false; seen.add(c); return true;
-  });
+  const seen = new Set();
+  ALL_CATS = [...ruleOrder, ...extras].filter(c=> (seen.has(c)?false:(seen.add(c),true)));
 }
 function renderCatsMenu(){
   const list = $$("#catsList");
@@ -410,25 +463,28 @@ function renderCatsMenu(){
   ALL_CATS.forEach(cat=>{
     const id = "cat_"+cat.replace(/\W+/g,'_');
     const row = document.createElement('label');
+    const checked = noneMode ? false : (!hasCatFilter() || CAT_SET.has(cat));
     row.className = "menu-row";
-    row.innerHTML = `<input type="checkbox" id="${id}" ${!hasCatFilter() || CAT_SET.has(cat) ? 'checked':''} data-cat="${cat}"/><span>${cat}</span>`;
+    row.innerHTML = `<input type="checkbox" id="${id}" ${checked?'checked':''} data-cat="${cat}"/><span>${cat}</span>`;
     list.appendChild(row);
   });
-  // listeners
   list.querySelectorAll('input[type=checkbox]').forEach(ch=>{
     ch.addEventListener('change', ()=>{
+      noneMode = false; // saiu do modo nenhuma
       if(ch.checked) CAT_SET.add(ch.dataset.cat); else CAT_SET.delete(ch.dataset.cat);
-      // se todos marcados, zera o set (equivale a "todas")
       const allChecked = ALL_CATS.every(c=>CAT_SET.has(c));
-      if(allChecked) CAT_SET.clear();
+      if(allChecked) CAT_SET.clear(); // equivale a "todas"
       applyFilters();
     });
   });
-  // badge resumo
   updateCatsBadge();
 }
 function updateCatsBadge(){
   const badge = $$("#activeCats");
+  if(noneMode){
+    badge.textContent = "Nenhuma categoria";
+    return;
+  }
   if(!hasCatFilter()){
     badge.textContent = "Todas as categorias";
     return;
@@ -437,7 +493,6 @@ function updateCatsBadge(){
   badge.textContent = arr.length ? arr.join(", ") : "Nenhuma categoria";
 }
 function applyFilters(){
-  // tabelas
   const fDesp = DESP.filter(r=>catAllowed(r.cat));
   const fParc = PARC.filter(r=>catAllowed(r.cat));
   renderRows($$("#tblDespesas tbody"), fDesp);
@@ -447,15 +502,15 @@ function applyFilters(){
   updateCatsBadge();
 }
 
-/* ================= Fluxo ================= */
+/* ============== Fluxo ============== */
 const input=$$("#fileInput"); 
 $$("#btnPick").addEventListener('click',()=>input.click());
 $$("#chkIncluiParc").addEventListener('change',()=>renderRank());
 $$("#btnPrompt").addEventListener('click',()=>generateAndCopyPrompt());
 
-// abrir/fechar dropdown categorias
+// abrir/fechar dropdown
 const catsDd = $$("#catsDropdown");
-$$("#btnCats").addEventListener('click', (e)=>{
+$$("#btnCats").addEventListener('click', ()=> {
   const exp = catsDd.getAttribute('aria-expanded') === 'true';
   catsDd.setAttribute('aria-expanded', String(!exp));
 });
@@ -463,38 +518,27 @@ document.addEventListener('click', (e)=>{
   if(!catsDd.contains(e.target)) catsDd.setAttribute('aria-expanded','false');
 });
 $$("#catsAll").addEventListener('click', ()=>{
-  CAT_SET.clear(); // todas
+  noneMode = false;
+  CAT_SET.clear();             // todas
   renderCatsMenu();
   applyFilters();
 });
 $$("#catsNone").addEventListener('click', ()=>{
-  CAT_SET = new Set(); // começar vazio, depois marcar nada
-  ALL_CATS.forEach(()=>{}); // noop
-  // marcar nenhum: preenche CAT_SET com nada explicitamente
-  CAT_SET = new Set(); // (já está)
+  noneMode = true;             // nenhuma
+  CAT_SET.clear();
   renderCatsMenu();
-  // com "nenhuma", CAT_SET vazio significaria todas — então
-  // para representar NENHUMA de fato, setamos um marcador impossível:
-  CAT_SET = new Set(["__NONE__"]);
   applyFilters();
 });
 
-// Drag & drop
+// DnD + input
 document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name)));});
 ['dragover','dragenter'].forEach(ev=>document.querySelector('.drop').addEventListener(ev,e=>e.preventDefault()));
 input.addEventListener('change', e=>handleFiles([...e.target.files]));
 
-/* helper para interpretar "__NONE__" como nenhum permitido */
-const _origCatAllowed = catAllowed;
-catAllowed = function(cat){
-  if(CAT_SET.has("__NONE__")) return false;
-  return _origCatAllowed(cat);
-}
-
 async function handleFiles(files){
   if(!files?.length) return;
   $$("#filesInfo").textContent=`Lendo ${files.length} arquivo(s)…`;
-  DESP=[]; PARC=[]; MISS_D=[]; MISS_P=[];
+  DESP=[]; PARC=[]; MISS_D=[]; MISS_P=[]; noneMode = false; CAT_SET.clear();
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
@@ -505,16 +549,12 @@ async function handleFiles(files){
       MISS_D=MISS_D.concat(missDesp); MISS_P=MISS_P.concat(missParc);
     }catch(err){ console.error(err); alert(`Erro lendo "${f.name}": ${err.message||err}`); }
   }
-  // ordena por data e descrição
   const ord=(a,b)=> (a.data||"").localeCompare(b.data||"") || a.desc.localeCompare(b.desc);
   DESP.sort(ord); PARC.sort(ord);
 
-  // (re)monta universo de categorias e menu
   rebuildCatUniverse();
-  CAT_SET.clear(); // padrão: todas
   renderCatsMenu();
 
-  // render
   renderRows($$("#tblDespesas tbody"), DESP);
   renderRows($$("#tblParcel tbody"), PARC);
   updateSums();
