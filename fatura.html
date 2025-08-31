@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fatura Santander – Parser robusto (2 colunas, só R$)</title>
+<title>Fatura Santander – Parser robusto (2 colunas, só R$, com patch)</title>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
 :root{--bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;--ok:#35c48b;--warn:#ffb020;--chip:#232842;--line:#2c3156}
@@ -32,7 +32,7 @@ main{padding:16px;display:grid;gap:16px;grid-template-columns:1.05fr 2fr}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .tag{background:#232842;border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
 .pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
-.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
+.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px}
 table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 h3{margin:16px 0 8px}
@@ -48,7 +48,7 @@ canvas{width:100%;height:240px;display:block;background:#12162b;border:1px solid
 <body>
 <header>
   <h1>🔎 Fatura Santander – Parser robusto</h1>
-  <div class="muted">2 colunas • só R$ • ignora textos explicativos • reconciliação com Resumo.</div>
+  <div class="muted">2 colunas • só R$ • ignora textos explicativos • reconciliação com Resumo • <b>cabeçalhos [DESPESAS]/[PARCELAMENTOS]</b>.</div>
 </header>
 
 <main>
@@ -175,11 +175,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@
 /* === Extração com consciência de colunas === */
 async function extractColAwareLines(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-  const all=[]; // {text, xAvg, y, page}
+  const all=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
     const content=await page.getTextContent();
-    const rows=new Map(); // y-> [ {x,str} ]
+    const rows=new Map();
     for(const it of content.items){
       const str=it.str??"";
       const tr=it.transform||it.matrix||[1,0,0,1,0,0];
@@ -187,7 +187,6 @@ async function extractColAwareLines(arrayBuffer){
       const yKey=Math.round(y);
       (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str});
     }
-    // monta linhas preservando x e guarda xAvg pra clusterizar em colunas
     const yKeys=[...rows.keys()].sort((a,b)=>b-a);
     const lines=[];
     for(const y of yKeys){
@@ -197,93 +196,87 @@ async function extractColAwareLines(arrayBuffer){
       const xAvg = arr.reduce((s,o)=>s+o.x,0)/arr.length;
       lines.push({text, xAvg, y, page:p});
     }
-    // 2-means super simples por xAvg pra separar esquerda/direita
     if(lines.length){
       const xs=lines.map(l=>l.xAvg).sort((a,b)=>a-b);
       const mid=(xs[Math.floor(xs.length/2)] + xs[Math.ceil(xs.length/2)-1])/2;
       const left = lines.filter(l=>l.xAvg<=mid);
       const right= lines.filter(l=>l.xAvg> mid);
-      // ordena verticalmente em cada coluna (de cima pra baixo como já está por y desc)
-      // e concatena coluna esquerda inteira seguida da direita (emula leitura de jornal)
       left.sort((a,b)=>b.y-a.y); right.sort((a,b)=>b.y-a.y);
       all.push(...left, ...right);
     }
   }
-  return all; // [{text,xAvg,y,page}]
+  return all;
 }
 
 /* ===== Parsers ===== */
-/* Somente a 1ª coluna de valor em R$ (ignora US$/2º valor) */
 const rxDespesaLine = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
-/* Parcelamento: tem "n/n" antes do valor */
 const rxParcLine    = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
-/* Linha que tem só um valor (pode ser continuação da anterior) */
 const rxBRLOnly     = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
-/* Qualquer valor R$ (para caçar “suspeitas”) */
 const rxMoneyAny    = /\d{1,3}(?:\.\d{3})*,\d{2}/;
-/* Negativos (créditos/estornos) */
 const rxNeg         = /(^|[\s(])-\d/;
 
-/* Ignorar anotações/avisos explicativos */
+// IGNORAR apenas o somatório do bloco e textos explicativos (patch):
 const rxIgnoreLines = [
+  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // ex: "[DESPESAS] VALOR TOTAL 1.956,05 0,00"
+  /^VALOR\s+TOTAL\b/i,
   /^\*?\s*Juros\s*=\s*[\d\.,]+\s*\/\s*IOF\s*=\s*[\d\.,]+/i,
-  /^\[?(DESPESAS|PARCELAMENTOS)\]?/i,
   /CET\s*[:\d,\.%]/i,
   /titular pode cancelar esta autorização/i,
   /^\(\+\)|^\(-\)|^Saldo Anterior\b|^Saldo Desta Fatura\b/i
 ];
 
-/* Cabeçalhos de blocos */
-const isDespesas     = l => /^Despesas$/i.test(l);
-const isParcelamentos= l => /^Parcelamentos$/i.test(l);
-const isCreditos     = l => /^Pagamento e Demais Créditos$/i.test(l);
-const isResumo       = l => /^Resumo da Fatura$/i.test(l);
+// Cabeçalhos “normais”
+const isDespesas      = l => /^Despesas$/i.test(l);
+const isParcelamentos = l => /^Parcelamentos$/i.test(l);
+const isCreditos      = l => /^Pagamento e Demais Créditos$/i.test(l);
+const isResumo        = l => /^Resumo da Fatura$/i.test(l);
 
-/* Itens de exterior em R$ (são despesas válidas) */
+// Itens de exterior em R$
 const rxCotacaoDolar = /^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i;
 const rxIOFExterior  = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
 
-function categorize(desc){
-  const r=categoryRules.find(r=>r.rx.test(desc));
-  return r? r.cat : "Outros";
-}
+function categorize(desc){ const r=categoryRules.find(r=>r.rx.test(desc)); return r? r.cat : "Outros"; }
 
-/* Parser tolerante de contexto + 2 linhas */
+/* Parser tolerante (colunas + quebras + patch de [DESPESAS]) */
 function parseTransacoes(colLines, fileName){
   const tx=[]; const misses=[];
-  let ctx=""; // DESPESAS, PARCELAMENTOS, CREDITOS, RESUMO, ""
-  let pending=null; // {data, desc} aguardando valor na próxima linha
+  let ctx=""; // DESPESAS | PARCELAMENTOS | CREDITOS | RESUMO | ""
+  let pending=null;
 
   for(const {text:lineRaw} of colLines){
-    const line=lineRaw.replace(/\u00A0/g,' ').trim();
+    let line=lineRaw.replace(/\u00A0/g,' ').trim();
 
-    // cabeçalhos
+    // PATCH 1: cabeçalho entre colchetes define contexto
+    const mHdr = line.match(/^\[(DESPESAS|PARCELAMENTOS)\]\b/i);
+    if(mHdr){
+      ctx = mHdr[1].toUpperCase(); // "DESPESAS" ou "PARCELAMENTOS"
+      pending=null; 
+      continue;
+    }
+
+    // cabeçalhos “normais”
     if(isDespesas(line)){ ctx="DESPESAS"; pending=null; continue; }
     if(isParcelamentos(line)){ ctx="PARCELAMENTOS"; pending=null; continue; }
     if(isCreditos(line)){ ctx="CREDITOS"; pending=null; continue; }
     if(isResumo(line)){ ctx="RESUMO"; pending=null; continue; }
 
-    // ignorar blocos não contabilizáveis
+    // IGNORAR: créditos/resumo/linhas explicativas/somatórios
     if(ctx==="CREDITOS" || ctx==="RESUMO") continue;
-
-    // ignorar textos explicativos
     if(rxIgnoreLines.some(re=>re.test(line))) continue;
 
-    // capturar itens de exterior (em R$)
+    // incluir “COTAÇÃO DÓLAR R$ …” e “IOF DESPESA NO EXTERIOR …”
     let m=line.match(rxCotacaoDolar);
-    if(m){
-      const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
-        tx.push({file:fileName,data:"",desc:"COTAÇÃO DÓLAR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
+      tx.push({file:fileName,data:"",desc:"COTAÇÃO DÓLAR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
       continue;
     }
     m=line.match(rxIOFExterior);
-    if(m){
-      const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
-        tx.push({file:fileName,data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0)
+      tx.push({file:fileName,data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false});
       continue;
     }
 
-    // 1) Tenta casar linha completa (parcelamento ou despesa)
+    // linha completa (parcelamento ou despesa)
     let mm=null, origem=null;
     mm = line.match(rxParcLine);
     if(mm){ origem="Parcelamentos"; }
@@ -291,25 +284,22 @@ function parseTransacoes(colLines, fileName){
 
     if(mm){
       const valorStr=mm.groups?.valor||"";
-      if(rxNeg.test(valorStr)) continue; // estorno/crédito
+      if(rxNeg.test(valorStr)) continue;
       const valor=parseBRL(valorStr); if(!isFinite(valor)||valor<=0) continue;
       const data=mm.groups?.data||""; const desc=(mm.groups?.desc||"").trim();
       tx.push({file:fileName,data,desc,valor,cat:categorize(desc),origem,sub:subscriptionRules.test(desc)});
-      pending=null;
+      pending=null; 
       continue;
     }
 
-    // 2) Caso quebrou em 2 linhas (linha 1 com data+desc, linha 2 com valor)
-    // se a linha atual começa com data e não tem valor => guarda pendente
+    // quebrou em 2 linhas (data+desc agora, valor na próxima)
     const startWithDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
     if(startWithDate && !rxMoneyAny.test(line)){
-      // guarda apenas data+descrição; valor será na próxima
       const data = (line.match(/\d{2}\/\d{2}/)||[""])[0];
       const desc = line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
       pending = {data,desc,origem: (ctx==="PARCELAMENTOS"?"Parcelamentos":"Despesas")};
       continue;
     }
-    // se há pendente e a linha atual contém um valor R$, usa-o
     if(pending && rxBRLOnly.test(line)){
       const vStr=line.match(rxBRLOnly)[1]; 
       if(!rxNeg.test(vStr)){
@@ -322,17 +312,7 @@ function parseTransacoes(colLines, fileName){
       }
     }
 
-    // 3) Modo tolerante: mesmo sem “Despesas/Parcelamentos”, se uma linha isolada parece um lançamento (data + valor)
-    if(!ctx && ( rxParcLine.test(line) || rxDespesaLine.test(line) )){
-      const mm2 = line.match(rxParcLine) || line.match(rxDespesaLine);
-      const valorStr=mm2.groups?.valor||""; if(rxNeg.test(valorStr)) continue;
-      const valor=parseBRL(valorStr); if(!isFinite(valor)||valor<=0) continue;
-      const data=mm2.groups?.data||""; const desc=(mm2.groups?.desc||"").trim();
-      tx.push({file:fileName,data,desc,valor,cat:categorize(desc),origem: rxParcLine.test(line)?"Parcelamentos":"Despesas",sub:subscriptionRules.test(desc)});
-      continue;
-    }
-
-    // 4) Se estamos em DESPESAS/PARCELAMENTOS e a linha tem R$ mas não casou => registrar como “suspeita”
+    // dentro do bloco, linha com R$ que não casou => suspeita (pra debug)
     if((ctx==="DESPESAS"||ctx==="PARCELAMENTOS") && rxMoneyAny.test(line)){
       misses.push({file:fileName, ctx, line});
     }
@@ -366,9 +346,7 @@ function parseResumo(colLines, fileName){
 }
 
 /* ===== Estado ===== */
-let ALL_TX=[];   // {file,data,desc,valor,cat,origem,sub}
-let RECON=[];    // resumo por arquivo
-let MISSES=[];   // linhas suspeitas não capturadas
+let ALL_TX=[]; let RECON=[]; let MISSES=[];
 
 /* ===== UI & Fluxo ===== */
 const input=$$("#fileInput"), drop=$$("#dropzone");
@@ -400,7 +378,7 @@ async function handleFiles(files){
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
-      const colLines=await extractColAwareLines(buf);    // ⭐️ consciente de colunas
+      const colLines=await extractColAwareLines(buf);
       const {tx,misses}=parseTransacoes(colLines, f.name);
       const r=parseResumo(colLines, f.name);
       all=all.concat(tx); recon.push(r); missesTotal=missesTotal.concat(misses);
@@ -417,19 +395,15 @@ function renderRecon(){
   const chips=$$("#chipsRecon"); chips.innerHTML="";
   const missBox=$$("#missList"); missBox.innerHTML="";
 
-  // soma por arquivo
-  const sumByFile = {};
-  ALL_TX.forEach(t => { sumByFile[t.file]=(sumByFile[t.file]||0)+t.valor; });
+  const sumByFile = {}; ALL_TX.forEach(t => { sumByFile[t.file]=(sumByFile[t.file]||0)+t.valor; });
 
-  // KPIs globais
   const totalAnalise = sum(ALL_TX,'valor');
   $$("#kTotal").textContent = BRL(totalAnalise);
   $$("#kCount").textContent = ALL_TX.length;
-  const topCat = byCategory(ALL_TX)[0];
-  $$("#kTopCat").textContent = topCat ? `${topCat.cat} (${BRL(topCat.total)})` : "—";
+  const top = byCategory(ALL_TX)[0];
+  $$("#kTopCat").textContent = top ? `${top.cat} (${BRL(top.total)})` : "—";
   $$("#kSubs").textContent = ALL_TX.filter(t=>t.sub).length;
 
-  // tabela por arquivo
   RECON.forEach(r=>{
     const cap = sumByFile[r.file] || 0;
     const resumoDespesas = (r.despesasBR||0) + (r.despesasEX||0);
@@ -446,16 +420,14 @@ function renderRecon(){
     `;
     tb.appendChild(tr);
 
-    const chip=document.createElement('span');
-    chip.className='tag';
+    const chip=document.createElement('span'); chip.className='tag';
     chip.textContent=`${r.file}: capturadas ${BRL(cap)} • resumo ${BRL(resumoDespesas)} • diff ${BRL(diff)}`;
     chips.appendChild(chip);
   });
 
-  // linhas suspeitas (para identificar formatos que ainda escapem)
   if(MISSES.length){
     const byFile = MISSES.reduce((m,o)=>{ (m[o.file]=m[o.file]||[]).push(o); return m; }, {});
-    let html = `<div class="alert"><b>Linhas suspeitas não lidas</b> (têm R$ em DESPESAS/PARCELAMENTOS, mas não casaram — ajusto o padrão com base nisso):</div>`;
+    let html = `<div class="alert"><b>Linhas suspeitas não lidas</b> (têm R$ no bloco, mas não casaram — ajusto o padrão com base nisso):</div>`;
     for(const file in byFile){
       html += `<div style="margin-top:8px"><b>${file}</b><ul class="small">`;
       byFile[file].slice(0,25).forEach(m => { html += `<li>[${m.ctx}] <span class="mono">${m.line}</span></li>`; });
@@ -488,7 +460,6 @@ function renderAll(){
   const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
   const view=ALL_TX.filter(t=>(!cat||t.cat===cat)&&(!q||t.desc.toLowerCase().includes(q)));
 
-  // categorias
   const tbC=$$("#tblCats tbody"); tbC.innerHTML="";
   const total=sum(view,'valor');
   byCategory(view).forEach(r=>{
@@ -500,7 +471,6 @@ function renderAll(){
     tbC.appendChild(tr);
   });
 
-  // transações
   const tbT=$$("#tblTx tbody"); tbT.innerHTML="";
   view.forEach(t=>{
     const tr=document.createElement('tr');
@@ -513,19 +483,17 @@ function renderAll(){
     tbT.appendChild(tr);
   });
 
-  // gráficos
   const cats=byCategory(view).map(r=>({k:r.cat,v:r.total}));
   drawDonut($$("#chDonut").getContext('2d'), cats);
   drawPareto($$("#chPareto").getContext('2d'), cats);
 
-  // plano (resumo)
   const top=byCategory(view);
   const cut1=(top[0]?.total||0)*0.15, cut2=(top[1]?.total||0)*0.10, cutRest=top.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
   const monthly = cut1+cut2+cutRest;
   $$("#adviceBox").innerHTML = `Potencial mensal: <b style="color:#35c48b">${BRL(monthly)}</b> (15% em <b>${top[0]?.cat||"—"}</b>, 10% em <b>${top[1]?.cat||"—"}</b>, 7% em ${top.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')||'—'}).`;
 }
 
-/* ===== Gráficos (Canvas) ===== */
+/* ===== Gráficos ===== */
 function clearCanvas(ctx){const {width:w,height:h}=ctx.canvas; ctx.clearRect(0,0,w,h);}
 function drawDonut(ctx, data){
   clearCanvas(ctx);
@@ -545,13 +513,11 @@ function drawDonut(ctx, data){
 }
 function drawPareto(ctx,data){
   clearCanvas(ctx);
-  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.clientHeight*2;
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
   const pad=50, plotW=w-2*pad, plotH=h-2*pad, x0=pad, y0=h-pad;
   const tot=data.reduce((s,d)=>s+d.v,0)||1; const max=Math.max(...data.map(d=>d.v),1);
-  // eixos
   ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
-  // barras + curva
   let acc=0;
   data.forEach((d,i)=>{
     const step=plotW/data.length, x=x0+i*step+6, bw=step-12;
@@ -561,9 +527,8 @@ function drawPareto(ctx,data){
     ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,6.283); ctx.fill();
     if(i){const xP=x0+(i-0.5)*step, yP=y0-((acc-d.v)/tot)*plotH; ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();}
   });
-  // linha de 80%
   ctx.setLineDash([6,6]); ctx.strokeStyle="#ffb020aa";
-  const y80=y0-0.8*plotH; ctx.beginPath(); ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
+  const y80=y0-0.8*plotH; ctx.beginPath(); ctx.MoveTo; ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
   ctx.setLineDash([]);
 }
 </script>
