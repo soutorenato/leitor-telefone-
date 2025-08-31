@@ -3,17 +3,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fatura Santander — Despesas x Parcelamentos (só R$)</title>
+<title>Fatura Santander — Despesas x Parcelamentos (colunas corrigidas)</title>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
-:root{
-  --bg:#0f1221; --card:#171a2e; --ink:#eef2ff; --muted:#9aa3b2;
-  --line:#2c3156; --chip:#232842; --accent:#5b8def; --ok:#35c48b;
-}
+:root{--bg:#0f1221;--card:#171a2e;--ink:#eef2ff;--muted:#9aa3b2;--line:#2c3156;--chip:#232842;--accent:#5b8def}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:500 14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
 header{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-h1{margin:0;font-size:18px} .muted{color:var(--muted)}
+h1{margin:0;font-size:18px}.muted{color:var(--muted)}
 main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .hd{padding:12px 16px;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center}
@@ -23,9 +20,6 @@ main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
 .btn:hover{border-color:var(--accent)}
 .drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
 .drop input{display:none}.drop .inner{text-align:center}
-.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.kpi{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
-.kpi .k{font-size:12px;color:var(--muted)} .kpi .v{font-size:18px;margin-top:2px}
 .grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
 @media(max-width:1024px){.grid{grid-template-columns:1fr}}
 table{width:100%;border-collapse:collapse}
@@ -36,12 +30,15 @@ tfoot td{font-weight:700}
 .small{font-size:12px}
 .alert{margin-top:10px;background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:12px;margin-left:6px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap}
+.kpi{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.kpi .k{font-size:12px;color:var(--muted)} .kpi .v{font-size:18px;margin-top:2px}
 </style>
 </head>
 <body>
 <header>
   <h1>Fatura Santander — Despesas x Parcelamentos</h1>
-  <div class="muted">Lê PDFs, separa em duas tabelas, e soma apenas valores em <b>R$</b>.</div>
+  <div class="muted">Leitura por coluna (corrige mistura de lados). Só soma a coluna em <b>R$</b>.</div>
 </header>
 
 <main>
@@ -55,12 +52,12 @@ tfoot td{font-weight:700}
         <input id="fileInput" type="file" accept="application/pdf" multiple/>
         <div class="inner">
           <div style="font-size:15px;margin-bottom:6px">Arraste aqui ou clique em <b>Selecionar PDFs</b></div>
-          <div class="muted">Tudo acontece no seu navegador.</div>
+          <div class="muted">Tudo ocorre no seu navegador.</div>
         </div>
       </label>
       <div id="filesInfo" class="small muted" style="margin-top:8px"></div>
 
-      <div class="kpis">
+      <div class="kpis" style="margin-top:10px">
         <div class="kpi"><div class="k">Itens de Despesa</div><div class="v" id="kDespCount">—</div></div>
         <div class="kpi"><div class="k">Total Despesas (R$)</div><div class="v money" id="kDespTotal">—</div></div>
         <div class="kpi"><div class="k">Itens de Parcelamento</div><div class="v" id="kParcCount">—</div></div>
@@ -76,8 +73,8 @@ tfoot td{font-weight:700}
       <div class="bd">
         <table id="tblDespesas">
           <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
-          <tbody></tbody>
-          <tfoot><tr><td colspan="2">Total Despesas</td><td class="money" id="sumDespesas">—</td></tr></tfoot>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="2">Total Despesas</td><td class="money" id="sumDespesas">—</td></tr></tfoot>
         </table>
         <div id="missDesp" class="alert" style="display:none"></div>
       </div>
@@ -88,8 +85,8 @@ tfoot td{font-weight:700}
       <div class="bd">
         <table id="tblParcel">
           <thead><tr><th>Data</th><th>Descrição</th><th class="money">R$</th></tr></thead>
-          <tbody></tbody>
-          <tfoot><tr><td colspan="2">Total Parcelamentos</td><td class="money" id="sumParcel">—</td></tr></tfoot>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="2">Total Parcelamentos</td><td class="money" id="sumParcel">—</td></tr></tfoot>
         </table>
         <div id="missParc" class="alert" style="display:none"></div>
       </div>
@@ -98,58 +95,82 @@ tfoot td{font-weight:700}
 </main>
 
 <script>
-/* ========= Utils ========= */
+/* ===== Utils ===== */
 const $$ = s => document.querySelector(s);
 const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
 
-/* ========= pdf.js ========= */
+/* ===== PDF.js worker ===== */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-/* Lê entendendo 2 colunas (separa por X médio) e preserva ordem vertical */
-async function extractColAwareLines(arrayBuffer){
+/* === Nova extração (colunas antes das linhas) === */
+async function extractByColumns(arrayBuffer){
   const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-  const out=[];
+  const all=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
-    const content=await page.getTextContent();
-    const rows=new Map();
-    for(const it of content.items){
-      const tr=it.transform||it.matrix||[1,0,0,1,0,0];
-      const x=tr[4], y=tr[5], yKey=Math.round(y);
-      (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str:it.str??""});
+    const {items}=await page.getTextContent();
+
+    // 1) Colete os tokens
+    const toks=items.map(it=>{
+      const m=it.transform||it.matrix||[1,0,0,1,0,0];
+      return {x:m[4], y:m[5], str: (it.str??"").trim()};
+    }).filter(t=>t.str);
+
+    if(!toks.length) continue;
+
+    // 2) 2-means em X (centros iniciais: minX e maxX)
+    let c0=Math.min(...toks.map(t=>t.x)), c1=Math.max(...toks.map(t=>t.x));
+    for(let i=0;i<8;i++){
+      const L=[], R=[];
+      toks.forEach(t=> (Math.abs(t.x-c0) <= Math.abs(t.x-c1) ? L : R).push(t));
+      const nc0=L.length? L.reduce((s,t)=>s+t.x,0)/L.length : c0;
+      const nc1=R.length? R.reduce((s,t)=>s+t.x,0)/R.length : c1;
+      if(Math.abs(nc0-c0)<0.5 && Math.abs(nc1-c1)<0.5) break;
+      c0=nc0; c1=nc1;
     }
-    const lines=[];
-    [...rows.keys()].sort((a,b)=>b-a).forEach(y=>{
-      const arr=rows.get(y).sort((a,b)=>a.x-b.x);
-      const text=arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
-      if(!text) return;
-      const xAvg=arr.reduce((s,o)=>s+o.x,0)/arr.length;
-      lines.push({text,xAvg,y,page:p});
-    });
-    if(!lines.length){continue;}
-    const xs=lines.map(l=>l.xAvg).sort((a,b)=>a-b);
-    const mid=(xs[Math.floor(xs.length/2)] + xs[Math.ceil(xs.length/2)-1])/2;
-    const left = lines.filter(l=>l.xAvg<=mid).sort((a,b)=>b.y-a.y);
-    const right= lines.filter(l=>l.xAvg> mid).sort((a,b)=>b.y-a.y);
-    out.push(...left,...right);
+    const cut=(Math.min(c0,c1)+Math.max(c0,c1))/2;
+
+    // 3) Separe tokens por coluna
+    const left = toks.filter(t=>t.x<=cut);
+    const right= toks.filter(t=>t.x> cut);
+
+    const makeLines = (arr) => {
+      // agrupa por Y (tolerância) e monta textos ordenando por X
+      const rows=new Map();
+      arr.forEach(t=>{
+        const yKey=Math.round(t.y); // arredonda para juntar pequenas variações
+        (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push(t);
+      });
+      const lines=[];
+      [...rows.keys()].sort((a,b)=>b-a).forEach(y=>{
+        const r=rows.get(y).sort((a,b)=>a.x-b.x);
+        const text=r.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
+        if(text){ lines.push({text,y,page:p}); }
+      });
+      return lines;
+    };
+
+    const Llines=makeLines(left), Rlines=makeLines(right);
+    // concatena coluna esquerda primeiro, depois direita (ordem natural de leitura)
+    all.push(...Llines, ...Rlines);
   }
-  return out; // [{text,xAvg,y,page}]
+  return all; // [{text,y,page}]
 }
 
-/* ========= Regras ========= */
-// (1) Linhas completas (somente a 1ª coluna em R$ — ignora US$)
+/* ===== Regras de parsing ===== */
+// Linha completa (só a 1ª coluna em R$ — ignora US$)
 const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
 const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\b\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
-// (2) Apenas valor em BRL (quando a linha vem quebrada)
+// Linha 2/2 (só valor em R$)
 const RX_BRL_ONLY = /(?:^|\s)(\d{1,3}(?:\.\d{3})*,\d{2})(\s|$)/;
-// (3) Qualquer número R$ (para “suspeitas”)
+// Qualquer valor (para marcar “suspeitas”)
 const RX_ANY_MONEY = /\d{1,3}(?:\.\d{3})*,\d{2}/;
-// (4) Negativos (créditos/estornos — não somam nas despesas)
+// Negativos (créditos)
 const RX_NEG = /(^|[\s(])-\d/;
 
-// Cabeçalhos (ambos formatos)
+// Cabeçalhos (com e sem colchetes)
 const IS_DESP = l => /^Despesas$/i.test(l) || /^\[Despesas\]/i.test(l);
 const IS_PARC = l => /^Parcelamentos$/i.test(l) || /^\[Parcelamentos\]/i.test(l);
 const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
@@ -157,7 +178,7 @@ const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
 
 // Ignorar textos explicativos/somatórios
 const RX_IGNORE = [
-  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i, // somatório do bloco
+  /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i,
   /^VALOR\s+TOTAL\b/i,
   /^\*?\s*Juros\s*=\s*[\d\.,]+\s*\/\s*IOF\s*=\s*[\d\.,]+/i,
   /CET\s*[:\d,\.%]/i,
@@ -165,14 +186,14 @@ const RX_IGNORE = [
   /^\(\+\)|^\(-\)|^Saldo Anterior\b|^Saldo Desta Fatura\b/i
 ];
 
-// Itens do exterior em R$ (são despesas válidas)
+// Itens do exterior em R$ (devem entrar)
 const RX_COTACAO = /^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i;
 const RX_IOF_EXT = /^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i;
 
-/* ========= Parser ========= */
+/* ===== Parser ===== */
 function parseFatura(lines, fileName){
   const despesas=[], parcelamentos=[], missDesp=[], missParc=[];
-  let ctx=""; let pending=null; // pending = {tipo:'DESP'|'PARC', data, desc}
+  let ctx="", pending=null; // pending={tipo:'DESP'|'PARC',data,desc}
 
   for(const {text:raw} of lines){
     const line=raw.replace(/\u00A0/g,' ').trim();
@@ -184,17 +205,16 @@ function parseFatura(lines, fileName){
     if(IS_CRED(line)){ ctx="CRED"; pending=null; continue; }
     if(IS_RESU(line)){ ctx="RESU"; pending=null; continue; }
 
-    // ignorar blocos não contabilizáveis + linhas explicativas / somatórios
-    if(ctx==="CRED" || ctx==="RESU") continue;
-    if(RX_IGNORE.some(re=>re.test(line))) continue;
+    if(ctx==="CRED" || ctx==="RESU") continue;           // fora do escopo
+    if(RX_IGNORE.some(r=>r.test(line))) continue;        // textos/somatórios
 
-    // incluir 2 linhas específicas (em R$)
+    // cotações/IOF exterior (vêm em R$, ficam em Despesas)
     let m=line.match(RX_COTACAO);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) despesas.push({data:"",desc:"COTAÇÃO DÓLAR",valor:v}); continue; }
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0){ despesas.push({data:"",desc:"COTAÇÃO DÓLAR",valor:v}); } continue; }
     m=line.match(RX_IOF_EXT);
-    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v}); continue; }
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0){ despesas.push({data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v}); } continue; }
 
-    // linha completa (prioridade)
+    // linha completa
     let mm=null, tipo=null;
     if((mm=line.match(RX_PARC))){ tipo="PARC"; }
     else if((mm=line.match(RX_DESP))){ tipo="DESP"; }
@@ -204,20 +224,17 @@ function parseFatura(lines, fileName){
       const valor=parseBRL(vStr); if(!isFinite(valor)||valor<=0) continue;
       const row={data:mm.groups?.data||"",desc:(mm.groups?.desc||"").trim(),valor};
       (tipo==="PARC"?parcelamentos:despesas).push(row);
-      pending=null;
-      continue;
+      pending=null; continue;
     }
 
-    // linha 1 de 2 (data + descrição, sem valor)
-    const startsWithDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
-    if(startsWithDate && !RX_ANY_MONEY.test(line)){
+    // linha quebrada (data+desc agora, valor depois)
+    const hasDate = /^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
+    if(hasDate && !RX_ANY_MONEY.test(line)){
       const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
       const desc=line.replace(/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b\s*/,'').trim();
       pending={tipo:(ctx==="PARC"?"PARC":"DESP"), data, desc};
       continue;
     }
-
-    // linha 2 de 2 (apenas valor)
     if(pending && RX_BRL_ONLY.test(line)){
       const vStr=line.match(RX_BRL_ONLY)[1];
       if(!RX_NEG.test(vStr)){
@@ -225,13 +242,12 @@ function parseFatura(lines, fileName){
         if(isFinite(valor)&&valor>0){
           const row={data:pending.data,desc:pending.desc,valor};
           (pending.tipo==="PARC"?parcelamentos:despesas).push(row);
-          pending=null;
-          continue;
+          pending=null; continue;
         }
       }
     }
 
-    // dentro do bloco, linha com R$ que não casou => suspeita
+    // dentro de bloco, tem R$ e não casou => logar como “suspeita”
     if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
       (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
     }
@@ -239,7 +255,7 @@ function parseFatura(lines, fileName){
   return {despesas, parcelamentos, missDesp, missParc};
 }
 
-/* ========= Render ========= */
+/* ===== Render ===== */
 function renderRows(tbody, rows){
   tbody.innerHTML="";
   rows.forEach(r=>{
@@ -274,7 +290,7 @@ function renderMiss(box, misses){
   box.innerHTML=html;
 }
 
-/* ========= Fluxo ========= */
+/* ===== Fluxo ===== */
 const input=$$("#fileInput"); $$("#btnPick").addEventListener('click',()=>input.click());
 input.addEventListener('change', e=>handleFiles([...e.target.files]));
 document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name)));});
@@ -287,8 +303,8 @@ async function handleFiles(files){
   for(const f of files){
     try{
       const buf=await f.arrayBuffer();
-      const lines=await extractColAwareLines(buf);
-      const {despesas,parcelamentos,missDesp,missParc}=parseFatura(lines, f.name);
+      const colLines=await extractByColumns(buf);               // 💥 colunas primeiro
+      const {despesas,parcelamentos,missDesp,missParc}=parseFatura(colLines, f.name);
       allDesp=allDesp.concat(despesas);
       allParc=allParc.concat(parcelamentos);
       missD=missD.concat(missDesp); missP=missP.concat(missParc);
