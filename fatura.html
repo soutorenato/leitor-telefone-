@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Analisador PRO – Fatura Santander (PDF → Insights & Economia)</title>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
+<style>
+:root{
+  --bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;
+  --ok:#35c48b;--warn:#ffb020;--bad:#ff5f7a;--chip:#232842;--bar:#2a2f52;--line:#2c3156;
+}
+*{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:500 14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial}
+header{padding:18px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+header h1{font-size:18px;margin:0} header .hint{color:var(--muted)}
+main{padding:18px;display:grid;gap:18px;grid-template-columns:1.1fr 2fr}
+@media(max-width:1100px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px dashed var(--line)}
+.hd h2{margin:0;font-size:15px}
+.bd{padding:14px 16px}
+.drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
+.drop input{display:none} .drop .inner{text-align:center}
+.btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)} .btn.secondary{background:transparent}
+.btnbar{display:flex;gap:8px;flex-wrap:wrap}
+.srch{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:8px;padding:8px 10px}
+.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.right{margin-left:auto} .muted{color:var(--muted)} .mono{font-family:ui-monospace,SFMono,Consolas,monospace}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px} @media(max-width:900px){.statgrid{grid-template-columns:1fr 1fr}}
+.stat{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--muted)} .stat .v{font-size:18px;margin-top:4px} .money{font-variant-numeric:tabular-nums}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{background:var(--chip);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
+h3{margin:16px 0 10px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
+canvas{width:100%;height:260px;display:block;background:#12162b;border:1px solid var(--line);border-radius:10px}
+.small canvas{height:220px}
+table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
+.foot{color:var(--muted);font-size:12px;margin-top:8px}
+.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.kbd{border:1px solid var(--line);padding:2px 6px;border-radius:6px;background:#0b0f24}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔎 Analisador PRO – Fatura Santander</h1>
+  <div class="hint">Arraste PDFs aqui, veja gráficos e um plano de economia gerado automaticamente.</div>
+</header>
+
+<main>
+  <!-- Coluna esquerda: Entrada & KPIs -->
+  <section class="card">
+    <div class="hd">
+      <h2>Upload de Faturas</h2>
+      <div class="btnbar">
+        <button class="btn" id="btnPick">Selecionar PDFs</button>
+        <button class="btn secondary" id="btnClear">Limpar</button>
+        <button class="btn secondary" id="btnExport">Exportar CSV</button>
+        <button class="btn secondary" id="btnPlan">Exportar Plano de Economia</button>
+      </div>
+    </div>
+    <div class="bd">
+      <label class="drop" id="dropzone">
+        <input id="fileInput" type="file" accept="application/pdf" multiple />
+        <div class="inner">
+          <div style="font-size:15px;margin-bottom:6px">Arraste os PDFs aqui ou clique em <b>Selecionar PDFs</b></div>
+          <div class="muted">Aceita várias faturas</div>
+        </div>
+      </label>
+      <div id="filesInfo" class="foot"></div>
+      <div class="statgrid" style="margin-top:12px">
+        <div class="stat"><div class="k">Total analisado</div><div class="v money" id="kTotal">—</div></div>
+        <div class="stat"><div class="k">Transações</div><div class="v" id="kCount">—</div></div>
+        <div class="stat"><div class="k">Maior categoria</div><div class="v" id="kTopCat">—</div></div>
+        <div class="stat"><div class="k">Assinaturas detectadas</div><div class="v" id="kSubs">—</div></div>
+      </div>
+      <div class="tags" id="quickChips"></div>
+      <div class="foot">Dica: filtre por texto com <span class="kbd">Ctrl/⌘</span>+<span class="kbd">F</span> ou use os gráficos para navegar.</div>
+    </div>
+  </section>
+
+  <!-- Coluna direita: Gráficos & Tabelas -->
+  <section class="card">
+    <div class="hd">
+      <h2>Visão Analítica</h2>
+      <div class="flex right">
+        <select id="categoryFilter" class="srch"><option value="">Todas as categorias</option></select>
+        <input id="searchBox" class="srch" type="search" placeholder="Buscar estabelecimento..." />
+      </div>
+    </div>
+    <div class="bd">
+      <div class="grid-2 small">
+        <div>
+          <h3>Participação por categoria (Rosca)</h3>
+          <canvas id="chDonut"></canvas>
+        </div>
+        <div>
+          <h3>Pareto 80/20 (Barras + Curva)</h3>
+          <canvas id="chPareto"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2 small" style="margin-top:12px">
+        <div>
+          <h3>Top Estabelecimentos</h3>
+          <canvas id="chMerchants"></canvas>
+        </div>
+        <div>
+          <h3>Gastos por dia (Timeline)</h3>
+          <canvas id="chDaily"></canvas>
+        </div>
+      </div>
+
+      <h3 style="margin-top:16px">Ranking por categoria</h3>
+      <table id="tblCats">
+        <thead><tr><th>Categoria</th><th>Total</th><th>%</th><th>Qtd</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h3 style="margin-top:16px">Transações</h3>
+      <table id="tblTx">
+        <thead><tr><th>Data</th><th>Estabelecimento</th><th>Categoria</th><th class="money">Valor (R$)</th><th>Origem</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h3 style="margin-top:16px">Plano de economia sugerido</h3>
+      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades de economia com números.</div>
+
+      <div class="foot">Privado: todo processamento acontece no seu navegador. Ajuste as regras em <span class="mono">categoryRules</span> e <span class="mono">subscriptionRules</span>.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ===========================
+   Utilidades
+=========================== */
+const $$ = s=>document.querySelector(s);
+const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct = (v,tot)=> tot>0 ? (v*100/tot) : 0;
+const parseBRLToNumber = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
+const fmtDate = d => d ? new Date(d).toISOString().slice(0,10) : '';
+
+/* ===========================
+   Regras de categorização (edite à vontade)
+=========================== */
+const categoryRules = [
+  { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC)/i },
+  { cat:"Pedágio/Tag & Vias", rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
+  { cat:"Transporte (Apps)", rx: /\bUBER\b|\b99\b/i },
+  { cat:"Estacionamento", rx: /(ESTAPAR|ESTACIONAMENTO|PARK)/i },
+  { cat:"Supermercado", rx: /(SUPERMERCADO|ATACADISTA|ATACAREJO|ASSAÍ|CARREFOUR|EXTRA|REDE ROFATTO|CINCO M COM ATACADISTA|DU BAIRRO)/i },
+  { cat:"Padaria/Lanches", rx: /(PADARIA|PANIFICADORA|LANCHONETE|PAES E DOCES|PASTEL|ACA[IÍ]|PUMILA)/i },
+  { cat:"Restaurantes", rx: /(RESTAURANTE|GRILL|PIZZARIA|ESFIHARIA|BURGER|MACDONALDS|RASCAL|TENNESSEE|ZIG\*CANA|SABOR)/i },
+  { cat:"Saúde/Farmácia", rx: /(DROGASIL|DROGARIA|RAIA|FARMACIA)/i },
+  { cat:"Pets", rx: /(PETZ|PET SHOP)/i },
+  { cat:"Assinaturas/Apps", rx: /(APPLE COM\/BILL|AMAZON|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE)/i },
+  { cat:"Educação/Livros", rx: /(LIVRARIA|CURSO|ESCOLA|FACUL|HEDRA)/i },
+  { cat:"Compras Online", rx: /(AMAZONMKTPLC|MERCADOPAGO|MAGAZINE|SUBMARINO|SHOPEE)/i },
+  { cat:"Beleza/Estética", rx: /(SAL[AÃ]O|BELEZA|SPA|BARBEARIA|CAPELLI)/i },
+  { cat:"Auto/Serviços", rx: /(LAVA R[AÁ]PIDO|AUTOMOTIVO|OFICINA)/i },
+  { cat:"Viagem/Hospedagem", rx: /(AIRBNB|LOCALIZA|UNIDAS|BOOKING|HOTEL)/i },
+  { cat:"Serviços Online", rx: /(HOSTGATOR|DOM[IÍ]NIO|HOSPEDAGEM)/i },
+  { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|JUROS|ENCARGOS)/i },
+  { cat:"Tarifas/Anuidade", rx: /(ANUIDADE|TARIFA)/i },
+  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
+  { cat:"Outros", rx: /.*/i }
+];
+
+const subscriptionRules = /(APPLE COM\/BILL|AMAZON (?:MUSIC|PRIME|DIGITAL)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE|PREMIERE)/i;
+
+/* ===========================
+   PDF.js
+=========================== */
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+
+async function extractLinesFromPDF(arrayBuffer){
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+  const lines = [];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    const rows = new Map();
+    for(const it of content.items){
+      const str = it.str ?? "";
+      const tr = it.transform || it.matrix || [1,0,0,1,0,0];
+      const x = tr[4], y = tr[5];
+      const yKey = Math.round(y);
+      (rows.get(yKey) ?? rows.set(yKey,[]).get(yKey)).push({x,str});
+    }
+    const yKeys = Array.from(rows.keys()).sort((a,b)=>b-a);
+    for(const y of yKeys){
+      const arr = rows.get(y).sort((a,b)=>a.x-b.x);
+      const text = arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
+      if(text) lines.push(text);
+    }
+  }
+  return lines;
+}
+
+/* ===========================
+   Parsing das faturas
+=========================== */
+const rxDespesa = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
+const rxParc    = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})\s*$/i;
+const rxNegativo=/(^|[\s(])-\d/;
+const rxPeriodo = /(?:Per[ií]odo|Per[ií]odo de)\s+(\d{2}\/\d{2}\/\d{4})\s*(?:a|até)\s*(\d{2}\/\d{2}\/\d{4})/i;
+const rxVenc    = /Vencimento\s+(\d{2}\/\d{2}\/\d{4})/i;
+
+function guessYearFromHeader(allText){
+  // tenta "Período 03/07/2025 a 02/08/2025" ou "Vencimento 10/08/2025"
+  const t = allText.join(' • ');
+  let y=null;
+  const mP = t.match(rxPeriodo);
+  if(mP){ y = mP[1].slice(-4); }
+  if(!y){
+    const mV = t.match(rxVenc);
+    if(mV) y = mV[1].slice(-4);
+  }
+  return y ? Number(y) : new Date().getFullYear();
+}
+
+function categorize(desc){
+  const rule = categoryRules.find(r=>r.rx.test(desc));
+  return rule ? rule.cat : "Outros";
+}
+
+function parseFromLines(lines){
+  const year = guessYearFromHeader(lines);
+  const tx=[]; let ctx=null;
+  for(const raw of lines){
+    const line = raw.replace(/\u00A0/g,' ').trim();
+    if(/^\s*Despesas\s*$/i.test(line))       { ctx="DESPESAS"; continue; }
+    if(/^\s*Parcelamentos\s*$/i.test(line))  { ctx="PARCELAMENTOS"; continue; }
+    if(/^\s*Pagamento e Demais Créditos\s*$/i.test(line)) { ctx="CREDITOS"; continue; }
+
+    if(ctx==="CREDITOS") continue;
+    if(/^(Compra|VALOR TOTAL|Detalhamento|Resumo da Fatura|Pagamento|Histórico|COTAÇÃO|IOF|DEMONSTRATIVO|Opções|Total a Pagar|Melhor Data|Seu Limite|Central|Ouvidoria|SAC|Explore)/i.test(line)) continue;
+
+    let m=null, origem=null;
+    if(ctx==="PARCELAMENTOS"){ m=line.match(rxParc); origem="Parcelamentos"; }
+    else { m=line.match(rxDespesa); origem="Despesas"; }
+    if(!m) continue;
+
+    const valorStr=m.groups?.valor||"";
+    if(rxNegativo.test(valorStr)) continue;
+
+    const [dd,mm]= (m.groups?.data||"").split('/');
+    const desc=(m.groups?.desc||"").trim();
+    const valor=parseBRLToNumber(valorStr);
+    if(!isFinite(valor) || valor<=0) continue;
+
+    // cria data ISO (tenta usar o ano inferido)
+    let dateISO=null;
+    if(dd && mm){
+      const y = Number(year)||new Date().getFullYear();
+      dateISO = new Date(y, Number(mm)-1, Number(dd));
+    }
+
+    const cat=categorize(desc);
+    const isSub=subscriptionRules.test(desc);
+    tx.push({date: dateISO, data:`${dd}/${mm}`, desc, valor, cat, origem, sub:isSub});
+  }
+  return tx;
+}
+
+/* ===========================
+   Estado
+=========================== */
+let ALL_TX=[];
+
+/* ===========================
+   Gráficos (Canvas puro)
+=========================== */
+function clearCanvas(ctx){ const {width:w,height:h}=ctx.canvas; ctx.clearRect(0,0,w,h); }
+
+function drawDonut(ctx, data){
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const r=Math.min(w,h)*0.32, cx=w/2, cy=h/2, hole=r*0.60;
+  const tot=data.reduce((s,d)=>s+d.v,0)||1;
+  let a0=-Math.PI/2;
+  data.forEach((d,i)=>{
+    const a=a0 + 2*Math.PI*(d.v/tot);
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.fillStyle = `hsl(${(i*63)%360} 70% 55%)`;
+    ctx.arc(cx,cy,r,a0,a); ctx.arc(cx,cy,hole,a, a0, true); ctx.fill();
+    a0=a;
+  });
+  // legenda & centro
+  ctx.fillStyle="#cfd6ff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font="700 32px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), cx, cy-12);
+  ctx.font="500 18px ui-sans-serif"; ctx.fillText("Total", cx, cy+14);
+}
+
+function drawPareto(ctx, data){
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const pad=60, plotW=w-pad*1.6, plotH=h-pad*1.6, x0=pad, y0=h-pad;
+  const tot=data.reduce((s,d)=>s+d.v,0)||1;
+  const vals=data.map(d=>d.v);
+  const max=Math.max(...vals,1);
+  // eixos
+  ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
+
+  // barras + curva
+  let acc=0;
+  data.forEach((d,i)=>{
+    const x=x0 + i*(plotW/data.length)+6, bw=(plotW/data.length)-12;
+    const hBar = (d.v/max)*plotH;
+    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
+    ctx.fillRect(x, y0-hBar, bw, hBar);
+
+    // curva acumulada
+    acc += d.v;
+    const xC = x0 + (i+0.5)*(plotW/data.length);
+    const yC = y0 - (acc/tot)*plotH;
+    ctx.fillStyle="#ffffff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,Math.PI*2); ctx.fill();
+    if(i>0){
+      const xPrev = x0 + (i-0.5)*(plotW/data.length);
+      const yPrev = y0 - ((acc-d.v)/tot)*plotH;
+      ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xPrev,yPrev); ctx.lineTo(xC,yC); ctx.stroke();
+    }
+  });
+  // linhas 80% e 20% (visuais)
+  ctx.strokeStyle="#ffb020aa"; ctx.setLineDash([6,6]);
+  const y80 = y0 - 0.8*plotH;
+  ctx.beginPath(); ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#ffb020"; ctx.font="600 20px ui-sans-serif"; ctx.fillText("80%", x0+plotW-30, y80-10);
+}
+
+function drawBarsH(ctx, data){
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const pad=40, x0=pad*1.3, y0=pad, plotW=w-x0-pad, row= (h - y0 - pad)/data.length;
+  const max = Math.max(...data.map(d=>d.v),1);
+  ctx.font="500 22px ui-sans-serif";
+  data.forEach((d,i)=>{
+    const y = y0 + i*row + row*0.15;
+    const bw = (d.v/max)*plotW;
+    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
+    ctx.fillRect(x0, y, bw, row*0.7);
+    ctx.fillStyle="#cfd6ff";
+    ctx.fillText(d.k, 10, y+row*0.45);
+    ctx.textAlign="right";
+    ctx.fillText(BRL(d.v), x0 + bw - 8, y+row*0.45);
+    ctx.textAlign="left";
+  });
+}
+
+function drawLine(ctx, points){
+  clearCanvas(ctx);
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const pad=50, x0=pad, y0=h-pad, plotW=w-2*pad, plotH=h-2*pad;
+  const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+  const xMin=Math.min(...xs), xMax=Math.max(...xs), yMax=Math.max(...ys,1);
+  // eixos
+  ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
+  // linha
+  ctx.strokeStyle="#9aa9ff"; ctx.lineWidth=3; ctx.beginPath();
+  points.forEach((p,i)=>{
+    const X = x0 + ( (p.x - xMin)/(xMax - xMin || 1) )*plotW;
+    const Y = y0 - ( (p.y / yMax) )*plotH;
+    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+  });
+  ctx.stroke();
+}
+
+/* ===========================
+   UI & Render
+=========================== */
+const input=$$("#fileInput"), drop=$$("#dropzone");
+const btnPick=$$("#btnPick"), btnClear=$$("#btnClear"), btnExport=$$("#btnExport"), btnPlan=$$("#btnPlan");
+
+btnPick.addEventListener('click',()=>input.click());
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--ok)'}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)'}));
+drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name))));
+input.addEventListener('change',e=>handleFiles([...e.target.files]));
+
+btnClear.addEventListener('click',()=>{
+  input.value=""; ALL_TX=[];
+  $$("#filesInfo").textContent="";
+  refreshFilters(); updateUI();
+  renderCharts();
+});
+
+btnExport.addEventListener('click',()=>{
+  if(!ALL_TX.length) return alert("Nada para exportar.");
+  const csv = toCSV(ALL_TX);
+  download(`transacoes-${new Date().toISOString().slice(0,10)}.csv`, csv);
+});
+
+btnPlan.addEventListener('click',()=>{
+  const txt = buildSavingsPlanText();
+  if(!txt) return alert("Carregue as faturas primeiro.");
+  const blob = new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`plano-economia-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+});
+
+async function handleFiles(files){
+  if(!files?.length) return;
+  $$("#filesInfo").textContent = `Lendo ${files.length} fatura(s)...`;
+  let parsed=[];
+  for(const f of files){
+    try{
+      const buf = await f.arrayBuffer();
+      const lines = await extractLinesFromPDF(buf);
+      parsed = parsed.concat(parseFromLines(lines));
+    } catch(err){
+      console.error(err);
+      alert(`Falha ao ler "${f.name}": ${err.message||err}`);
+    }
+  }
+  ALL_TX = parsed;
+  $$("#filesInfo").textContent = `Processadas ${files.length} fatura(s). ${ALL_TX.length} lançamentos válidos.`;
+  refreshFilters(); updateUI(); renderCharts();
+}
+
+function refreshFilters(){
+  const cats = Array.from(new Set(ALL_TX.map(t=>t.cat))).sort();
+  const sel=$$("#categoryFilter"); const cur=sel.value;
+  sel.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(cats.includes(cur)) sel.value=cur;
+}
+$$("#categoryFilter").addEventListener('change',()=>{updateUI();renderCharts();});
+$$("#searchBox").addEventListener('input',()=>{updateUI();renderCharts();});
+
+function updateUI(){
+  const filterCat=$$("#categoryFilter").value;
+  const q= $$("#searchBox").value.trim().toLowerCase();
+  const view = ALL_TX.filter(t=>(!filterCat || t.cat===filterCat) && (!q || t.desc.toLowerCase().includes(q)));
+
+  // KPIs
+  const total = sum(view,'valor'); const topCat = topCategory(view);
+  $$("#kTotal").textContent = BRL(total);
+  $$("#kCount").textContent = view.length;
+  $$("#kTopCat").textContent = topCat ? `${topCat.cat} (${BRL(topCat.total)})` : "—";
+  $$("#kSubs").textContent = view.filter(t=>t.sub).length;
+
+  // Chips rápidas: top 3 categorias
+  const chips=$$("#quickChips"); chips.innerHTML="";
+  const cats = byCategory(view).slice(0,3);
+  cats.forEach(c=>{
+    const s=document.createElement('span'); s.className='tag';
+    s.textContent=`${c.cat}: ${BRL(c.total)} (${(100*c.total/(total||1)).toFixed(1)}%)`;
+    chips.appendChild(s);
+  });
+
+  // Tabela categorias
+  const tbC=$$("#tblCats tbody"); tbC.innerHTML="";
+  const catRows = byCategory(view);
+  catRows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td><span class="pill">${r.cat}</span></td>
+      <td class="money">${BRL(r.total)}</td>
+      <td>${(100*r.total/(total||1)).toFixed(1)}%</td>
+      <td>${r.count}</td>`;
+    tbC.appendChild(tr);
+  });
+
+  // Tabela transações
+  const tbT=$$("#tblTx tbody"); tbT.innerHTML="";
+  view.sort((a,b)=> (a.date-b.date)||a.desc.localeCompare(b.desc)).forEach(t=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${t.date?fmtDate(t.date):t.data}</td>
+      <td>${t.desc}</td>
+      <td><span class="pill">${t.cat}</span></td>
+      <td class="money">${BRL(t.valor)}</td>
+      <td class="muted">${t.origem}</td>`;
+    tbT.appendChild(tr);
+  });
+
+  // Plano de economia
+  $$("#adviceBox").innerHTML = buildAdviceHTML(view);
+}
+
+/* helpers de agregação */
+const sum = (arr, k) => arr.reduce((s,o)=>s+(k?o[k]:o),0);
+function byCategory(arr){
+  const m=new Map();
+  arr.forEach(t=>{
+    const a=m.get(t.cat)||{cat:t.cat,total:0,count:0};
+    a.total+=t.valor; a.count++; m.set(t.cat,a);
+  });
+  return [...m.values()].sort((a,b)=>b.total-a.total);
+}
+function byMerchant(arr){
+  const m=new Map();
+  arr.forEach(t=>{
+    const key=t.desc.toUpperCase().replace(/\s+/g,' ').slice(0,60);
+    const a=m.get(key)||{k:key,v:0,c:0};
+    a.v+=t.valor; a.c++; m.set(key,a);
+  });
+  return [...m.values()].sort((a,b)=>b.v-a.v);
+}
+function topCategory(arr){
+  const bc=byCategory(arr);
+  return bc[0]||null;
+}
+
+/* ===========================
+   Charts render
+=========================== */
+function renderCharts(){
+  const filterCat=$$("#categoryFilter").value;
+  const q=$$("#searchBox").value.trim().toLowerCase();
+  const view = ALL_TX.filter(t=>(!filterCat || t.cat===filterCat) && (!q || t.desc.toLowerCase().includes(q)));
+
+  const total = sum(view,'valor') || 1;
+
+  // Donut por categoria
+  const cats = byCategory(view).map(r=>({k:r.cat,v:r.total}));
+  drawDonut($$("#chDonut").getContext('2d'), cats);
+
+  // Pareto (cat)
+  const pareto = [...cats]; // já vem ordenado desc
+  drawPareto($$("#chPareto").getContext('2d'), pareto);
+
+  // Top merchants (até 12)
+  const merch = byMerchant(view).slice(0,12);
+  drawBarsH($$("#chMerchants").getContext('2d'), merch);
+
+  // Timeline diária (se houver datas ISO)
+  const dailyMap=new Map();
+  view.forEach(t=>{
+    if(!t.date) return;
+    const d=fmtDate(t.date);
+    dailyMap.set(d,(dailyMap.get(d)||0)+t.valor);
+  });
+  const daily=[...dailyMap.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([d,v],i)=>({x:i,y:v}));
+  drawLine($$("#chDaily").getContext('2d'), daily.length?daily:[{x:0,y:0},{x:1,y:0}]);
+}
+
+/* ===========================
+   Export
+=========================== */
+function toCSV(rows){
+  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
+  const header=["dataISO","dataOriginal","descricao","categoria","valor","origem","assinatura"];
+  const lines=[header.join(";")];
+  rows.forEach(r=>{
+    lines.push([r.date?fmtDate(r.date):"", r.data, r.desc, r.cat, r.valor.toFixed(2), r.origem, r.sub?"sim":"não"].map(esc).join(";"));
+  });
+  return lines.join("\n");
+}
+function download(filename, text){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));
+  a.download=filename; a.click();
+}
+
+/* ===========================
+   Insights de economia
+=========================== */
+function buildAdviceHTML(view){
+  if(!view.length) return "Carregue as faturas para ver oportunidades de economia com números.";
+  const total = sum(view,'valor');
+  const cats = byCategory(view);
+  const subs = view.filter(t=>t.sub);
+  const merchants = byMerchant(view);
+
+  // 80/20 (quais categorias somam ~80%)
+  let acc=0, vital=[];
+  for(const c of cats){ acc+=c.total; vital.push(c); if(acc/total>=0.8) break; }
+
+  // Sugerir cortes: 10% no topo 1–2 e 5–10% no resto
+  const cut1 = (cats[0]?.total||0) * 0.15;
+  const cut2 = (cats[1]?.total||0) * 0.10;
+  const cutRest = cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
+  const monthlySave = cut1 + cut2 + cutRest;
+  const save12 = monthlySave * 12;
+
+  // Estabelecimentos recorrentes (3+ ocorrências)
+  const recMerch = merchants.filter(m=>m.c>=3).slice(0,6);
+
+  // Dias de pico
+  const byDay=new Map();
+  view.forEach(t=>{ if(t.date){ const d=fmtDate(t.date); byDay.set(d,(byDay.get(d)||0)+t.valor);} });
+  const peaks=[...byDay.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  return `
+    <div><b>Resumo:</b> total analisado <b>${BRL(total)}</b> em ${view.length} lançamentos.</div>
+    <ul>
+      <li><b>Regra 80/20:</b> ${vital.map(v=>v.cat).join(' • ')} concentram ~${(100*sum(vital,'total')/total).toFixed(0)}% do gasto.</li>
+      <li><b>Assinaturas detectadas:</b> ${subs.length ? subs.length : "nenhuma"} ${subs.length?`(ex.: ${subs.slice(0,5).map(s=>s.desc).join(' • ')}${subs.length>5?"…":""})`:""}</li>
+      ${peaks.length?`<li><b>Dias de pico:</b> ${peaks.map(([d,v])=>`${d}: ${BRL(v)}`).join(' • ')}</li>`:""}
+    </ul>
+    <div><b>Cortes sugeridos (realistas):</b></div>
+    <ol>
+      <li>Cortar <b>15%</b> em <b>${cats[0]?.cat||"—"}</b> → ${BRL(cut1)}</li>
+      <li>Cortar <b>10%</b> em <b>${cats[1]?.cat||"—"}</b> → ${BRL(cut2)}</li>
+      <li>Cortar <b>7%</b> em ${cats.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')} → ${BRL(cutRest)}</li>
+    </ol>
+    <div class="foot">Potencial de economia mensal: <b class="ok">${BRL(monthlySave)}</b> • em 12 meses: <b class="ok">${BRL(save12)}</b></div>
+    ${recMerch.length?`<div style="margin-top:8px"><b>Recorrências:</b> atenção a ${recMerch.map(m=>`${m.k} (${m.c}x, ${BRL(m.v)})`).join(' • ')}</div>`:""}
+    <div class="foot" style="margin-top:8px">Ajuste cortes/percentuais exportando o plano (botão acima) e edite conforme sua realidade.</div>
+  `;
+}
+
+function buildSavingsPlanText(){
+  if(!ALL_TX.length) return "";
+  const total = sum(ALL_TX,'valor');
+  const cats = byCategory(ALL_TX);
+  const subs = ALL_TX.filter(t=>t.sub);
+  const merchants = byMerchant(ALL_TX).slice(0,15);
+
+  const top=cats.slice(0,6);
+  const cut1=(top[0]?.total||0)*0.15;
+  const cut2=(top[1]?.total||0)*0.10;
+  const cutRest=top.slice(2).reduce((s,c)=>s+c.total*0.07,0);
+  const monthlySave = cut1+cut2+cutRest;
+
+  return `PLANO DE ECONOMIA – Fatura Santander
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+Total analisado: ${BRL(total)} em ${ALL_TX.length} lançamentos.
+
+TOP CATEGORIAS:
+${top.map(c=>`- ${c.cat}: ${BRL(c.total)} (${(100*c.total/total).toFixed(1)}%)`).join('\n')}
+
+ASSINATURAS:
+${subs.length? subs.map(s=>`- ${s.desc}: ${BRL(s.valor)}`).join('\n') : '- Nenhuma detectada'}
+
+RECORRÊNCIAS (estabelecimentos):
+${merchants.map(m=>`- ${m.k} – ${m.c}x | ${BRL(m.v)}`).join('\n')}
+
+CORTES SUGERIDOS:
+- ${top[0]?.cat||'-'}: reduzir 15%  → ${BRL(cut1)}
+- ${top[1]?.cat||'-'}: reduzir 10%  → ${BRL(cut2)}
+- ${top.slice(2).map(c=>c.cat).join(', ')||'-'}: reduzir 7% → ${BRL(cutRest)}
+
+ECONOMIA POTENCIAL:
+- Mensal: ${BRL(monthlySave)}
+- 12 meses (sem juros): ${BRL(monthlySave*12)}
+
+AÇÕES PRÁTICAS:
+1) Revisar assinaturas: cancelar ou trocar planos redundantes.
+2) Definir teto mensal por categoria (ex.: Top 2 com limite -10%).
+3) Criar regra: adiar compras não essenciais por 48h.
+4) Concentrar abastecimentos/mercado em dias com cashback/desconto.
+5) Monitorar semanalmente (reaplicar esta análise a cada nova fatura).`;
+}
+
+/* ===========================
+   FIM setup
+=========================== */
+</script>
+</body>
+</html>
