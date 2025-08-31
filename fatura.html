@@ -3,62 +3,57 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Analisador de Fatura Santander (somando só R$)</title>
-<!-- Leitura de PDFs (somente local no navegador) -->
+<title>Fatura Santander – Reconciliação (só R$)</title>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
-:root{
-  --bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;
-  --ok:#35c48b;--warn:#ffb020;--bad:#ff5f7a;--chip:#232842;--bar:#2a2f52;--line:#2c3156;
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-  font:500 14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-header{padding:18px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-header h1{font-size:18px;margin:0}
-.hint{color:var(--muted)}
-main{padding:18px;display:grid;gap:18px;grid-template-columns:1.05fr 2fr}
+:root{--bg:#0f1221;--card:#171a2e;--muted:#9aa3b2;--text:#eef2ff;--accent:#5b8def;--ok:#35c48b;--warn:#ffb020;--bad:#ff5f7a;--chip:#232842;--bar:#2a2f52;--line:#2c3156}
+*{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:500 14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+header{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h1{font-size:18px;margin:0} .muted{color:var(--muted)}
+main{padding:16px;display:grid;gap:16px;grid-template-columns:1.05fr 2fr}
 @media(max-width:1100px){main{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px dashed var(--line)}
+.hd{padding:12px 16px;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center}
 .hd h2{margin:0;font-size:15px}
 .bd{padding:14px 16px}
 .drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
-.drop input{display:none}.drop .inner{text-align:center}
+.drop input{display:none} .drop .inner{text-align:center}
 .btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}.btn.secondary{background:transparent}
+.btn:hover{border-color:var(--accent)} .btn.secondary{background:transparent}
 .btnbar{display:flex;gap:8px;flex-wrap:wrap}
 .srch{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:8px;padding:8px 10px}
-.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .right{margin-left:auto}
-.muted{color:var(--muted)}
-.mono{font-family:ui-monospace,SFMono,Consolas,monospace}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:1100px){.statgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:950px){.statgrid{grid-template-columns:1fr 1fr}}
 .stat{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.stat .k{font-size:12px;color:var(--muted)} .stat .v{font-size:18px;margin-top:4px} .money{font-variant-numeric:tabular-nums}
-.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stat .k{font-size:12px;color:var(--muted)} .stat .v{font-size:18px;margin-top:4px}
+.money{font-variant-numeric:tabular-nums}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .tag{background:var(--chip);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted);font-size:12px}
-h3{margin:16px 0 10px}
+.pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
+.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
+table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+h3{margin:16px 0 8px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
 canvas{width:100%;height:240px;display:block;background:#12162b;border:1px solid var(--line);border-radius:10px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
-th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
-.alert{background:#21131b;border:1px solid #5a2030;color:#ffd2da;padding:10px 12px;border-radius:10px}
-.kbd{border:1px solid var(--line);padding:2px 6px;border-radius:6px;background:#0b0f24}
+.badge-ok{color:#0f1;display:inline-block;margin-left:6px}
+.badge-warn{color:#ffb020;display:inline-block;margin-left:6px}
+.mono{font-family:ui-monospace,SFMono,Consolas,monospace}
+.small{font-size:12px}
 </style>
 </head>
 <body>
 <header>
-  <h1>🔎 Analisador de Fatura Santander</h1>
-  <div class="hint">Somando <b>somente a coluna em Real (R$)</b> e ignorando a coluna em US$.</div>
+  <h1>🔎 Fatura Santander – Reconciliação</h1>
+  <div class="muted">Soma <b>apenas a coluna em Real (R$)</b> e confere com o <b>Resumo da Fatura</b>.</div>
 </header>
 
 <main>
-  <!-- Coluna esquerda: Entrada & KPIs -->
+  <!-- Coluna 1: Upload & KPIs -->
   <section class="card">
     <div class="hd">
       <h2>Upload de Faturas</h2>
@@ -66,38 +61,50 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
         <button class="btn" id="btnPick">Selecionar PDFs</button>
         <button class="btn secondary" id="btnClear">Limpar</button>
         <button class="btn secondary" id="btnExport">Exportar CSV</button>
-        <button class="btn secondary" id="btnPlan">Exportar Plano</button>
       </div>
     </div>
     <div class="bd">
       <label class="drop" id="dropzone">
-        <input id="fileInput" type="file" accept="application/pdf" multiple />
+        <input id="fileInput" type="file" accept="application/pdf" multiple/>
         <div class="inner">
           <div style="font-size:15px;margin-bottom:6px">Arraste PDFs aqui ou clique em <b>Selecionar PDFs</b></div>
-          <div class="muted">Tudo roda local, no seu navegador.</div>
+          <div class="muted">Processamento local (nada sai do navegador).</div>
         </div>
       </label>
       <div id="filesInfo" class="muted" style="margin-top:8px"></div>
 
-      <div class="statgrid" style="margin-top:12px">
-        <div class="stat"><div class="k">Total analisado (R$ das despesas + parcelamentos)</div><div class="v money" id="kTotal">—</div></div>
+      <div class="statgrid" style="margin-top:10px">
+        <div class="stat"><div class="k">Total analisado (R$)</div><div class="v money" id="kTotal">—</div></div>
         <div class="stat"><div class="k">Transações</div><div class="v" id="kCount">—</div></div>
         <div class="stat"><div class="k">Maior categoria</div><div class="v" id="kTopCat">—</div></div>
         <div class="stat"><div class="k">Assinaturas detectadas</div><div class="v" id="kSubs">—</div></div>
       </div>
 
-      <div class="tags" id="quickChips"></div>
-      <div class="muted" style="margin-top:6px">Dica: filtre por texto com <span class="kbd">Ctrl/⌘</span>+<span class="kbd">F</span>.</div>
+      <h3>Reconciliação por arquivo</h3>
+      <table id="tblRecon">
+        <thead>
+          <tr>
+            <th>Arquivo</th>
+            <th>Despesas capturadas (R$)</th>
+            <th>Despesas do Resumo (R$)</th>
+            <th>Diferença</th>
+            <th>Saldo desta fatura (Resumo)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="tags" id="chipsRecon"></div>
+      <div id="missList" class="small" style="margin-top:8px"></div>
     </div>
   </section>
 
-  <!-- Coluna direita: Gráficos & Tabelas -->
+  <!-- Coluna 2: Gráficos & tabelas -->
   <section class="card">
     <div class="hd">
       <h2>Visão Analítica</h2>
       <div class="flex right">
         <select id="categoryFilter" class="srch"><option value="">Todas as categorias</option></select>
-        <input id="searchBox" class="srch" type="search" placeholder="Buscar estabelecimento..." />
+        <input id="searchBox" class="srch" type="search" placeholder="Buscar estabelecimento..."/>
       </div>
     </div>
     <div class="bd">
@@ -120,28 +127,25 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
 
       <h3 style="margin-top:16px">Transações</h3>
       <table id="tblTx">
-        <thead><tr><th>Data</th><th>Estabelecimento</th><th>Categoria</th><th class="money">Valor (R$)</th><th>Origem</th></tr></thead>
+        <thead><tr><th>Arquivo</th><th>Data</th><th>Estabelecimento</th><th>Categoria</th><th class="money">Valor (R$)</th><th>Origem</th></tr></thead>
         <tbody></tbody>
       </table>
 
       <h3 style="margin-top:16px">Plano de economia sugerido</h3>
-      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades de economia com números.</div>
+      <div id="adviceBox" class="alert">Carregue as faturas para ver oportunidades com números.</div>
     </div>
   </section>
 </main>
 
 <script>
-/* ===========================
-   Utilidades
-=========================== */
+/* ===== Utils ===== */
 const $$ = s => document.querySelector(s);
 const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
+const sum = (arr,k) => arr.reduce((acc,o)=>acc+(k?o[k]:o),0);
 const pct = (v,tot)=> tot>0 ? (v*100/tot) : 0;
-const parseBRLToNumber = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 
-/* ===========================
-   Categorias (edite se quiser)
-=========================== */
+/* ===== Categorias ===== */
 const categoryRules = [
   { cat:"Combustível", rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC)/i },
   { cat:"Pedágio/Tag & Vias", rx: /(CONCESSIONARIA|RENOVIAS|RODOANEL|ECOPISTA|AUTOBAN|SEM PARAR|BANDEIRANTES)/i },
@@ -161,16 +165,13 @@ const categoryRules = [
   { cat:"Serviços Online", rx: /(HOSTGATOR|DOM[IÍ]NIO|HOSPEDAGEM)/i },
   { cat:"Juros/Parcelamento", rx: /(PARC SALDO DE FATURA|PARCELA\s+\d+\/\d+|CREDI[ÁA]RIO|JUROS|ENCARGOS)/i },
   { cat:"Tarifas/Anuidade", rx: /(ANUIDADE|TARIFA)/i },
-  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
   { cat:"Impostos/Exterior", rx: /(COTA[ÇC][AÃ]O D[ÓO]LAR|IOF DESPESA NO EXTERIOR)/i },
+  { cat:"Bancos/Serviços", rx: /(SCP PLUS|SEGURO CART[AÃ]O)/i },
   { cat:"Outros", rx: /.*/i }
 ];
-
 const subscriptionRules = /(APPLE COM\/BILL|AMAZON (?:MUSIC|PRIME|DIGITAL)|DL\*GOOGLE|GOOGLE ONE|NETFLIX|SPOTIFY|GLOBO|MICROSOFT|ADOBE|PREMIERE)/i;
 
-/* ===========================
-   pdf.js
-=========================== */
+/* ===== pdf.js ===== */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
 async function extractLinesFromPDF(arrayBuffer){
@@ -181,96 +182,199 @@ async function extractLinesFromPDF(arrayBuffer){
     const content=await page.getTextContent();
     const rows=new Map();
     for(const it of content.items){
-      const str=it.str??"";
-      const tr=it.transform||it.matrix||[1,0,0,1,0,0];
-      const x=tr[4],y=tr[5];
-      const yKey=Math.round(y);
-      (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str});
+      const s=it.str??""; const tr=it.transform||it.matrix||[1,0,0,1,0,0]; const x=tr[4], y=tr[5];
+      const yKey=Math.round(y); (rows.get(yKey)??rows.set(yKey,[]).get(yKey)).push({x,str:s});
     }
     const yKeys=[...rows.keys()].sort((a,b)=>b-a);
     for(const y of yKeys){
       const arr=rows.get(y).sort((a,b)=>a.x-b.x);
-      const text=arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
-      if(text) lines.push(text);
+      const t=arr.map(o=>o.str).join(' ').replace(/\s{2,}/g,' ').trim();
+      if(t) lines.push(t);
     }
   }
   return lines;
 }
 
-/* ===========================
-   PARSERS
-=========================== */
-/* ⚠️ REGEX PRINCIPAL (somente R$)
-   - captura a data e a descrição
-   - captura APENAS o PRIMEIRO valor em R$ (coluna em real)
-   - ignora qualquer outro valor na sequência (ex.: coluna em US$)
-*/
+/* ===== Parsers ===== */
+/* PRINCIPAL: pega só a coluna em Real (R$). Se existir coluna US$, ela é ignorada. */
 const rxDespesa = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
+const rxParc    = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
+const rxNeg     = /(^|[\s(])-\d/; // valores negativos => créditos/estornos (ignorar para despesas)
+const rxMoneyAny= /\d{1,3}(?:\.\d{3})*,\d{2}/; // para caçar “linhas suspeitas”
 
-/* Parcelamentos (também só captura o primeiro valor em R$) */
-const rxParc = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})/i;
+function categorize(desc){const r=categoryRules.find(r=>r.rx.test(desc)); return r? r.cat : "Outros";}
 
-const rxNegativo = /(^|[\s(])-\d/;
-
-function categorize(desc){ const r=categoryRules.find(r=>r.rx.test(desc)); return r? r.cat : "Outros"; }
-
-function parseFromLines(lines){
-  const tx=[]; let ctx=null; // DESPESAS | PARCELAMENTOS | CREDITOS
+/* Captura transações e, opcionalmente, lista as linhas com R$ que não casaram (suspeitas) */
+function parseTransacoes(lines, fileName){
+  const tx=[]; let ctx=null; const misses=[];
   for(const raw of lines){
     const line=raw.replace(/\u00A0/g,' ').trim();
 
-    // Alternância de blocos
     if(/^Despesas$/i.test(line)){ ctx="DESPESAS"; continue; }
     if(/^Parcelamentos$/i.test(line)){ ctx="PARCELAMENTOS"; continue; }
     if(/^Pagamento e Demais Créditos$/i.test(line)){ ctx="CREDITOS"; continue; }
     if(ctx==="CREDITOS") continue;
 
-    // Linhas de exterior em R$ (devem entrar)
+    // incluir “COTAÇÃO DÓLAR R$” e “IOF DESPESA NO EXTERIOR” como despesas em R$
     let m;
     m = line.match(/^COTA[ÇC][AÃ]O D[ÓO]LAR R\$\s*([\d\.,]+)/i);
-    if(m){
-      const v=parseBRLToNumber(m[1]);
-      if(isFinite(v) && v>0) tx.push({data:"", desc:"COTAÇÃO DÓLAR", valor:v, cat:"Impostos/Exterior", origem:"Despesas", sub:false});
-      continue;
-    }
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) tx.push({file:fileName,data:"",desc:"COTAÇÃO DÓLAR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false}); continue; }
     m = line.match(/^IOF DESPESA NO EXTERIOR\s+([\d\.,]+)/i);
-    if(m){
-      const v=parseBRLToNumber(m[1]);
-      if(isFinite(v) && v>0) tx.push({data:"", desc:"IOF DESPESA NO EXTERIOR", valor:v, cat:"Impostos/Exterior", origem:"Despesas", sub:false});
+    if(m){ const v=parseBRL(m[1]); if(isFinite(v)&&v>0) tx.push({file:fileName,data:"",desc:"IOF DESPESA NO EXTERIOR",valor:v,cat:"Impostos/Exterior",origem:"Despesas",sub:false}); continue; }
+
+    // pular cabeçalhos obvios
+    if(/^(Compra|VALOR TOTAL|Detalhamento|Resumo da Fatura|Pagamento|Histórico|DEMONSTRATIVO|Opções|Total a Pagar|Melhor Data|Seu Limite|Central|Ouvidoria|SAC|Explore|Vencimento)/i.test(line)){
       continue;
     }
 
-    // Ignorar cabeçalhos gerais
-    if(/^(Compra|VALOR TOTAL|Detalhamento|Resumo da Fatura|Pagamento|Histórico|COTAÇÃO|IOF|DEMONSTRATIVO|Opções|Total a Pagar|Melhor Data|Seu Limite|Central|Ouvidoria|SAC|Explore|Vencimento)/i.test(line)) continue;
-
-    // Tenta casar com despesa/parcelamento
     let mm=null, origem=null;
     if(ctx==="PARCELAMENTOS"){ mm=line.match(rxParc); origem="Parcelamentos"; }
     else { mm=line.match(rxDespesa); origem="Despesas"; }
-    if(!mm) continue;
 
-    const valorStr=mm.groups?.valor||"";
-    if(rxNegativo.test(valorStr)) continue; // ignora créditos/estornos
-    const valor=parseBRLToNumber(valorStr);
-    if(!isFinite(valor) || valor<=0) continue;
-
-    const data=mm.groups?.data||"";
-    const desc=(mm.groups?.desc||"").trim();
-    const cat=categorize(desc);
-    const sub=subscriptionRules.test(desc);
-
-    tx.push({data, desc, valor, cat, origem, sub});
+    if(mm){
+      const valorStr=mm.groups?.valor||"";
+      if(rxNeg.test(valorStr)) continue; // ignora créditos/estornos
+      const valor=parseBRL(valorStr);
+      if(!isFinite(valor)||valor<=0) continue;
+      const data=mm.groups?.data||""; const desc=(mm.groups?.desc||"").trim();
+      tx.push({file:fileName,data,desc,valor,cat:categorize(desc),origem,sub:subscriptionRules.test(desc)});
+    } else {
+      // se estamos dentro de DESPESAS/PARCELAMENTOS e a linha tem valor em R$, marque como potencial “miss”
+      if((ctx==="DESPESAS"||ctx==="PARCELAMENTOS") && rxMoneyAny.test(line)){
+        misses.push({file:fileName, ctx, line});
+      }
+    }
   }
-  return tx;
+  return {tx, misses};
 }
 
-/* ===========================
-   ESTADO & AGREGAÇÃO
-=========================== */
-let ALL_TX=[];
+/* Parser do Resumo da Fatura */
+function parseResumo(lines, fileName){
+  const out={file:fileName,saldoAnterior:0,jurosRemu:0,iof:0,jurosMora:0,multa:0,despesasBR:0,despesasEX:0,pagamentos:0,creditos:0,saldoFatura:0};
+  let inside=false;
+  for(const raw of lines){
+    const line=raw.replace(/\u00A0/g,' ').trim();
+    if(/^Resumo da Fatura$/i.test(line)){ inside=true; continue; }
+    if(!inside) continue;
+    if(/^Detalhamento|^Central|^Ouvidoria|^SAC|^Compra/i.test(line)) break;
+    const g=(re)=>{const m=line.match(re); return m?parseBRL(m[1]):null;};
+    let v;
+    if((v=g(/Saldo Anterior\s+([\d\.,]+)/i))!=null) out.saldoAnterior=v;
+    if((v=g(/Juros Remunerat[óo]rios\s+([\d\.,]+)/i))!=null) out.jurosRemu=v;
+    if((v=g(/IOF\s+([\d\.,]+)/i))!=null) out.iof=v;
+    if((v=g(/Juros de Mora\s+([\d\.,]+)/i))!=null) out.jurosMora=v;
+    if((v=g(/Multa por Atraso\s+([\d\.,]+)/i))!=null) out.multa=v;
+    if((v=g(/Total Despesas\/D[eé]bitos no Brasil\s+([\d\.,]+)/i))!=null) out.despesasBR=v;
+    if((v=g(/Total Despesas\/D[eé]bitos no Exterior\s+([\d\.,]+)/i))!=null) out.despesasEX=v;
+    if((v=g(/Total de pagamentos\s+([\d\.,]+)/i))!=null) out.pagamentos=v;
+    if((v=g(/Total de cr[eé]ditos\s+([\d\.,]+)/i))!=null) out.creditos=v;
+    if((v=g(/Saldo Desta Fatura\s+([\d\.,]+)/i))!=null) out.saldoFatura=v;
+  }
+  return out;
+}
 
-const sum=(arr,k)=>arr.reduce((s,o)=>s+(k?o[k]:o),0);
+/* ===== Estado ===== */
+let ALL_TX=[];         // todas as transações c/ {file,...}
+let RECON=[];          // um resumo por arquivo
+let MISSES=[];         // linhas suspeitas por arquivo (para debug)
 
+/* ===== UI & Fluxo ===== */
+const input=$$("#fileInput"), drop=$$("#dropzone");
+$$("#btnPick").addEventListener('click',()=>input.click());
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--ok)'}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)'}));
+drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name))));
+input.addEventListener('change',e=>handleFiles([...e.target.files]));
+
+$$("#btnClear").addEventListener('click',()=>{
+  input.value=""; ALL_TX=[]; RECON=[]; MISSES=[];
+  $$("#filesInfo").textContent=""; renderRecon(); refreshFilters(); renderAll();
+});
+
+$$("#btnExport").addEventListener('click',()=>{
+  if(!ALL_TX.length) return alert("Nada para exportar.");
+  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
+  const header=["arquivo","data","descricao","categoria","valor","origem","assinatura"];
+  const rows=[header.join(";")];
+  ALL_TX.forEach(r=>rows.push([r.file,r.data,r.desc,r.cat,r.valor.toFixed(2),r.origem,r.sub?"sim":"não"].map(esc).join(";")));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([rows.join("\n")],{type:'text/csv;charset=utf-8'}));
+  a.download=`transacoes-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+});
+
+async function handleFiles(files){
+  if(!files?.length) return;
+  $$("#filesInfo").textContent=`Lendo ${files.length} fatura(s)...`;
+  let all=[], recon=[], missesTotal=[];
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer();
+      const lines=await extractLinesFromPDF(buf);
+      const {tx,misses}=parseTransacoes(lines, f.name); all=all.concat(tx);
+      const r=parseResumo(lines, f.name); recon.push(r);
+      // guarda misses que aparentam ter valor e não foram capturadas
+      missesTotal=missesTotal.concat(misses);
+    }catch(err){ console.error(err); alert(`Falha ao ler "${f.name}": ${err.message||err}`); }
+  }
+  ALL_TX=all; RECON=recon; MISSES=missesTotal;
+  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Lançamentos capturados: ${ALL_TX.length}.`;
+  renderRecon(); refreshFilters(); renderAll();
+}
+
+/* ===== Reconciliação ===== */
+function renderRecon(){
+  const tb=$$("#tblRecon tbody"); tb.innerHTML="";
+  const chips=$$("#chipsRecon"); chips.innerHTML="";
+  const missBox=$$("#missList"); missBox.innerHTML="";
+
+  // monta soma por arquivo
+  const sumByFile = {};
+  ALL_TX.forEach(t => { sumByFile[t.file]=(sumByFile[t.file]||0)+t.valor; });
+
+  let totalAnalise = sum(ALL_TX,'valor');
+  $$("#kTotal").textContent = BRL(totalAnalise);
+  $$("#kCount").textContent = ALL_TX.length;
+  const topCat = byCategory(ALL_TX)[0];
+  $$("#kTopCat").textContent = topCat ? `${topCat.cat} (${BRL(topCat.total)})` : "—";
+  $$("#kSubs").textContent = ALL_TX.filter(t=>t.sub).length;
+
+  RECON.forEach(r=>{
+    const cap = sumByFile[r.file] || 0;
+    const resumoDespesas = (r.despesasBR||0) + (r.despesasEX||0);
+    const diff = +(cap - resumoDespesas).toFixed(2);
+    const ok = Math.abs(diff) < 0.05;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.file} ${ok?'<span class="badge-ok">✔️</span>':'<span class="badge-warn">⚠️</span>'}</td>
+      <td class="money">${BRL(cap)}</td>
+      <td class="money">${BRL(resumoDespesas)}</td>
+      <td class="money" style="color:${ok?'#35c48b':'#ffb020'}">${BRL(diff)}</td>
+      <td class="money">${BRL(r.saldoFatura||0)}</td>
+    `;
+    tb.appendChild(tr);
+
+    const chip=document.createElement('span');
+    chip.className='tag';
+    chip.textContent=`${r.file}: despesas capturadas ${BRL(cap)} • resumo ${BRL(resumoDespesas)} • diff ${BRL(diff)}`;
+    chips.appendChild(chip);
+  });
+
+  // lista de “linhas suspeitas não lidas”
+  if(MISSES.length){
+    const byFile = MISSES.reduce((m,o)=>{ (m[o.file]=m[o.file]||[]).push(o); return m; }, {});
+    let html = `<div class="alert"><b>Linhas suspeitas não lidas</b> (têm valor em R$, mas não casaram com a regex – revise regras/cabeçalhos):</div>`;
+    for(const file in byFile){
+      html += `<div style="margin-top:8px"><b>${file}</b><ul class="small">`;
+      byFile[file].slice(0,20).forEach(m => { html += `<li>[${m.ctx}] <span class="mono">${m.line}</span></li>`; });
+      if(byFile[file].length>20) html += `<li>… (+${byFile[file].length-20})</li>`;
+      html += `</ul></div>`;
+    }
+    missBox.innerHTML = html;
+  }
+}
+
+/* ===== Agregações ===== */
 function byCategory(arr){
   const m=new Map();
   arr.forEach(t=>{
@@ -282,101 +386,30 @@ function byCategory(arr){
 function byMerchant(arr){
   const m=new Map();
   arr.forEach(t=>{
-    const key=t.desc.toUpperCase().replace(/\s+/g,' ').slice(0,60);
+    const key=t.desc.toUpperCase().replace(/\s+/g,' ').slice(0,70);
     const a=m.get(key)||{k:key,v:0,c:0};
     a.v+=t.valor; a.c++; m.set(key,a);
   });
   return [...m.values()].sort((a,b)=>b.v-a.v);
 }
 
-/* ===========================
-   UI & EXPORT
-=========================== */
-const input=$$("#fileInput"), drop=$$("#dropzone");
-const btnPick=$$("#btnPick"), btnClear=$$("#btnClear"), btnExport=$$("#btnExport"), btnPlan=$$("#btnPlan");
-
-btnPick.addEventListener('click',()=>input.click());
-["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--ok)'}));
-["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)'}));
-drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name))));
-input.addEventListener('change',e=>handleFiles([...e.target.files]));
-
-btnClear.addEventListener('click',()=>{
-  input.value=""; ALL_TX=[];
-  $$("#filesInfo").textContent="";
-  refreshFilters(); updateUI(); renderCharts();
-});
-
-btnExport.addEventListener('click',()=>{
-  if(!ALL_TX.length) return alert("Nada para exportar.");
-  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
-  const header=["data","descricao","categoria","valor","origem","assinatura"];
-  const lines=[header.join(";")];
-  ALL_TX.forEach(r=>lines.push([r.data,r.desc,r.cat,r.valor.toFixed(2),r.origem,r.sub?"sim":"não"].map(esc).join(";")));
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([lines.join("\n")],{type:'text/csv;charset=utf-8'}));
-  a.download=`transacoes-${new Date().toISOString().slice(0,10)}.csv`; a.click();
-});
-
-btnPlan.addEventListener('click',()=>{
-  if(!ALL_TX.length) return alert("Carregue as faturas.");
-  const cats=byCategory(ALL_TX);
-  const cut1=(cats[0]?.total||0)*0.15, cut2=(cats[1]?.total||0)*0.10, cutRest=cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
-  const monthly=cut1+cut2+cutRest;
-  const txt=`PLANO (resumo)
-Total analisado: ${BRL(sum(ALL_TX,'valor'))}
-Cortes: ${cats[0]?.cat||"-"} -15% (${BRL(cut1)}), ${cats[1]?.cat||"-"} -10% (${BRL(cut2)}), demais -7% (${BRL(cutRest)})
-Economia mensal: ${BRL(monthly)} • 12 meses: ${BRL(monthly*12)}`;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
-  a.download=`plano-${new Date().toISOString().slice(0,10)}.txt`; a.click();
-});
-
-async function handleFiles(files){
-  if(!files?.length) return;
-  $$("#filesInfo").textContent=`Lendo ${files.length} fatura(s)...`;
-  let parsed=[];
-  for(const f of files){
-    try{
-      const buf=await f.arrayBuffer();
-      const lines=await extractLinesFromPDF(buf);
-      parsed=parsed.concat(parseFromLines(lines)); // captura apenas R$
-    }catch(err){ console.error(err); alert(`Falha em "${f.name}": ${err.message||err}`); }
-  }
-  ALL_TX=parsed;
-  $$("#filesInfo").textContent=`Processadas ${files.length} fatura(s). Lançamentos (somando só R$): ${ALL_TX.length}.`;
-  refreshFilters(); updateUI(); renderCharts();
-}
-
+/* ===== Render geral ===== */
 function refreshFilters(){
   const cats=[...new Set(ALL_TX.map(t=>t.cat))].sort();
   const sel=$$("#categoryFilter"); const cur=sel.value;
-  sel.innerHTML=`<option value="">Todas as categorias</option>`+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
   if(cats.includes(cur)) sel.value=cur;
 }
-$$("#categoryFilter").addEventListener('change',()=>{updateUI();renderCharts();});
-$$("#searchBox").addEventListener('input',()=>{updateUI();renderCharts();});
+$$("#categoryFilter").addEventListener('change',()=>renderAll());
+$$("#searchBox").addEventListener('input',()=>renderAll());
 
-function updateUI(){
+function renderAll(){
   const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
   const view=ALL_TX.filter(t=>(!cat||t.cat===cat)&&(!q||t.desc.toLowerCase().includes(q)));
 
-  const total=sum(view,'valor');
-  $$("#kTotal").textContent=BRL(total);
-  $$("#kCount").textContent=view.length;
-  const top=byCategory(view)[0]; $$("#kTopCat").textContent=top?`${top.cat} (${BRL(top.total)})`:"—";
-  $$("#kSubs").textContent=view.filter(t=>t.sub).length;
-
-  // chips de top categorias
-  const chips=$$("#quickChips"); chips.innerHTML="";
-  byCategory(view).slice(0,3).forEach(r=>{
-    const s=document.createElement('span'); s.className='tag';
-    s.textContent=`${r.cat}: ${BRL(r.total)} (${(100*r.total/(total||1)).toFixed(1)}%)`;
-    chips.appendChild(s);
-  });
-
-  // tabela categorias
+  // categorias
   const tbC=$$("#tblCats tbody"); tbC.innerHTML="";
+  const total=sum(view,'valor');
   byCategory(view).forEach(r=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><span class="pill">${r.cat}</span></td>
@@ -386,11 +419,12 @@ function updateUI(){
     tbC.appendChild(tr);
   });
 
-  // tabela transações
+  // transações
   const tbT=$$("#tblTx tbody"); tbT.innerHTML="";
   view.forEach(t=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="mono">${t.data}</td>
+    tr.innerHTML=`<td class="mono small">${t.file}</td>
+      <td class="mono">${t.data}</td>
       <td>${t.desc}</td>
       <td><span class="pill">${t.cat}</span></td>
       <td class="money">${BRL(t.valor)}</td>
@@ -398,16 +432,19 @@ function updateUI(){
     tbT.appendChild(tr);
   });
 
-  // plano de economia (rápido)
-  const cats=byCategory(view);
-  const cut1=(cats[0]?.total||0)*0.15, cut2=(cats[1]?.total||0)*0.10, cutRest=cats.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
-  const monthly=cut1+cut2+cutRest;
-  $$("#adviceBox").innerHTML=`Potencial mensal: <b class="ok">${BRL(monthly)}</b> (15% em <b>${cats[0]?.cat||"—"}</b>, 10% em <b>${cats[1]?.cat||"—"}</b>, 7% em ${cats.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')||'—'}).`;
+  // gráficos
+  const cats=byCategory(view).map(r=>({k:r.cat,v:r.total}));
+  drawDonut($$("#chDonut").getContext('2d'), cats);
+  drawPareto($$("#chPareto").getContext('2d'), cats);
+
+  // plano
+  const top=byCategory(view);
+  const cut1=(top[0]?.total||0)*0.15, cut2=(top[1]?.total||0)*0.10, cutRest=top.slice(2,5).reduce((s,c)=>s+c.total*0.07,0);
+  const monthly = cut1+cut2+cutRest;
+  $$("#adviceBox").innerHTML = `Potencial mensal: <b class="ok">${BRL(monthly)}</b> (15% em <b>${top[0]?.cat||"—"}</b>, 10% em <b>${top[1]?.cat||"—"}</b>, 7% em ${top.slice(2,5).map(c=>`<b>${c.cat}</b>`).join(', ')||'—'}).`;
 }
 
-/* ===========================
-   GRÁFICOS (Canvas puro)
-=========================== */
+/* ===== Gráficos ===== */
 function clearCanvas(ctx){const {width:w,height:h}=ctx.canvas; ctx.clearRect(0,0,w,h);}
 function drawDonut(ctx, data){
   clearCanvas(ctx);
@@ -415,50 +452,35 @@ function drawDonut(ctx, data){
   const r=Math.min(w,h)*0.32, cx=w/2, cy=h/2, hole=r*0.60;
   const tot=data.reduce((s,d)=>s+d.v,0)||1; let a0=-Math.PI/2;
   data.forEach((d,i)=>{
-    const a=a0 + 2*Math.PI*(d.v/tot);
+    const a=a0+2*Math.PI*(d.v/tot);
     ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.fillStyle = `hsl(${(i*63)%360} 70% 55%)`;
+    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
     ctx.arc(cx,cy,r,a0,a); ctx.arc(cx,cy,hole,a,a0,true); ctx.fill();
     a0=a;
   });
   ctx.fillStyle="#cfd6ff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.font="700 28px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), cx, cy-10);
-  ctx.font="500 16px ui-sans-serif"; ctx.fillText("Total", cx, cy+12);
+  ctx.font="700 26px ui-sans-serif"; ctx.fillText((tot).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), cx, cy-10);
+  ctx.font="500 14px ui-sans-serif"; ctx.fillText("Total", cx, cy+12);
 }
 function drawPareto(ctx,data){
   clearCanvas(ctx);
-  const w=ctx.canvas.width=ctx.canvas.clientWidth*2,h=ctx.canvas.clientHeight*2;
-  const pad=50,plotW=w-2*pad,plotH=h-2*pad,x0=pad,y0=h-pad;
+  const w=ctx.canvas.width=ctx.canvas.clientWidth*2, h=ctx.canvas.height=ctx.canvas.clientHeight*2;
+  const pad=50, plotW=w-2*pad, plotH=h-2*pad, x0=pad, y0=h-pad;
   const tot=data.reduce((s,d)=>s+d.v,0)||1; const max=Math.max(...data.map(d=>d.v),1);
-  // eixos
   ctx.strokeStyle="#2c3156"; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y0-plotH); ctx.lineTo(x0+plotW,y0-plotH); ctx.stroke();
-  // barras e curva
   let acc=0;
   data.forEach((d,i)=>{
     const step=plotW/data.length, x=x0+i*step+6, bw=step-12;
     const hBar=(d.v/max)*plotH;
-    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`;
-    ctx.fillRect(x,y0-hBar,bw,hBar);
-    acc+=d.v;
-    const xC=x0+(i+0.5)*step, yC=y0-(acc/tot)*plotH;
+    ctx.fillStyle=`hsl(${(i*63)%360} 70% 55%)`; ctx.fillRect(x,y0-hBar,bw,hBar);
+    acc+=d.v; const xC=x0+(i+0.5)*step, yC=y0-(acc/tot)*plotH;
     ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(xC,yC,4,0,6.283); ctx.fill();
-    if(i){
-      const xP=x0+(i-0.5)*step, yP=y0-((acc-d.v)/tot)*plotH;
-      ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();
-    }
+    if(i){const xP=x0+(i-0.5)*step, yP=y0-((acc-d.v)/tot)*plotH; ctx.strokeStyle="#cfd6ff"; ctx.beginPath(); ctx.moveTo(xP,yP); ctx.lineTo(xC,yC); ctx.stroke();}
   });
-  // guia 80%
   ctx.setLineDash([6,6]); ctx.strokeStyle="#ffb020aa";
   const y80=y0-0.8*plotH; ctx.beginPath(); ctx.moveTo(x0,y80); ctx.lineTo(x0+plotW,y80); ctx.stroke();
   ctx.setLineDash([]);
-}
-function renderCharts(){
-  const cat=$$("#categoryFilter").value, q=$$("#searchBox").value.trim().toLowerCase();
-  const view=ALL_TX.filter(t=>(!cat||t.cat===cat)&&(!q||t.desc.toLowerCase().includes(q)));
-  const cats=byCategory(view).map(r=>({k:r.cat,v:r.total}));
-  drawDonut($$("#chDonut").getContext('2d'), cats);
-  drawPareto($$("#chPareto").getContext('2d'), cats);
 }
 </script>
 </body>
