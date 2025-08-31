@@ -4,9 +4,10 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Fatura Santander — Análises</title>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
+<!-- PDF.js versão mais estável p/ Safari -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.12.313/build/pdf.min.js"></script>
 <style>
-:root{--bg:#0f1221;--card:#171a2e;--ink:#eef2ff;--muted:#9aa3b2;--line:#2c3156;--chip:#232842;--accent:#5b8def;--ok:#35c48b}
+:root{--bg:#0f1221;--card:#171a2e;--ink:#eef2ff;--muted:#9aa3b2;--line:#2c3156;--chip:#232842;--accent:#5b8def;--ok:#35c48b;--err:#ff6b6b}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:500 14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
 header{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -18,8 +19,8 @@ main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
 .bd{padding:14px 16px}
 .btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
 .btn:hover{border-color:var(--accent)}
-.drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221)}
-.drop input{display:none}.drop .inner{text-align:center}
+.drop{display:flex;align-items:center;justify-content:center;border:2px dashed var(--accent);border-radius:12px;padding:22px;background:linear-gradient(180deg,#101433,#0f1221);text-align:center}
+.drop input{display:none}
 .grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
 @media(max-width:1200px){.grid{grid-template-columns:1fr}}
 table{width:100%;border-collapse:collapse}
@@ -35,8 +36,8 @@ tfoot td{font-weight:700}
 .kpi .k{font-size:12px;color:var(--muted)} .kpi .v{font-size:18px;margin-top:2px}
 .pill{font-size:12px;color:#c9d2ff;background:rgba(91,141,239,.15);border:1px solid rgba(91,141,239,.35);padding:2px 8px;border-radius:999px}
 .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px solid var(--line);border-radius:10px;padding:10px;font:500 13px/1.5 ui-monospace,SFMono,Consolas,monospace}
-.copy-ok{color:var(--ok);font-weight:700}
+textarea{width:100%;min-height:160px;background:#0f1221;color:#eef2ff;border:1px solid var(--line);border-radius:10px;padding:10px;font:500 13px/1.5 ui-monospace,SFMono,Consolas,monospace}
+#errBox{display:none;margin-top:10px;border:1px solid rgba(255,107,107,.45);background:#2a1416;color:#ffdede;padding:10px;border-radius:10px;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -57,13 +58,14 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
     </div>
     <div class="bd">
       <label class="drop">
-        <input id="fileInput" type="file" accept="application/pdf" multiple/>
-        <div class="inner">
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple/>
+        <div>
           <div style="font-size:15px;margin-bottom:6px">Arraste aqui ou clique em <b>Selecionar PDFs</b></div>
           <div class="muted">Tudo ocorre no seu navegador.</div>
         </div>
       </label>
       <div id="filesInfo" class="small muted" style="margin-top:8px"></div>
+      <div id="errBox"></div>
 
       <div class="kpis" style="margin-top:10px">
         <div class="kpi"><div class="k">Itens de Despesa</div><div class="v" id="kDespCount">—</div></div>
@@ -119,13 +121,28 @@ textarea{width:100%;min-height:180px;background:#0f1221;color:#eef2ff;border:1px
 </main>
 
 <script>
-/* ================= Utils ================= */
+/* ===== Helpers ===== */
 const $$ = s => document.querySelector(s);
 const BRL = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const parseBRL = s => Number(String(s).replace(/\s+/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''));
 const sum = (arr,k) => arr.reduce((a,o)=>a+(k?o[k]:o),0);
+const showErr = (msg, err) => {
+  const box = $$('#errBox');
+  box.style.display='block';
+  box.textContent = '⚠️ ' + msg + (err ? '\\n' + (err.stack || err.message || String(err)) : '');
+  console.error(msg, err);
+};
 
-/* ================= Categorias (regras simples) ================= */
+/* ===== PDF.js init (compat) ===== */
+const PDFNS = (window.pdfjsLib) ? window.pdfjsLib : (window['pdfjs-dist/build/pdf'] || null);
+if(!PDFNS){
+  showErr('PDF.js não carregou. Verifique sua conexão ou tente recarregar a página.');
+}
+if(PDFNS){
+  PDFNS.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.12.313/build/pdf.worker.min.js';
+}
+
+/* ===== Categorias simples ===== */
 const categoryRules = [
   { cat:"Combustível",           rx: /(ABASTEC\*ABASTECE AI|AUTO\s*POSTO|POSTO\s|ABASTEC|SHELL|IPIRANGA)/i },
   { cat:"Pedágio/Tag & Vias",    rx: /(SEM PARAR|CONCESSIONARIA|RODOANEL|ECOPISTA|AUTOBAN|BANDEIRANTES)/i },
@@ -148,11 +165,10 @@ const categoryRules = [
 ];
 const categorize = (desc)=> (categoryRules.find(r=>r.rx.test(desc))||{cat:"Outros"}).cat;
 
-/* ================= PDF.js (rodar local) ================= */
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
-
+/* ===== Extração por colunas ===== */
 async function extractByColumns(arrayBuffer){
-  const pdf=await pdfjsLib.getDocument({data:arrayBuffer, disableWorker:true}).promise;
+  if(!PDFNS) throw new Error('PDF.js não disponível.');
+  const pdf=await PDFNS.getDocument({data:new Uint8Array(arrayBuffer), disableWorker:true}).promise;
   const all=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
@@ -163,7 +179,7 @@ async function extractByColumns(arrayBuffer){
     }).filter(t=>t.str);
     if(!toks.length) continue;
 
-    // separa 2 colunas por k-means 1D simplificado
+    // separa 2 colunas
     let c0=Math.min(...toks.map(t=>t.x)), c1=Math.max(...toks.map(t=>t.x));
     for(let i=0;i<8;i++){
       const L=[], R=[]; toks.forEach(t=> (Math.abs(t.x-c0)<=Math.abs(t.x-c1)?L:R).push(t));
@@ -192,8 +208,7 @@ async function extractByColumns(arrayBuffer){
   return all;
 }
 
-/* ================= Regras de parsing ================= */
-/* pega só o 1º valor (R$) – ignora um segundo (ex.: US$ ao fim da linha) */
+/* ===== Parsing ===== */
 const RX_DESP = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 const RX_PARC = /^\s*(?:\d+\s+)?(?<data>\d{2}\/\d{2})\s+(?<desc>.+?)\s+\d{1,2}\/\d{1,2}\s+(?<valor>\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$/i;
 
@@ -206,7 +221,6 @@ const IS_PARC = l => /^Parcelamentos$/i.test(l) || /^\[Parcelamentos\]/i.test(l)
 const IS_CRED = l => /^Pagamento e Demais Créditos$/i.test(l);
 const IS_RESU = l => /^Resumo da Fatura$/i.test(l);
 
-/* linhas de cabeçalho, rodapé e textos informativos a ignorar */
 const RX_IGNORE = [
   /^\[(DESPESAS|PARCELAMENTOS)\]\s+VALOR\s+TOTAL\b/i,
   /^VALOR\s+TOTAL\b/i,
@@ -217,7 +231,6 @@ const RX_IGNORE = [
   /^\(\+\)|^\(-\)|^Saldo Anterior\b|^Saldo Desta Fatura\b/i
 ];
 
-/* ================= Parser ================= */
 function parseFatura(lines, fileName){
   const despesas=[], parcelamentos=[], missDesp=[], missParc=[];
   let ctx="", pending=null;
@@ -234,7 +247,6 @@ function parseFatura(lines, fileName){
     if(ctx==="CRED" || ctx==="RESU") continue;
     if(RX_IGNORE.some(r=>r.test(line))) continue;
 
-    // linha completa (preferível)
     let mm=null, tipo=null;
     if((mm=line.match(RX_PARC))){ tipo="PARC"; }
     else if((mm=line.match(RX_DESP))){ tipo="DESP"; }
@@ -248,7 +260,7 @@ function parseFatura(lines, fileName){
       pending=null; continue;
     }
 
-    // linha quebrada (data + desc) -> valor BRL na próxima
+    // linha quebrada: data + descrição, valor na próxima
     const hasDate=/^\s*(?:\d+\s+)?\d{2}\/\d{2}\b/.test(line);
     if(hasDate && !RX_ANY_MONEY.test(line)){
       const data=(line.match(/\d{2}\/\d{2}/)||[""])[0];
@@ -268,7 +280,6 @@ function parseFatura(lines, fileName){
       }
     }
 
-    // tinha número em formato R$, mas não casou: registrar para auditoria
     if((ctx==="DESP"||ctx==="PARC") && RX_ANY_MONEY.test(line)){
       (ctx==="PARC"?missParc:missDesp).push({file:fileName,line});
     }
@@ -276,10 +287,9 @@ function parseFatura(lines, fileName){
   return {despesas, parcelamentos, missDesp, missParc};
 }
 
-/* ================= Estado ================= */
+/* ===== Estado/Render ===== */
 let DESP=[], PARC=[], MISS_D=[], MISS_P[];
 
-/* ================= Renderização ================= */
 function renderRows(tbody, rows){
   tbody.innerHTML="";
   rows.forEach(r=>{
@@ -308,7 +318,7 @@ function renderMiss(){
     let html="<b>Linhas com R$ não capturadas</b><br/>Se alguma é lançamento válido, me diga a linha para ajustar o padrão:";
     for(const f in byFile){
       html+=`<div style="margin-top:6px"><b>${f}</b><ul class="small">`;
-      byFile[f].slice(0,20).forEach(x=> html+=`<li><span class="mono">${x.line}</span></li>`);
+      byFile[f].slice(0,20).forEach(x=> html+=`<li><span class="mono">${x.line}</span></li>`;
       if(byFile[f].length>20) html+=`<li>… (+${byFile[f].length-20})</li>`;
       html+="</ul></div>";
     }
@@ -317,8 +327,6 @@ function renderMiss(){
   show($$("#missDesp"), MISS_D);
   show($$("#missParc"), MISS_P);
 }
-
-/* ================= Ranking ================= */
 function byCategory(rows){
   const m=new Map();
   rows.forEach(r=>{
@@ -340,8 +348,6 @@ function renderRank(){
     tb.appendChild(tr);
   });
 }
-
-/* ================= Prompt (geração automática) ================= */
 function tableToText(rows){
   const lines = ["Categoria | Total | % | Qtd"];
   const total = sum(rows,'valor') || 1;
@@ -349,14 +355,13 @@ function tableToText(rows){
   cats.forEach(c=>{
     lines.push(`${c.cat} | ${BRL(c.total)} | ${(100*c.total/total).toFixed(1)}% | ${c.count}`);
   });
-  return lines.join("\n");
+  return lines.join("\\n");
 }
 function buildPrompt(){
   const includeParc=$$("#chkIncluiParc").checked;
   const base = includeParc ? DESP.concat(PARC) : DESP.slice();
-
   const prompt = [
-"Você é meu consultor financeiro. Abaixo estão os dados da minha fatura (extraídos do meu site).",
+"Você é meu consultor financeiro. Abaixo estão os dados da minha fatura.",
 "Analise considerando apenas a coluna “R$”.",
 "",
 "Tarefas:",
@@ -368,57 +373,56 @@ function buildPrompt(){
 "",
 "---",
 "Despesas (Data | Descrição | Categoria | R$):"
-  ].join("\n");
-
-  const despLines = DESP.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
-  const parcLines = PARC.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\n") || "(sem itens)";
+  ].join("\\n");
+  const despLines = DESP.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\\n") || "(sem itens)";
+  const parcLines = PARC.map(r=>`${r.data} | ${r.desc} | ${r.cat} | ${BRL(r.valor)}`).slice(0,50).join("\\n") || "(sem itens)";
   const rankBlock = tableToText(base);
-
-  return [
-    prompt,
-    despLines,
-    "",
-    "Parcelamentos (Data | Descrição | Categoria | R$):",
-    parcLines,
-    "",
-    "Ranking por categoria:",
-    rankBlock
-  ].join("\n");
+  return [prompt, despLines, "", "Parcelamentos (Data | Descrição | Categoria | R$):", parcLines, "", "Ranking por categoria:", rankBlock].join("\\n");
 }
 async function generateAndCopyPrompt(){
   const txt = buildPrompt();
   $$("#promptBox").value = txt;
   try{
     await navigator.clipboard.writeText(txt);
-    $$("#copyStatus").innerHTML = "<span class='copy-ok'>✅ Prompt copiado para a área de transferência.</span>";
+    $$("#copyStatus").innerHTML = "<span style='color:var(--ok);font-weight:700'>✅ Prompt copiado para a área de transferência.</span>";
   }catch(e){
     $$("#copyStatus").textContent = "Prompt gerado. Se não copiou automaticamente, selecione e copie manualmente.";
   }
 }
 
-/* ================= Fluxo ================= */
+/* ===== Fluxo ===== */
 const input=$$("#fileInput"); 
 $$("#btnPick").addEventListener('click',()=>input.click());
 $$("#chkIncluiParc").addEventListener('change',()=>renderRank());
 $$("#btnPrompt").addEventListener('click',()=>generateAndCopyPrompt());
 
-input.addEventListener('change', e=>handleFiles([...e.target.files]));
-document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();handleFiles([...e.dataTransfer.files].filter(f=>/pdf$/i.test(f.name)));});
-['dragover','dragenter'].forEach(ev=>document.querySelector('.drop').addEventListener(ev,e=>e.preventDefault()));
+['dragover','dragenter','drop'].forEach(ev=>{
+  document.querySelector('.drop').addEventListener(ev, e=>{
+    e.preventDefault();
+    if(ev==='drop'){
+      const files = [...(e.dataTransfer?.files||[])].filter(f=>/pdf$/i.test(f.name));
+      if(files.length) handleFiles(files);
+    }
+  });
+});
 
+input.addEventListener('change', e=>handleFiles([...(e.target.files||[])]));
 async function handleFiles(files){
   if(!files?.length) return;
   $$("#filesInfo").textContent=`Lendo ${files.length} arquivo(s)…`;
+  $$('#errBox').style.display='none';
   DESP=[]; PARC=[]; MISS_D=[]; MISS_P=[];
   for(const f of files){
     try{
-      const buf=await f.arrayBuffer();
-      const colLines=await extractByColumns(buf);
+      const buf = await f.arrayBuffer();
+      const colLines = await extractByColumns(buf);
       const {despesas,parcelamentos,missDesp,missParc}=parseFatura(colLines, f.name);
       DESP=DESP.concat(despesas);
       PARC=PARC.concat(parcelamentos);
       MISS_D=MISS_D.concat(missDesp); MISS_P=MISS_P.concat(missParc);
-    }catch(err){ console.error(err); alert(`Erro lendo "${f.name}": ${err.message||err}`); }
+    }catch(err){
+      showErr(`Erro lendo "${f.name}"`, err);
+    }
   }
   const ord=(a,b)=> (a.data||"").localeCompare(b.data||"") || a.desc.localeCompare(b.desc);
   DESP.sort(ord); PARC.sort(ord);
