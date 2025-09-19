@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reconhecimento Facial (client-side)</title>
+  <style>
+    :root { --bg:#0f1220; --card:#171b2e; --text:#e9ecf1; --muted:#9aa3b2; --accent:#5aa8ff; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    header{padding:18px 20px;border-bottom:1px solid #22263d}
+    h1{margin:0;font-size:18px}
+    main{display:grid;grid-template-columns:1fr 380px;gap:16px;padding:16px}
+    @media (max-width: 980px){ main{grid-template-columns:1fr} }
+    .card{background:var(--card);border:1px solid #22263d;border-radius:12px; padding:14px}
+    .stack{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .stack > *{flex: none}
+    .grow{flex:1}
+    input[type="text"]{width:100%;background:#0e1121;border:1px solid #2a2f4a;color:var(--text);border-radius:8px;padding:10px}
+    button{background:#1e2440;border:1px solid #2a2f4a;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer}
+    button.primary{background:var(--accent);border-color:#3f86d6;color:#081321;font-weight:600}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    small{color:var(--muted)}
+    .pill{display:inline-block;font-size:12px;padding:4px 8px;border:1px solid #2a2f4a;border-radius:999px;color:var(--muted)}
+    .video-wrap{position:relative; border-radius:12px; overflow:hidden; background:#0c0f1f; aspect-ratio:16/9}
+    video,canvas{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+    .log{max-height:160px; overflow:auto; background:#0e1121; border:1px solid #2a2f4a; border-radius:8px; padding:8px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#cfd6e6}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .tag{background:#0e1121;border:1px solid #2a2f4a;border-radius:8px;padding:6px 8px;color:#cfd6e6;font-size:12px}
+    .danger{color:#ff7070}
+  </style>
+  <!-- face-api.js (usa tfjs por baixo). Versão fixada -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+</head>
+<body>
+  <header class="row">
+    <h1>Reconhecimento Facial (demo local)</h1>
+    <span class="pill" id="status">Carregando modelos…</span>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="video-wrap">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="stack">
+          <button id="btnStart" class="primary">Iniciar câmera</button>
+          <button id="btnStop">Parar câmera</button>
+          <span class="tag" id="camInfo">Câmera parada</span>
+        </div>
+        <div class="stack">
+          <span class="tag" id="facesCount">0 rosto(s)</span>
+          <span class="tag" id="fps">FPS: —</span>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="stack">
+          <input id="nameInput" class="grow" type="text" placeholder="Nome para cadastro (ex.: Renato)" />
+          <button id="btnEnroll">Cadastrar rosto</button>
+          <button id="btnRecognize" class="primary">Reconhecer</button>
+          <button id="btnIdle">Parar</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <small>Estado: <strong id="mode">IDLE</strong> • Threshold: <span id="threshVal">0.6</span> (menor = mais exigente)</small>
+        <input id="thresh" type="range" min="0.35" max="0.8" step="0.01" value="0.6" style="width:100%">
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3 style="margin:6px 0 8px">Base de rostos</h3>
+      <div class="row">
+        <div class="stack">
+          <button id="btnExport">Baixar JSON</button>
+          <label class="button">
+            <input id="fileImport" type="file" accept="application/json" style="display:none">
+            <button id="btnImport">Importar JSON</button>
+          </label>
+        </div>
+        <button id="btnClear" class="danger">Apagar Base</button>
+      </div>
+      <div style="margin-top:10px">
+        <small id="dbInfo">Nenhum rosto cadastrado.</small>
+      </div>
+
+      <h3 style="margin:14px 0 8px">Log</h3>
+      <div class="log" id="log"></div>
+
+      <h3 style="margin:14px 0 8px">Dicas</h3>
+      <ul style="margin:0 0 0 18px; padding:0">
+        <li>Cadastre 3–5 amostras por pessoa (ângulos/expressões diferentes).</li>
+        <li>Ambiente bem iluminado melhora MUITO o resultado.</li>
+        <li>Se aparecer “unknown”, suba o limite (threshold) ou cadastre mais amostras.</li>
+      </ul>
+    </aside>
+  </main>
+
+  <script>
+    // --------- Utilidades UI ----------
+    const $ = sel => document.querySelector(sel);
+    const logEl = $('#log');
+    function log(msg){ const t = new Date().toLocaleTimeString(); logEl.innerText = `[${t}] ${msg}\n` + logEl.innerText; }
+    function setStatus(text){ $('#status').textContent = text; }
+    function updateDbInfo(){ const db = loadDB(); const total = db.reduce((a,p)=>a + p.descriptors.length, 0); $('#dbInfo').textContent = db.length ? `${db.length} pessoa(s), ${total} amostras` : 'Nenhum rosto cadastrado.'; }
+    function loadDB(){ try{ return JSON.parse(localStorage.getItem('face-db')||'[]'); }catch(e){ return []; } }
+    function saveDB(db){ localStorage.setItem('face-db', JSON.stringify(db)); updateDbInfo(); }
+    updateDbInfo();
+
+    // --------- Estado ---------
+    let stream = null;
+    let mode = 'IDLE'; // IDLE | ENROLL | RECOGNIZE
+    let lastTime = performance.now();
+    let detections = [];
+    let matcher = null; // faceapi.FaceMatcher
+    let rafId = null;
+
+    const video = $('#video');
+    const canvas = $('#overlay');
+    const ctx = canvas.getContext('2d');
+    const facesCount = $('#facesCount');
+    const fpsEl = $('#fps');
+
+    const thresholdInput = $('#thresh');
+    const thresholdVal = $('#threshVal');
+
+    thresholdInput.addEventListener('input', ()=> {
+      thresholdVal.textContent = thresholdInput.value;
+      buildMatcher();
+    });
+
+    function resizeCanvas(){
+      const { videoWidth:w, videoHeight:h } = video;
+      if(!w || !h) return;
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    // --------- Câmera ----------
+    async function startCamera(){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio:false });
+        video.srcObject = stream;
+        await video.play();
+        $('#camInfo').textContent = 'Câmera ligada';
+        log('Câmera iniciada.');
+        resizeCanvas();
+        tick();
+      }catch(e){
+        log('Erro câmera: ' + e.message);
+        $('#camInfo').textContent = 'Erro ao ligar';
+      }
+    }
+    function stopCamera(){
+      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+      cancelAnimationFrame(rafId);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      $('#camInfo').textContent = 'Câmera parada';
+      facesCount.textContent = '0 rosto(s)';
+      fpsEl.textContent = 'FPS: —';
+      log('Câmera parada.');
+    }
+    $('#btnStart').onclick = startCamera;
+    $('#btnStop').onclick = stopCamera;
+
+    // --------- Modelos (face-api.js) ----------
+    async function loadModels(){
+      // Pesos hospedados via jsDelivr (face-api.js@0.22.2)
+      const base = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(base);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(base);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(base);
+    }
+
+    // Constrói FaceMatcher a partir do DB e threshold atual
+    function buildMatcher(){
+      const db = loadDB();
+      const labeled = db.map(entry => {
+        const descs = entry.descriptors.map(d => new Float32Array(d));
+        return new faceapi.LabeledFaceDescriptors(entry.label, descs);
+      });
+      matcher = labeled.length ? new faceapi.FaceMatcher(labeled, parseFloat(thresholdInput.value)) : null;
+      log('Matcher atualizado: ' + (matcher ? `${db.length} pessoa(s)` : 'vazio'));
+    }
+
+    // --------- Cadastro ---------
+    async function enroll(name){
+      name = (name || '').trim();
+      if(!name){ alert('Informe um nome para cadastro.'); return; }
+      const det = await detectSingle();
+      if(!det){ log('Cadastro falhou: nenhum rosto detectado.'); return; }
+      const desc = Array.from(det.descriptor);
+
+      const db = loadDB();
+      let person = db.find(p => p.label === name);
+      if(!person){ person = { label: name, descriptors: [] }; db.push(person); }
+      person.descriptors.push(desc);
+      saveDB(db);
+      buildMatcher();
+      log(`Cadastrado "${name}" (total amostras: ${person.descriptors.length}).`);
+    }
+
+    // --------- Reconhecimento (loop) ---------
+    async function tick(){
+      if(!video.srcObject){ rafId = requestAnimationFrame(tick); return; }
+      resizeCanvas();
+      const ts = performance.now();
+      const detectionsNow = await faceapi
+        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }))
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+      detections = detectionsNow;
+      facesCount.textContent = `${detections.length} rosto(s)`;
+
+      // desenhar
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const displaySize = { width: video.videoWidth||canvas.width, height: video.videoHeight||canvas.height };
+      const resized = faceapi.resizeResults(detections, displaySize);
+
+      resized.forEach((det,i) => {
+        const { x,y,width,height } = det.detection.box;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#5aa8ff';
+        ctx.strokeRect(x,y,width,height);
+
+        let label = '—';
+        if(mode==='RECOGNIZE' && matcher){
+          const best = matcher.findBestMatch(det.descriptor);
+          label = `${best.label} (${best.distance.toFixed(2)})`;
+        } else if(mode==='ENROLL'){
+          label = 'capturar…';
+        }
+        ctx.fillStyle = 'rgba(14,17,33,.75)';
+        ctx.fillRect(x, y-24, ctx.measureText(label).width + 14, 22);
+        ctx.fillStyle = '#e9ecf1';
+        ctx.font = '14px system-ui, -apple-system, Segoe UI, Roboto';
+        ctx.fillText(label, x+7, y-8);
+      });
+
+      // FPS
+      const delta = ts - lastTime;
+      if(delta > 0){ fpsEl.textContent = 'FPS: ' + Math.round(1000/delta); }
+      lastTime = ts;
+      rafId = requestAnimationFrame(tick);
+    }
+
+    async function detectSingle(){
+      const res = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+      return res || null;
+    }
+
+    // --------- Eventos UI de modo ---------
+    $('#btnEnroll').onclick = async () => {
+      mode = 'ENROLL'; $('#mode').textContent = mode;
+      const name = $('#nameInput').value;
+      await enroll(name);
+      mode = 'IDLE'; $('#mode').textContent = mode;
+    };
+    $('#btnRecognize').onclick = () => { mode='RECOGNIZE'; $('#mode').textContent = mode; };
+    $('#btnIdle').onclick = () => { mode='IDLE'; $('#mode').textContent = mode; };
+
+    // --------- Exportar/Importar/Apagar ---------
+    $('#btnExport').onclick = () => {
+      const data = localStorage.getItem('face-db') || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'face-db.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
+    $('#btnImport').onclick = ()=> $('#fileImport').click();
+    $('#fileImport').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const text = await file.text();
+      try{
+        const json = JSON.parse(text);
+        if(!Array.isArray(json)) throw new Error('Formato inválido');
+        localStorage.setItem('face-db', JSON.stringify(json));
+        buildMatcher(); updateDbInfo(); log('Base importada com sucesso.');
+      }catch(err){
+        alert('Falha ao importar: ' + err.message);
+      }
+      e.target.value = '';
+    });
+    $('#btnClear').onclick = ()=>{
+      if(confirm('Apagar TODA a base local?')){ localStorage.removeItem('face-db'); buildMatcher(); updateDbInfo(); log('Base apagada.'); }
+    };
+
+    // --------- Boot ---------
+    (async function(){
+      try{
+        await loadModels();
+        setStatus('Modelos prontos');
+        log('Modelos carregados.');
+        buildMatcher();
+      }catch(e){
+        setStatus('Erro ao carregar modelos');
+        log('Erro modelos: ' + e.message);
+      }
+    })();
+  </script>
+</body>
+</html>
