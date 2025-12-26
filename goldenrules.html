@@ -22,6 +22,7 @@
       --max: 1100px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      --topbar-h: 56px;
     }
 
     *{ box-sizing:border-box; }
@@ -35,6 +36,8 @@
         radial-gradient(900px 480px at 20% 85%, rgba(214,178,91,.10), transparent 55%),
         linear-gradient(180deg, var(--bg-0), var(--bg-1) 35%, var(--bg-2));
       overflow-x:hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
     }
 
     /* Top bar */
@@ -43,8 +46,9 @@
       top:0;
       z-index:50;
       backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(20,0,0,.85), rgba(20,0,0,.55));
+      background: linear-gradient(180deg, rgba(20,0,0,.88), rgba(20,0,0,.60));
       border-bottom: 1px solid rgba(214,178,91,.18);
+      min-height: var(--topbar-h);
     }
     .topbar-inner{
       max-width: var(--max);
@@ -60,6 +64,7 @@
       align-items:center;
       gap:10px;
       min-width: 220px;
+      flex-wrap:wrap;
     }
     .badge{
       display:inline-flex;
@@ -70,7 +75,7 @@
       border:1px solid rgba(214,178,91,.35);
       background: rgba(0,0,0,.25);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-      font-weight:700;
+      font-weight:800;
       letter-spacing:.3px;
       font-size:12px;
       color: var(--gold-2);
@@ -81,11 +86,12 @@
       flex-wrap:wrap;
       gap:8px;
       justify-content:flex-end;
+      max-width: 58%;
     }
     .nav a{
       text-decoration:none;
       color: var(--muted);
-      font-weight:700;
+      font-weight:800;
       font-size:12px;
       padding:6px 10px;
       border-radius:999px;
@@ -93,6 +99,7 @@
       background: rgba(0,0,0,.20);
       transition: .15s ease;
       white-space:nowrap;
+      user-select:none;
     }
     .nav a:hover{
       transform: translateY(-1px);
@@ -104,18 +111,23 @@
     .wrap{
       max-width: var(--max);
       margin: 0 auto;
-      padding: 28px 16px 56px;
+      padding: 22px 16px 56px;
     }
 
-    /* Hero */
+    /* HERO com IMAGEM de CAPA */
     .hero{
       position:relative;
-      border-radius: calc(var(--radius) + 8px);
+      border-radius: calc(var(--radius) + 10px);
       padding: 28px 22px;
+
+      /* COLOQUE a capa como "capa.jpg" na mesma pasta do HTML */
       background:
+        linear-gradient(180deg, rgba(0,0,0,.72), rgba(0,0,0,.45)),
         radial-gradient(900px 420px at 50% 0%, rgba(214,178,91,.14), transparent 60%),
-        radial-gradient(1100px 520px at 30% 90%, rgba(255,255,255,.08), transparent 55%),
-        linear-gradient(135deg, rgba(0,0,0,.55), rgba(80,0,0,.35));
+        url("capa.jpg");
+      background-size: cover;
+      background-position: center;
+
       border: 1px solid rgba(214,178,91,.22);
       box-shadow: var(--shadow);
       overflow:hidden;
@@ -125,11 +137,13 @@
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(400px 260px at 70% 20%, rgba(214,178,91,.20), transparent 60%),
-        radial-gradient(500px 340px at 15% 65%, rgba(214,178,91,.12), transparent 60%);
+        radial-gradient(420px 260px at 75% 20%, rgba(214,178,91,.22), transparent 60%),
+        radial-gradient(520px 340px at 15% 65%, rgba(214,178,91,.12), transparent 60%);
       pointer-events:none;
-      opacity:.9;
+      opacity:.85;
+      mix-blend-mode: screen;
     }
+
     .hero-inner{
       position:relative;
       display:grid;
@@ -137,23 +151,23 @@
       gap: 18px;
       align-items:center;
     }
-    @media (max-width: 900px){
-      .hero-inner{ grid-template-columns:1fr; }
-    }
     .hero h1{
       margin: 2px 0 10px;
       font-size: clamp(30px, 5vw, 54px);
       line-height:1.05;
       letter-spacing:.2px;
+      text-shadow: 0 10px 30px rgba(0,0,0,.5);
     }
-    .hero h1 .gold{ color: var(--gold-2); text-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .hero h1 .gold{ color: var(--gold-2); }
     .hero p{
       margin: 0;
-      color: var(--muted);
+      color: rgba(255,255,255,.88);
       font-size: 15px;
       line-height:1.55;
       max-width: 68ch;
+      text-shadow: 0 10px 24px rgba(0,0,0,.5);
     }
+
     .hero-actions{
       display:flex;
       gap:10px;
@@ -167,19 +181,21 @@
       color: var(--text);
       padding: 10px 12px;
       border-radius: 12px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.2px;
       display:inline-flex;
       align-items:center;
       gap:8px;
       transition:.15s ease;
       user-select:none;
+      backdrop-filter: blur(6px);
     }
     .btn:hover{ transform: translateY(-1px); border-color: rgba(214,178,91,.55); }
     .btn.primary{
-      background: linear-gradient(135deg, rgba(214,178,91,.35), rgba(0,0,0,.20));
-      border-color: rgba(214,178,91,.55);
+      background: linear-gradient(135deg, rgba(214,178,91,.38), rgba(0,0,0,.18));
+      border-color: rgba(214,178,91,.60);
     }
+
     .mini{
       text-align:right;
       display:flex;
@@ -190,14 +206,15 @@
       align-self:flex-end;
       font-family: var(--mono);
       font-size: 12px;
-      opacity:.9;
-      color: rgba(255,255,255,.85);
-      background: rgba(0,0,0,.20);
+      opacity:.95;
+      color: rgba(255,255,255,.88);
+      background: rgba(0,0,0,.26);
       border:1px solid rgba(255,255,255,.10);
       border-radius: 12px;
       padding: 10px 12px;
       width: fit-content;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+      backdrop-filter: blur(6px);
     }
 
     /* Summary grid */
@@ -209,16 +226,18 @@
     }
     @media (max-width: 1000px){ .grid{ grid-template-columns: repeat(3, 1fr);} }
     @media (max-width: 650px){ .grid{ grid-template-columns: repeat(2, 1fr);} }
+
     .pill{
       position:relative;
       border-radius: 14px;
       padding: 12px 12px 10px;
-      background: rgba(0,0,0,.18);
+      background: rgba(0,0,0,.22);
       border:1px solid rgba(214,178,91,.20);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
       cursor:pointer;
       transition:.15s ease;
       min-height: 64px;
+      backdrop-filter: blur(6px);
     }
     .pill:hover{ transform: translateY(-1px); border-color: rgba(214,178,91,.45); }
     .pill .n{
@@ -236,7 +255,7 @@
     .pill small{
       display:block;
       margin-top:6px;
-      color: var(--muted);
+      color: rgba(255,255,255,.82);
       font-size: 11px;
       line-height:1.3;
       opacity:.95;
@@ -296,6 +315,8 @@
       align-items:center;
       gap:8px;
       flex: 0 0 auto;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
     .chip{
       font-family: var(--mono);
@@ -325,12 +346,7 @@
       font-size: 14px;
     }
     .content p{ margin: 0 0 10px; }
-    .content ul{
-      margin: 10px 0 0 18px;
-      padding:0;
-      color: rgba(255,255,255,.92);
-    }
-    .content li{ margin: 6px 0; }
+
     .aside{
       border-radius: 14px;
       padding: 12px 12px;
@@ -366,6 +382,45 @@
       text-align:center;
     }
 
+    /* ===== MOBILE TUNING (responsivo real) ===== */
+    @media (max-width: 720px){
+      .wrap{ padding: 14px 12px 46px; }
+
+      .topbar-inner{ padding:10px 12px; }
+      .brand{ min-width: 0; }
+      .badge{ font-size:11px; padding:6px 9px; }
+
+      /* Menu vira scroll horizontal */
+      .nav{
+        max-width: 52%;
+        flex-wrap:nowrap;
+        overflow-x:auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .nav::-webkit-scrollbar{ display:none; }
+
+      .hero{ padding: 18px 14px; border-radius: 18px; }
+      .hero-inner{ grid-template-columns:1fr; }
+      .hero p{ font-size: 14px; }
+
+      .mini{ text-align:left; }
+      .mini .tag{ align-self:flex-start; font-size:11px; padding:8px 10px; }
+
+      /* Botões em coluna */
+      .hero-actions .btn{
+        width: 100%;
+        justify-content:center;
+      }
+
+      .section-head{ padding: 14px 12px 10px; }
+      .body{ padding: 12px 12px 14px; }
+
+      .title h2{ font-size: 14px; }
+      .num{ width: 42px; height: 42px; border-radius: 12px; }
+      .content{ font-size: 14px; }
+    }
+
     /* Print (caso queiram imprimir em PDF) */
     @media print{
       .topbar, .hero-actions{ display:none !important; }
@@ -397,7 +452,7 @@
           <h1><span class="gold">Golden</span> Rules</h1>
           <p>
             Material consolidado em uma página para apresentação. Estrutura: <b>visão geral</b> + <b>10 regras</b>
-            com resumo, contexto e perguntas de reflexão (conforme o PDF).
+            com resumo, contexto e perguntas de reflexão.
           </p>
           <div class="hero-actions">
             <button class="btn primary" id="btnExpand">Expandir tudo</button>
@@ -408,19 +463,17 @@
         <div class="mini">
           <div class="tag">Rede Grande SP &amp; Litoral</div>
           <div class="tag">Paleta: Vermelho • Dourado • Branco</div>
-          <div class="tag">Navegação: Topo + Cards</div>
+          <div class="tag">Capa no topo: capa.jpg</div>
         </div>
       </div>
 
-      <div class="grid" id="summaryGrid">
-        <!-- Preenchido via JS -->
-      </div>
+      <div class="grid" id="summaryGrid"></div>
     </header>
 
     <div id="rules"></div>
 
     <footer>
-      Conteúdo baseado no PDF “Golden Rules — Rede Grande SP &amp; Litoral”.  [oai_citation:1‡golden-rules-grande-SP-litoral.pdf](sediment://file_000000003244720ebf0f7c14caea6405)
+      Golden Rules — Rede Grande SP &amp; Litoral
     </footer>
   </main>
 
@@ -725,7 +778,6 @@
     document.getElementById("btnPresenter").addEventListener("click", ()=>{
       presenter = !presenter;
       document.documentElement.style.setProperty("--max", presenter ? "1250px" : "1100px");
-      document.body.style.fontSize = presenter ? "18px" : "";
       document.querySelectorAll(".content").forEach(el=>{
         el.style.fontSize = presenter ? "16px" : "14px";
         el.style.lineHeight = presenter ? "1.7" : "1.55";
@@ -734,6 +786,7 @@
         el.style.fontSize = presenter ? "14px" : "13px";
       });
       document.getElementById("btnPresenter").textContent = presenter ? "Sair do Modo Apresentação" : "Modo Apresentação";
+      window.scrollTo({top:0, behavior:"smooth"});
     });
 
     // highlight on nav click
