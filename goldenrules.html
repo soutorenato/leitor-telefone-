@@ -1,821 +1,178 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Golden Rules — Rede Grande SP & Litoral</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Golden Rules</title>
 
-  <style>
-    :root{
-      /* Paleta inspirada na imagem: vermelho profundo + dourado + branco */
-      --bg-0:#2a0000;
-      --bg-1:#6a0000;
-      --bg-2:#b10a0a;
-      --gold:#d6b25b;
-      --gold-2:#f0d58a;
-      --text:#ffffff;
-      --muted:rgba(255,255,255,.78);
-      --card:rgba(10,0,0,.55);
-      --border:rgba(214,178,91,.35);
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius:16px;
-      --max: 1100px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-      --topbar-h: 56px;
-    }
+<style>
+:root{
+  --bg1:#3a0000;
+  --bg2:#8b0000;
+  --gold:#d6b25b;
+  --gold2:#f0d58a;
+  --text:#ffffff;
+  --card:rgba(0,0,0,.45);
+  --border:rgba(214,178,91,.35);
+  --radius:18px;
+}
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: var(--sans);
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 50% 25%, rgba(255,255,255,.08), transparent 60%),
-        radial-gradient(900px 480px at 20% 85%, rgba(214,178,91,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg-0), var(--bg-1) 35%, var(--bg-2));
-      overflow-x:hidden;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: geometricPrecision;
-    }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+}
 
-    /* Top bar */
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(20,0,0,.88), rgba(20,0,0,.60));
-      border-bottom: 1px solid rgba(214,178,91,.18);
-      min-height: var(--topbar-h);
-    }
-    .topbar-inner{
-      max-width: var(--max);
-      margin:0 auto;
-      padding:10px 16px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      justify-content:space-between;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 220px;
-      flex-wrap:wrap;
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(214,178,91,.35);
-      background: rgba(0,0,0,.25);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-      font-weight:800;
-      letter-spacing:.3px;
-      font-size:12px;
-      color: var(--gold-2);
-      white-space:nowrap;
-    }
-    .nav{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      justify-content:flex-end;
-      max-width: 58%;
-    }
-    .nav a{
-      text-decoration:none;
-      color: var(--muted);
-      font-weight:800;
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.20);
-      transition: .15s ease;
-      white-space:nowrap;
-      user-select:none;
-    }
-    .nav a:hover{
-      transform: translateY(-1px);
-      color: var(--text);
-      border-color: rgba(214,178,91,.35);
-    }
+/* ===== MENU ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(0,0,0,.75);
+  padding:14px 20px;
+  font-weight:bold;
+  letter-spacing:.5px;
+}
 
-    /* Layout */
-    .wrap{
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 22px 16px 56px;
-    }
+/* ===== HERO ===== */
+.hero{
+  height:320px;
+  background:
+    linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
+    url("capa.jpg") center/cover no-repeat;
+}
 
-    /* HERO com IMAGEM de CAPA */
-    .hero{
-      position:relative;
-      border-radius: calc(var(--radius) + 10px);
-      padding: 28px 22px;
+/* ===== CONTAINER ===== */
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 16px 60px;
+}
 
-      /* COLOQUE a capa como "capa.jpg" na mesma pasta do HTML */
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.72), rgba(0,0,0,.45)),
-        radial-gradient(900px 420px at 50% 0%, rgba(214,178,91,.14), transparent 60%),
-        url("capa.jpg");
-      background-size: cover;
-      background-position: center;
+/* ===== GRID CARDS ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
 
-      border: 1px solid rgba(214,178,91,.22);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .hero:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(420px 260px at 75% 20%, rgba(214,178,91,.22), transparent 60%),
-        radial-gradient(520px 340px at 15% 65%, rgba(214,178,91,.12), transparent 60%);
-      pointer-events:none;
-      opacity:.85;
-      mix-blend-mode: screen;
-    }
+@media(max-width:768px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
 
-    .hero-inner{
-      position:relative;
-      display:grid;
-      grid-template-columns: 1.25fr .75fr;
-      gap: 18px;
-      align-items:center;
-    }
-    .hero h1{
-      margin: 2px 0 10px;
-      font-size: clamp(30px, 5vw, 54px);
-      line-height:1.05;
-      letter-spacing:.2px;
-      text-shadow: 0 10px 30px rgba(0,0,0,.5);
-    }
-    .hero h1 .gold{ color: var(--gold-2); }
-    .hero p{
-      margin: 0;
-      color: rgba(255,255,255,.88);
-      font-size: 15px;
-      line-height:1.55;
-      max-width: 68ch;
-      text-shadow: 0 10px 24px rgba(0,0,0,.5);
-    }
+/* ===== CARD ===== */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  cursor:pointer;
+  transition:.2s;
+}
 
-    .hero-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 14px;
-    }
-    .btn{
-      cursor:pointer;
-      border:1px solid rgba(214,178,91,.30);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight:900;
-      letter-spacing:.2px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      transition:.15s ease;
-      user-select:none;
-      backdrop-filter: blur(6px);
-    }
-    .btn:hover{ transform: translateY(-1px); border-color: rgba(214,178,91,.55); }
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(214,178,91,.38), rgba(0,0,0,.18));
-      border-color: rgba(214,178,91,.60);
-    }
+.card:hover{
+  transform:translateY(-2px);
+}
 
-    .mini{
-      text-align:right;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .mini .tag{
-      align-self:flex-end;
-      font-family: var(--mono);
-      font-size: 12px;
-      opacity:.95;
-      color: rgba(255,255,255,.88);
-      background: rgba(0,0,0,.26);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: 12px;
-      padding: 10px 12px;
-      width: fit-content;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-      backdrop-filter: blur(6px);
-    }
+.card h3{
+  margin:0;
+  font-size:20px;
+}
 
-    /* Summary grid */
-    .grid{
-      margin-top: 18px;
-      display:grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-    }
-    @media (max-width: 1000px){ .grid{ grid-template-columns: repeat(3, 1fr);} }
-    @media (max-width: 650px){ .grid{ grid-template-columns: repeat(2, 1fr);} }
+.card h3 span{
+  color:var(--gold2);
+  margin-right:8px;
+}
 
-    .pill{
-      position:relative;
-      border-radius: 14px;
-      padding: 12px 12px 10px;
-      background: rgba(0,0,0,.22);
-      border:1px solid rgba(214,178,91,.20);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-      cursor:pointer;
-      transition:.15s ease;
-      min-height: 64px;
-      backdrop-filter: blur(6px);
-    }
-    .pill:hover{ transform: translateY(-1px); border-color: rgba(214,178,91,.45); }
-    .pill .n{
-      font-weight: 900;
-      color: var(--gold-2);
-      font-size: 16px;
-      margin-right: 6px;
-    }
-    .pill .t{
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing:.2px;
-      color: rgba(255,255,255,.92);
-    }
-    .pill small{
-      display:block;
-      margin-top:6px;
-      color: rgba(255,255,255,.82);
-      font-size: 11px;
-      line-height:1.3;
-      opacity:.95;
-    }
+.card p{
+  margin:10px 0 0;
+  opacity:.9;
+  line-height:1.4;
+}
 
-    /* Sections */
-    section{
-      margin-top: 18px;
-      border-radius: var(--radius);
-      background: var(--card);
-      border:1px solid rgba(214,178,91,.18);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .section-head{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      justify-content:space-between;
-      padding: 16px 16px 12px;
-      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.12));
-      border-bottom:1px solid rgba(214,178,91,.16);
-    }
-    .title{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      min-width: 0;
-    }
-    .num{
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      display:grid;
-      place-items:center;
-      font-weight: 1000;
-      color: #1a0a00;
-      background: linear-gradient(135deg, var(--gold-2), var(--gold));
-      box-shadow: 0 10px 24px rgba(0,0,0,.35);
-      flex: 0 0 auto;
-    }
-    .title h2{
-      margin:0;
-      font-size: 16px;
-      letter-spacing:.3px;
-      text-transform: uppercase;
-    }
-    .title p{
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height:1.45;
-      max-width: 90ch;
-    }
-    .tools{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex: 0 0 auto;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .chip{
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      color: rgba(255,255,255,.9);
-      background: rgba(0,0,0,.20);
-      border:1px solid rgba(255,255,255,.10);
-      white-space:nowrap;
-    }
+/* ===== EXPAND ===== */
+.details{
+  display:none;
+  margin-top:14px;
+  border-top:1px solid var(--border);
+  padding-top:14px;
+  font-size:14px;
+  line-height:1.6;
+}
 
-    .body{
-      padding: 14px 16px 18px;
-      display:grid;
-      grid-template-columns: 1.35fr .65fr;
-      gap: 12px;
-      align-items:start;
-    }
-    @media (max-width: 900px){
-      .body{ grid-template-columns:1fr; }
-    }
+.details h4{
+  color:var(--gold2);
+  margin:16px 0 6px;
+  font-size:13px;
+  text-transform:uppercase;
+}
 
-    .content{
-      color: rgba(255,255,255,.92);
-      line-height:1.55;
-      font-size: 14px;
-    }
-    .content p{ margin: 0 0 10px; }
-
-    .aside{
-      border-radius: 14px;
-      padding: 12px 12px;
-      border:1px solid rgba(214,178,91,.22);
-      background: rgba(0,0,0,.20);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-    .aside h3{
-      margin: 0 0 8px;
-      font-size: 12px;
-      letter-spacing:.3px;
-      text-transform: uppercase;
-      color: var(--gold-2);
-    }
-    .q{
-      margin: 0 0 10px;
-      padding: 10px 10px;
-      border-radius: 12px;
-      border:1px dashed rgba(214,178,91,.25);
-      color: rgba(255,255,255,.88);
-      background: rgba(0,0,0,.18);
-      font-size: 13px;
-      line-height:1.35;
-    }
-    .q:last-child{ margin-bottom:0; }
-
-    /* Footer */
-    footer{
-      margin-top: 20px;
-      opacity: .9;
-      color: rgba(255,255,255,.70);
-      font-size: 12px;
-      text-align:center;
-    }
-
-    /* ===== MOBILE TUNING (responsivo real) ===== */
-    @media (max-width: 720px){
-      .wrap{ padding: 14px 12px 46px; }
-
-      .topbar-inner{ padding:10px 12px; }
-      .brand{ min-width: 0; }
-      .badge{ font-size:11px; padding:6px 9px; }
-
-      /* Menu vira scroll horizontal */
-      .nav{
-        max-width: 52%;
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      }
-      .nav::-webkit-scrollbar{ display:none; }
-
-      .hero{ padding: 18px 14px; border-radius: 18px; }
-      .hero-inner{ grid-template-columns:1fr; }
-      .hero p{ font-size: 14px; }
-
-      .mini{ text-align:left; }
-      .mini .tag{ align-self:flex-start; font-size:11px; padding:8px 10px; }
-
-      /* Botões em coluna */
-      .hero-actions .btn{
-        width: 100%;
-        justify-content:center;
-      }
-
-      .section-head{ padding: 14px 12px 10px; }
-      .body{ padding: 12px 12px 14px; }
-
-      .title h2{ font-size: 14px; }
-      .num{ width: 42px; height: 42px; border-radius: 12px; }
-      .content{ font-size: 14px; }
-    }
-
-    /* Print (caso queiram imprimir em PDF) */
-    @media print{
-      .topbar, .hero-actions{ display:none !important; }
-      body{ background: #ffffff; color:#000; }
-      .hero, section{ box-shadow:none; }
-      section{ break-inside: avoid; }
-    }
-  </style>
+.details .q{
+  border:1px dashed var(--border);
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+}
+</style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <span class="badge">GOLDEN RULES</span>
-        <span class="badge">REDE GRANDE SP &amp; LITORAL</span>
-      </div>
-      <nav class="nav" aria-label="Atalhos">
-        <a href="#r1">1</a><a href="#r2">2</a><a href="#r3">3</a><a href="#r4">4</a><a href="#r5">5</a>
-        <a href="#r6">6</a><a href="#r7">7</a><a href="#r8">8</a><a href="#r9">9</a><a href="#r10">10</a>
-      </nav>
+
+<div class="topbar">Golden Rules</div>
+
+<div class="hero"></div>
+
+<div class="container">
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const rules = [
+ {n:1,title:"Resultado",lead:"Resultado com consistência é primordial.",
+  text:[
+   "Entrega consistente de resultado garante autonomia e crescimento sustentável.",
+   "Resultado é coletivo, construído em bloco, com disciplina e revisão mensal."
+  ],
+  q:[
+   "Onde está a maior oportunidade do seu território?",
+   "O que está sendo deixado na mesa?"
+  ]},
+ {n:2,title:"Propósito",lead:"Atuação com propósito: educação e consultoria financeira.",
+  text:[
+   "Nosso papel é ajudar clientes a tomar melhores decisões financeiras.",
+   "Propósito gera engajamento e melhora NPS."
+  ],
+  q:[
+   "O cliente sai melhor do que entrou?",
+   "Estamos simplificando ou complicando?"
+  ]},
+ // Continue replicando até o 10 conforme seu conteúdo
+];
+
+const grid = document.getElementById("grid");
+
+grid.innerHTML = rules.map((r,i)=>`
+  <div class="card" onclick="toggle(${i})">
+    <h3><span>${r.n}</span>${r.title}</h3>
+    <p>${r.lead}</p>
+
+    <div class="details" id="d${i}">
+      ${r.text.map(t=>`<p>${t}</p>`).join("")}
+      <h4>Perguntas-chave</h4>
+      ${r.q.map(q=>`<div class="q">${q}</div>`).join("")}
     </div>
   </div>
+`).join("");
 
-  <main class="wrap">
-    <header class="hero" id="top">
-      <div class="hero-inner">
-        <div>
-          <h1><span class="gold">Golden</span> Rules</h1>
-          <p>
-            Material consolidado em uma página para apresentação. Estrutura: <b>visão geral</b> + <b>10 regras</b>
-            com resumo, contexto e perguntas de reflexão.
-          </p>
-          <div class="hero-actions">
-            <button class="btn primary" id="btnExpand">Expandir tudo</button>
-            <button class="btn" id="btnCollapse">Recolher tudo</button>
-            <button class="btn" id="btnPresenter">Modo Apresentação</button>
-          </div>
-        </div>
-        <div class="mini">
-          <div class="tag">Rede Grande SP &amp; Litoral</div>
-          <div class="tag">Paleta: Vermelho • Dourado • Branco</div>
-          <div class="tag">Capa no topo: capa.jpg</div>
-        </div>
-      </div>
+function toggle(i){
+  const el = document.getElementById("d"+i);
+  el.style.display = el.style.display==="block" ? "none" : "block";
+}
+</script>
 
-      <div class="grid" id="summaryGrid"></div>
-    </header>
-
-    <div id="rules"></div>
-
-    <footer>
-      Golden Rules — Rede Grande SP &amp; Litoral
-    </footer>
-  </main>
-
-  <script>
-    const rules = [
-      {
-        id:"r1",
-        n:1,
-        title:"Resultado com consistência",
-        kpy:"KPY: MOB/MOL/BAI",
-        lead:"Resultado com consistência é primordial.",
-        text: [
-          "Estamos aqui para entregar o potencial de resultado de São Paulo em todas as dimensões (Lojas, Select, B1 e GIU). Cada Território deve ser uma fonte relevante de geração de negócios, com atuação consistente nos cinco Territórios da Rede SP. Somos sócios em cada um deles.",
-          "O resultado é a somatória da entrega de cada um, potencializado pela sinergia e cross sell do Território. A entrega tem que ser coletiva. Andar em bloco. A Rede precisa entregar crescimento de dois dígitos. Puxar o resultado do Varejo.",
-          "A economia de São Paulo cresceu 5,8% em 2024, acima do PIB nacional (3,4%) e concentra 32% da massa de rendimentos nacional. Único estado do Sudeste a acelerar o ritmo de crescimento. Expansão sustentada por indústria de transformação e serviços.",
-          "Destaque para a Região Metropolitana de São Paulo: 19% da renda total do Brasil com 10% da população e 22,5% do crédito PF. O Varejo Total possui 5,7 trilhões de reais de investimentos, sendo que a RMSP concentra 25%. Muita oportunidade e muita concorrência — por isso não podemos errar com o cliente.",
-          "Entrega de resultado é autonomia e liberdade para tocarmos o negócio do nosso jeito. Faremos Business Review consistentemente todo fechamento de mês (Rede com Heads; Heads com Líderes; Líderes com Regionais), acompanhando dispersão, produção, evolução de carteira e resultado. Todo mês precisamos mudar de patamar."
-        ],
-        questions: [
-          "Onde está a maior oportunidade do seu território hoje?",
-          "O que estamos deixando na mesa por falta de processo ou disciplina?",
-          "Sua rotina atual realmente produz consistência ou apenas esforço não direcionado?"
-        ]
-      },
-      {
-        id:"r2",
-        n:2,
-        title:"Propósito em tudo o que faço",
-        kpy:"KPY: YourVoice e Turnover",
-        lead:"Atuação com propósito: educação e consultoria financeira.",
-        text: [
-          "Nós somos vendedores. Mas a nossa atuação e o nosso propósito é educação e consultoria financeira com foco nos clientes.",
-          "Estamos aqui para ajudar pessoas e empresas a encontrarem as melhores soluções de crédito e as melhores formas de proteger e rentabilizar seu patrimônio. Isso garante prosperidade no momento certo.",
-          "O cliente é o centro e nosso NPS deve estar nos níveis que buscamos alcançar. O time precisa estar engajado no nosso propósito, para andarmos em bloco."
-        ],
-        questions: [
-          "O cliente sai da interação melhor do que entrou?",
-          "Estamos entregando clareza ou complexidade?",
-          "Seu time fala de propósito com a mesma força que fala de metas?"
-        ]
-      },
-      {
-        id:"r3",
-        n:3,
-        title:"Liderança que impacta e mobiliza",
-        kpy:"KPY: YourVoice e Turnover",
-        lead:"Liderança é uma escolha diária — inspirar, engajar e desenvolver.",
-        text: [
-          "Todo negócio é feito de/por pessoas e a liderança é uma escolha diária. E nós escolhemos estar aqui.",
-          "Como líderes, conduzimos o time, contratamos certo, preparamos e capacitamos para que todos aproveitem as oportunidades de negócio da Rede.",
-          "A liderança deve inspirar, engajar e desenvolver. Contratar certo, orientar certo e manter o time preparado é o que nos permite crescer com consistência.",
-          "Decisões difíceis fazem o futuro mais fácil; líder só mobiliza e engaja com conhecimento, repertório e boa comunicação."
-        ],
-        questions: [
-          "Esse talento é a pessoa certa para o futuro da área, não só para o presente?",
-          "O que fiz, como líder, para que essa pessoa pudesse performar melhor essa semana?",
-          "Se eu fosse liderado por mim, eu estaria engajado?",
-          "Quantas conversas difíceis adiei este mês?",
-          "Meu time me vê como referência técnica, cultural e humana ou só como cobrador de metas?"
-        ]
-      },
-      {
-        id:"r4",
-        n:4,
-        title:"Obsessão com disciplina",
-        kpy:"KPY: Aderência ao modelo comercial / Mais Certo",
-        lead:"Oriente com clareza, pergunte e acompanhe indicadores — foco em causa, não só efeito.",
-        text: [
-          "Oriente com clareza, faça perguntas e acompanhe indicadores mensalmente. Comunicação clara evita interpretações equivocadas.",
-          "O líder não opera o resultado, ele conduz o processo. Pressão sem orientação não gera resultado sustentável.",
-          "Precisamos dominar o processo para liberar o potencial do time e direcionar ações corretas. Falar, priorizar e orientar a organização garante evolução contínua.",
-          "Focar apenas no “efeito” (o resultado que ainda não veio) não resolve o que precisa ser atacado na “causa”. Resultado comercial é engenharia.",
-          "Cobrar número pelo número não transforma ninguém. Ensinar o processo transforma o time. É necessário pensamento crítico para melhorar continuamente e enxergar oportunidades de evolução em produtos, processos e incentivos, olhando para a entrega do potencial.",
-          "Atuação deve priorizar o que precisa ser feito, incentivar o time a falar (speak up) e evoluir de forma consciente. Business Review todos os meses."
-        ],
-        questions: [
-          "Minha comunicação está clara?",
-          "O que da nossa rotina comercial está quebrado hoje e por que ainda não foi corrigido?",
-          "Quais indicadores eu deveria parar de olhar e quais deveria olhar todos os dias?",
-          "O time entende o processo ou apenas executa tarefas?"
-        ]
-      },
-      {
-        id:"r5",
-        n:5,
-        title:"Atalhos não são uma opção",
-        kpy:"KPY: Venda Certa / IQ",
-        lead:"O que você tolera define o padrão do time — transparência e respeito sempre.",
-        text: [
-          "O que você tolera define o padrão do time. Com respeito, você deve sempre dizer a verdade e ser transparente.",
-          "O que você tolera está dizendo para todo o time: “eu aceito isso”. Não existe espaço para decisões que prejudiquem o cliente, a operação ou o negócio.",
-          "Negócio sustentável é bom para o cliente, para o profissional e para o acionista. Não tem jeito certo de fazer o errado.",
-          "Foque no que gera valor. Use a capacity do time no que gera valor.",
-          "Confiança do time é essencial para enxergar o que realmente acontece. Se o time não confia em você, não traz os problemas que você precisa resolver.",
-          "Como líderes somos 100% responsáveis pelo que acontece na operação. Acompanhe números e outliers e retroalimente o ecossistema."
-        ],
-        questions: [
-          "Se eu tolerar isso hoje, estou disposto a viver com isso como padrão?",
-          "O time realmente confia em mim a ponto de trazer problemas antes que virem crises?",
-          "Onde há risco reputacional que não está sendo discutido?",
-          "Quais comportamentos eu elogio que não deveria, e quais eu deveria reforçar mais?"
-        ]
-      },
-      {
-        id:"r6",
-        n:6,
-        title:"Praticidade e otimização de tempo",
-        kpy:"—",
-        lead:"Foque no que muda o ponteiro — priorize impacto, saúde mental e equilíbrio.",
-        text: [
-          "Foque no que realmente muda o ponteiro. Nosso tempo é limitado e precisa ser utilizado de forma inteligente, priorizando performance, entregas, saúde mental e equilíbrio.",
-          "Seu foco é mobilizar, desenvolver as equipes e colocar a atividade comercial no ritmo planejado.",
-          "Use áreas centrais, especialistas e staff como suporte para entregar o que é importante.",
-          "Automatize atividades com apoio de ferramentas fornecidas pela organização (Dashs, Copilot, ChatGPT Plus etc.).",
-          "Questione todos os dias se está fazendo o que é importante. Não temos tempo para desperdiçar."
-        ],
-        questions: [
-          "O que eu preciso acelerar?",
-          "O que eu preciso parar de fazer imediatamente?",
-          "O que preciso começar a fazer que realmente gere impacto?",
-          "Quantas das minhas atividades semanais poderiam ser feitas por outra pessoa ou por uma ferramenta?"
-        ]
-      },
-      {
-        id:"r7",
-        n:7,
-        title:"Execução impecável",
-        kpy:"—",
-        lead:"Rapidez com cuidado nos detalhes que importam — excelência vira valor.",
-        text: [
-          "Avançar com rapidez, porém sem perder cuidado com os detalhes que importam. É durante o processo que garantiremos qualidade no resultado.",
-          "Traduzir complexidade em clareza, pressão em foco e planejamento em resultado.",
-          "Não deixar que tudo seja tratado como prioridade e garantir que a prioridade seja traduzida em resultado e impacto real.",
-          "Cuide dos detalhes que impactam o cliente. A experiência tem que ser “uau” sempre. Seja o exemplo.",
-          "Nem todas as mudanças geram valor. A execução impecável gera."
-        ],
-        questions: [
-          "Que detalhe ignorado hoje pode virar um problema amanhã?",
-          "O que na minha execução demonstra excelência e o que revela improviso?",
-          "Onde está o gargalo real do processo e por que ele ainda existe?",
-          "Estou traduzindo prioridades em entregas ou apenas repassando pressão?",
-          "Como eu sei que meu cliente teve uma experiência “uau”?"
-        ]
-      },
-      {
-        id:"r8",
-        n:8,
-        title:"Barra alta sempre",
-        kpy:"—",
-        lead:"Padrão elevado, ambição relevante e repertório constante.",
-        text: [
-          "Devemos nos desafiar continuamente, mantendo padrões elevados de atuação e execução. Dado o tamanho do negócio que tocamos, nossa barra precisa seguir a mesma dimensão; nos negócios, ter ambições relevantes.",
-          "Modelo de incentivos ou orçamento não podem ser o balizador; precisamos atuar pelo potencial da praça e ter concorrentes como parâmetro.",
-          "Somos os “CEOs” do Território. Obrigatório dominar mercado, concorrência, potencial da praça, e os talentos do mercado que podemos contratar.",
-          "Como líderes, desenvolver repertório e estar em constante atualização. Se atualize e mostre isso para o time. O exemplo arrasta.",
-          "Nossa mobilização virá da forma humana de conduzir o time e do repertório técnico-cultural que compartilharmos."
-        ],
-        questions: [
-          "Estou fazendo as provocações certas? O time responde?",
-          "O que eu estudei ou aprendi esta semana que me tornou um líder melhor?",
-          "Quem são os melhores talentos do mercado que eu deveria estar monitorando?",
-          "Meu time acredita que a barra é alta ou que ela é inalcançável?",
-          "Em quais temas técnicos eu ainda não sou referência, mas deveria ser?"
-        ]
-      },
-      {
-        id:"r9",
-        n:9,
-        title:"Cultura é o comportamento da liderança",
-        kpy:"—",
-        lead:"A cultura se consolida pelo exemplo — ego fica em casa.",
-        text: [
-          "A cultura organizacional se consolida pelo exemplo. A forma como lideramos define, na prática, como a Rede funciona e se desenvolve.",
-          "Todos somos um. O ego fica em casa. A cultura é a fundação para todo o resto. Sem cultura forte, não tem entrega de resultado consistente."
-        ],
-        questions: [
-          "Se todos se comportassem como eu me comportei essa semana, onde estaríamos?",
-          "Quais comportamentos meus estão reforçando a cultura desejada?",
-          "Onde estou criando cultura sem perceber?",
-          "Quais mensagens não ditas eu comunico pelo meu comportamento?",
-          "Em que momento recente eu coloquei o time acima do meu ego?"
-        ]
-      },
-      {
-        id:"r10",
-        n:10,
-        title:"Fazer muito, sempre certo e curtir a jornada",
-        kpy:"—",
-        lead:"Excelência com energia positiva — celebrar e evoluir.",
-        text: [
-          "Produzir com excelência, da forma correta e com energia positiva ao longo do caminho fortalece o negócio, o time e a experiência dentro da Rede.",
-          "Comemorar os negócios importantes."
-        ],
-        questions: [
-          "Quando foi a última vez que comemorei uma entrega relevante com o time?",
-          "O que faço diariamente que inspira o time a “curtir a jornada”?",
-          "Trabalho duro ou trabalho inteligente?",
-          "Estou operando no modo excelência ou no modo urgência permanente?",
-          "Se a jornada não está leve, o que eu posso mudar?"
-        ]
-      }
-    ];
-
-    const summaryTitles = [
-      "Resultado", "Propósito", "Liderança", "Disciplina", "Sem atalhos",
-      "Tempo", "Execução", "Barra alta", "Cultura", "Jornada"
-    ];
-
-    const grid = document.getElementById("summaryGrid");
-    grid.innerHTML = rules.map((r, idx) => `
-      <div class="pill" role="button" tabindex="0" data-jump="${r.id}">
-        <div><span class="n">${r.n}</span><span class="t">${summaryTitles[idx]}</span></div>
-        <small>${r.lead}</small>
-      </div>
-    `).join("");
-
-    function makeSection(r){
-      const paragraphs = r.text.map(p => `<p>${escapeHtml(p)}</p>`).join("");
-      const questions = r.questions.map(q => `<div class="q">• ${escapeHtml(q)}</div>`).join("");
-
-      return `
-        <section id="${r.id}">
-          <div class="section-head">
-            <div class="title">
-              <div class="num">${r.n}</div>
-              <div style="min-width:0">
-                <h2>${escapeHtml(r.title)}</h2>
-                <p>${escapeHtml(r.lead)}</p>
-              </div>
-            </div>
-            <div class="tools">
-              <span class="chip">${escapeHtml(r.kpy)}</span>
-              <button class="btn" data-toggle="${r.id}" aria-expanded="true">Recolher</button>
-            </div>
-          </div>
-          <div class="body" data-body="${r.id}">
-            <div class="content">${paragraphs}</div>
-            <aside class="aside">
-              <h3>Perguntas-chave</h3>
-              ${questions}
-            </aside>
-          </div>
-        </section>
-      `;
-    }
-
-    const rulesWrap = document.getElementById("rules");
-    rulesWrap.innerHTML = rules.map(makeSection).join("");
-
-    // Jump from summary pills
-    grid.addEventListener("click", (e)=>{
-      const pill = e.target.closest(".pill");
-      if(!pill) return;
-      const id = pill.getAttribute("data-jump");
-      document.getElementById(id).scrollIntoView({behavior:"smooth", block:"start"});
-      highlight(id);
-    });
-    grid.addEventListener("keydown", (e)=>{
-      if(e.key !== "Enter" && e.key !== " ") return;
-      const pill = e.target.closest(".pill");
-      if(!pill) return;
-      e.preventDefault();
-      pill.click();
-    });
-
-    // Toggle sections
-    document.addEventListener("click", (e)=>{
-      const btn = e.target.closest("[data-toggle]");
-      if(!btn) return;
-      const id = btn.getAttribute("data-toggle");
-      const body = document.querySelector(`[data-body="${id}"]`);
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      if(expanded){
-        body.style.display = "none";
-        btn.textContent = "Expandir";
-        btn.setAttribute("aria-expanded","false");
-      }else{
-        body.style.display = "";
-        btn.textContent = "Recolher";
-        btn.setAttribute("aria-expanded","true");
-      }
-    });
-
-    // Expand/Collapse all
-    document.getElementById("btnExpand").addEventListener("click", ()=>{
-      document.querySelectorAll("[data-body]").forEach(b=> b.style.display="");
-      document.querySelectorAll("[data-toggle]").forEach(btn=>{
-        btn.textContent="Recolher";
-        btn.setAttribute("aria-expanded","true");
-      });
-    });
-    document.getElementById("btnCollapse").addEventListener("click", ()=>{
-      document.querySelectorAll("[data-body]").forEach(b=> b.style.display="none");
-      document.querySelectorAll("[data-toggle]").forEach(btn=>{
-        btn.textContent="Expandir";
-        btn.setAttribute("aria-expanded","false");
-      });
-    });
-
-    // Presenter mode: aumenta fonte e espaçamento
-    let presenter = false;
-    document.getElementById("btnPresenter").addEventListener("click", ()=>{
-      presenter = !presenter;
-      document.documentElement.style.setProperty("--max", presenter ? "1250px" : "1100px");
-      document.querySelectorAll(".content").forEach(el=>{
-        el.style.fontSize = presenter ? "16px" : "14px";
-        el.style.lineHeight = presenter ? "1.7" : "1.55";
-      });
-      document.querySelectorAll(".q").forEach(el=>{
-        el.style.fontSize = presenter ? "14px" : "13px";
-      });
-      document.getElementById("btnPresenter").textContent = presenter ? "Sair do Modo Apresentação" : "Modo Apresentação";
-      window.scrollTo({top:0, behavior:"smooth"});
-    });
-
-    // highlight on nav click
-    document.querySelectorAll(".nav a").forEach(a=>{
-      a.addEventListener("click", ()=>{
-        const id = a.getAttribute("href").slice(1);
-        setTimeout(()=>highlight(id), 250);
-      });
-    });
-
-    function highlight(id){
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.animate(
-        [{transform:"translateY(0)", boxShadow:"var(--shadow)"},
-         {transform:"translateY(-2px)", boxShadow:"0 18px 45px rgba(0,0,0,.45)"},
-         {transform:"translateY(0)", boxShadow:"var(--shadow)"}],
-        {duration:600, easing:"ease-out"}
-      );
-    }
-
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-  </script>
 </body>
 </html>
