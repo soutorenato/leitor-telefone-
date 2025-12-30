@@ -50,14 +50,13 @@
     border-bottom: 1px solid rgba(255,255,255,.14);
     backdrop-filter: none; /* ✅ remove blur */
   }
+  
   .topbar-inner{
-    max-width: var(--max);
-    margin:0 auto;
-    padding: 14px 16px;
-    font-weight: 900;
-    letter-spacing: .3px;
-    color:#fff; /* ✅ letra branca */
-    text-transform: uppercase;
+  display: flex;
+  align-items: center;      /* centraliza vertical */
+  justify-content: center;  /* centraliza horizontal */
+  height: 56px;             /* altura do header */
+  padding: 0 16px;
   }
 
   /* ✅ Hero (capa) SEM BRANQUICADO */
