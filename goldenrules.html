@@ -17,13 +17,13 @@
     --text:#ffffff;
     --muted:rgba(255,255,255,.82);
 
-    --card: rgba(0,0,0,.38);
-    --stroke: rgba(214,178,91,.26);
+    --card: rgba(0,0,0,.40);
+    --stroke: rgba(214,178,91,.22);
 
     --radius: 22px;
     --shadow: 0 10px 30px rgba(0,0,0,.35);
 
-    --max: 1040px;
+    --max: 1200px;
   }
 
   *{ box-sizing:border-box; }
@@ -57,7 +57,7 @@
     letter-spacing: .3px;
   }
 
-  /* Hero (apenas capa) */
+  /* Hero (capa) */
   .hero{
     height: 300px;
     background:
@@ -74,17 +74,26 @@
   .wrap{
     max-width: var(--max);
     margin: 0 auto;
-    padding: 24px 16px 56px;
+    padding: 22px 16px 56px;
   }
 
-  /* Grid no estilo do print */
+  /* ✅ GRID RESPONSIVO:
+     - Mobile: 2 colunas
+     - Desktop: 5 colunas
+  */
   .grid{
     display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
   }
-  @media (max-width: 820px){
-    .grid{ grid-template-columns: 1fr; }
+  @media (max-width: 1100px){
+    .grid{ grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 900px){
+    .grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 680px){
+    .grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
   /* Card */
@@ -92,56 +101,63 @@
     border-radius: var(--radius);
     background:
       radial-gradient(600px 260px at 30% 0%, rgba(214,178,91,.10), transparent 60%),
-      linear-gradient(180deg, rgba(0,0,0,.40), rgba(0,0,0,.34));
+      linear-gradient(180deg, rgba(0,0,0,.44), rgba(0,0,0,.34));
     border: 1px solid var(--stroke);
     box-shadow: var(--shadow);
-    padding: 22px 22px 18px;
+    padding: 18px 18px 16px;
     cursor:pointer;
     transition: transform .15s ease, border-color .15s ease;
     outline: none;
     user-select:none;
+    min-height: 132px;
   }
   .card:hover{
     transform: translateY(-2px);
-    border-color: rgba(214,178,91,.38);
+    border-color: rgba(214,178,91,.40);
   }
 
-  .card-head{
+  .head{
     display:flex;
     align-items:baseline;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
   .n{
     font-weight: 1000;
     color: var(--gold-2);
-    font-size: 26px;
+    font-size: 22px;
     line-height:1;
-    min-width: 26px;
+    min-width: 18px;
   }
 
-  /* Aqui o LEAD vira "título principal" do card */
-  .lead-title{
+  /* ✅ TÍTULO (igual ao PDF): Resultado, Propósito, ... */
+  .title{
     margin:0;
     font-weight: 1000;
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: .1px;
-    line-height: 1.25;
+    line-height: 1.2;
   }
 
-  /* Subtexto opcional (curto), se quiser manter algo abaixo */
-  .sub{
-    margin: 10px 0 0;
+  /* ✅ LEAD embaixo */
+  .lead{
+    margin:0;
     color: var(--muted);
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.35;
+  }
+
+  @media (max-width: 680px){
+    .card{ padding: 16px 14px 14px; min-height: 122px; }
+    .title{ font-size: 17px; }
+    .lead{ font-size: 13.5px; }
   }
 
   /* ===== MODAL ===== */
   .overlay{
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.70);
+    background: rgba(0,0,0,.72);
     backdrop-filter: blur(6px);
     display: none;
     align-items: center;
@@ -166,7 +182,7 @@
   .modal-head{
     position: sticky;
     top: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,.40));
+    background: linear-gradient(180deg, rgba(0,0,0,.78), rgba(0,0,0,.40));
     border-bottom: 1px solid rgba(214,178,91,.16);
     padding: 14px 16px;
     display:flex;
@@ -180,7 +196,7 @@
     gap:12px;
     align-items:flex-start;
   }
-  .modal-title .nbox{
+  .nbox{
     width: 44px;
     height: 44px;
     border-radius: 14px;
@@ -194,8 +210,15 @@
   .modal-title h2{
     margin:0;
     font-size: 18px;
-    line-height: 1.2;
+    line-height: 1.25;
     letter-spacing: .15px;
+  }
+  .modal-title .small{
+    display:block;
+    margin-top: 6px;
+    color: rgba(255,255,255,.78);
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .close{
@@ -263,15 +286,6 @@
     font-size: 13px;
     line-height: 1.35;
   }
-
-  /* Mobile refinements */
-  @media (max-width: 720px){
-    .card{ padding: 18px 16px 14px; border-radius: 20px; }
-    .lead-title{ font-size: 18px; }
-    .sub{ font-size: 14px; }
-    .modal-title h2{ font-size: 16px; }
-    .modal{ border-radius: 18px; }
-  }
 </style>
 </head>
 
@@ -294,6 +308,7 @@
           <div class="nbox" id="modalN">1</div>
           <div>
             <h2 id="modalH2"></h2>
+            <span class="small" id="modalLead"></span>
           </div>
         </div>
         <button class="close" id="btnClose" aria-label="Fechar">×</button>
@@ -303,10 +318,12 @@
   </div>
 
 <script>
-  // Texto conforme você colou (PDF)
+  // ✅ Titulos corrigidos (Resultado/Propósito/.../Cultura/Jornada)
+  // ✅ Leads (frases) ficam abaixo no card e também no modal
   const rules = [
     {
       n: 1,
+      title: "Resultado",
       lead: "Resultado com consistência é primordial.",
       kpy: "MOB/MOL/BAI",
       paragraphs: [
@@ -327,6 +344,7 @@
     },
     {
       n: 2,
+      title: "Propósito",
       lead: "Atuação com propósito: educação e consultoria financeira.",
       kpy: "YourVoice e Turnover",
       paragraphs: [
@@ -342,6 +360,7 @@
     },
     {
       n: 3,
+      title: "Liderança",
       lead: "Liderança é uma escolha diária — inspirar, engajar e desenvolver.",
       kpy: "YourVoice e Turnover",
       paragraphs: [
@@ -360,6 +379,7 @@
     },
     {
       n: 4,
+      title: "Disciplina",
       lead: "Oriente com clareza, pergunte e acompanhe indicadores — foco em causa, não só efeito.",
       kpy: "Aderência ao modelo comercial / Mais Certo",
       paragraphs: [
@@ -382,6 +402,7 @@
     },
     {
       n: 5,
+      title: "Sem atalhos",
       lead: "O que você tolera define o padrão do time — transparência e respeito sempre.",
       kpy: "Venda Certa / IQ",
       paragraphs: [
@@ -401,6 +422,7 @@
     },
     {
       n: 6,
+      title: "Tempo",
       lead: "Foque no que muda o ponteiro — priorize impacto, saúde mental e equilíbrio.",
       kpy: "—",
       paragraphs: [
@@ -419,6 +441,7 @@
     },
     {
       n: 7,
+      title: "Execução",
       lead: "Rapidez com cuidado nos detalhes que importam — excelência vira valor.",
       kpy: "—",
       paragraphs: [
@@ -438,6 +461,7 @@
     },
     {
       n: 8,
+      title: "Barra alta",
       lead: "Padrão elevado, ambição relevante e repertório constante.",
       kpy: "—",
       paragraphs: [
@@ -457,6 +481,7 @@
     },
     {
       n: 9,
+      title: "Cultura",
       lead: "A cultura se consolida pelo exemplo — ego fica em casa.",
       kpy: "—",
       paragraphs: [
@@ -473,6 +498,7 @@
     },
     {
       n: 10,
+      title: "Jornada",
       lead: "Excelência com energia positiva — celebrar e evoluir.",
       kpy: "—",
       paragraphs: [
@@ -491,13 +517,14 @@
 
   const grid = document.getElementById("grid");
 
-  // Cards: número + lead (lead é o título)
+  // Cards: número + título + lead (igual à lógica do PDF)
   grid.innerHTML = rules.map((r, idx) => `
     <article class="card" data-i="${idx}" tabindex="0" role="button" aria-label="Abrir item ${r.n}">
-      <div class="card-head">
+      <div class="head">
         <div class="n">${r.n}</div>
-        <h3 class="lead-title">${escapeHtml(r.lead)}</h3>
+        <h3 class="title">${escapeHtml(r.title)}</h3>
       </div>
+      <p class="lead">${escapeHtml(r.lead)}</p>
     </article>
   `).join("");
 
@@ -506,8 +533,8 @@
   const btnClose = document.getElementById("btnClose");
   const modalN = document.getElementById("modalN");
   const modalH2 = document.getElementById("modalH2");
+  const modalLead = document.getElementById("modalLead");
   const modalBody = document.getElementById("modalBody");
-
   let lastFocusEl = null;
 
   function openModal(i){
@@ -517,14 +544,14 @@
     lastFocusEl = document.activeElement;
 
     modalN.textContent = r.n;
-    modalH2.textContent = r.lead;
+    modalH2.textContent = r.title;
+    modalLead.textContent = r.lead;
 
     const kpyHtml = (r.kpy && r.kpy !== "—")
       ? `<div class="kpy"><b>KPY:</b> ${escapeHtml(r.kpy)}</div>`
       : ``;
 
     const paragraphs = r.paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join("");
-
     const questions = r.questions.map(q => `<div class="q">${escapeHtml(q)}</div>`).join("");
 
     modalBody.innerHTML = `
