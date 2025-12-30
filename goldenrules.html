@@ -15,7 +15,7 @@
     --gold-2:#f0d58a;
 
     --text:#ffffff;
-    --muted:rgba(255,255,255,.82);
+    --muted:rgba(255,255,255,.84);
 
     --card: rgba(0,0,0,.40);
     --stroke: rgba(214,178,91,.22);
@@ -23,7 +23,8 @@
     --radius: 22px;
     --shadow: 0 10px 30px rgba(0,0,0,.35);
 
-    --max: 1200px;
+    --max: 1250px;
+    --cardH: 158px;   /* altura fixa para padronizar */
   }
 
   *{ box-sizing:border-box; }
@@ -77,27 +78,29 @@
     padding: 22px 16px 56px;
   }
 
-  /* ✅ GRID RESPONSIVO:
-     - Mobile: 2 colunas
-     - Desktop: 5 colunas
+  /* GRID RESPONSIVO:
+     - mobile: 2
+     - depois: 3, 4
+     - desktop: 5
   */
   .grid{
     display:grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 16px;
   }
-  @media (max-width: 1100px){
+  @media (max-width: 1200px){
     .grid{ grid-template-columns: repeat(4, 1fr); }
   }
-  @media (max-width: 900px){
+  @media (max-width: 980px){
     .grid{ grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 680px){
     .grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* Card */
+  /* Card (altura igual) */
   .card{
+    height: var(--cardH);
     border-radius: var(--radius);
     background:
       radial-gradient(600px 260px at 30% 0%, rgba(214,178,91,.10), transparent 60%),
@@ -109,7 +112,11 @@
     transition: transform .15s ease, border-color .15s ease;
     outline: none;
     user-select:none;
-    min-height: 132px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    overflow:hidden; /* garante visual limpo */
   }
   .card:hover{
     transform: translateY(-2px);
@@ -118,7 +125,7 @@
 
   .head{
     display:flex;
-    align-items:baseline;
+    align-items:flex-start;
     gap: 10px;
     margin-bottom: 10px;
   }
@@ -128,29 +135,55 @@
     font-size: 22px;
     line-height:1;
     min-width: 18px;
+    margin-top: 2px;
   }
 
-  /* ✅ TÍTULO (igual ao PDF): Resultado, Propósito, ... */
+  /* título do card (ajustável p/ caber) */
   .title{
     margin:0;
     font-weight: 1000;
-    font-size: 18px;
     letter-spacing: .1px;
-    line-height: 1.2;
+    line-height: 1.18;
+
+    /* Base: já menor para caber nos maiores */
+    font-size: 16px;
+
+    /* Clamp para não ficar enorme nem minúsculo */
+    font-size: clamp(14px, 1.25vw, 16px);
+
+    /* Limita linhas p/ estética e caber */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* até 3 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  /* ✅ LEAD embaixo */
+  /* lead do card (texto curto) */
   .lead{
     margin:0;
     color: var(--muted);
-    font-size: 14px;
-    line-height: 1.35;
+    font-size: 13.5px;
+    line-height: 1.32;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* até 3 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
+  /* Ajustes finos por viewport */
+  @media (max-width: 1200px){
+    :root{ --cardH: 164px; }
+  }
+  @media (max-width: 980px){
+    :root{ --cardH: 170px; }
+  }
   @media (max-width: 680px){
-    .card{ padding: 16px 14px 14px; min-height: 122px; }
-    .title{ font-size: 17px; }
-    .lead{ font-size: 13.5px; }
+    :root{ --cardH: 170px; }
+    .card{ padding: 16px 14px 14px; border-radius: 20px; }
+    .n{ font-size: 20px; }
+    .title{ font-size: 15px; -webkit-line-clamp: 3; }
+    .lead{ font-size: 13px; -webkit-line-clamp: 3; }
   }
 
   /* ===== MODAL ===== */
@@ -302,7 +335,7 @@
 
   <!-- Modal -->
   <div class="overlay" id="overlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalH2">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalH2">
       <div class="modal-head">
         <div class="modal-title">
           <div class="nbox" id="modalN">1</div>
@@ -318,12 +351,11 @@
   </div>
 
 <script>
-  // ✅ Titulos corrigidos (Resultado/Propósito/.../Cultura/Jornada)
-  // ✅ Leads (frases) ficam abaixo no card e também no modal
+  // ✅ Títulos oficiais dos cards (como você listou)
   const rules = [
     {
       n: 1,
-      title: "Resultado",
+      title: "Resultado com consistência",
       lead: "Resultado com consistência é primordial.",
       kpy: "MOB/MOL/BAI",
       paragraphs: [
@@ -344,7 +376,7 @@
     },
     {
       n: 2,
-      title: "Propósito",
+      title: "Propósito em tudo o que faço",
       lead: "Atuação com propósito: educação e consultoria financeira.",
       kpy: "YourVoice e Turnover",
       paragraphs: [
@@ -360,7 +392,7 @@
     },
     {
       n: 3,
-      title: "Liderança",
+      title: "Liderança que impacta e mobiliza",
       lead: "Liderança é uma escolha diária — inspirar, engajar e desenvolver.",
       kpy: "YourVoice e Turnover",
       paragraphs: [
@@ -379,7 +411,7 @@
     },
     {
       n: 4,
-      title: "Disciplina",
+      title: "Obsessão com disciplina",
       lead: "Oriente com clareza, pergunte e acompanhe indicadores — foco em causa, não só efeito.",
       kpy: "Aderência ao modelo comercial / Mais Certo",
       paragraphs: [
@@ -402,7 +434,7 @@
     },
     {
       n: 5,
-      title: "Sem atalhos",
+      title: "Atalhos não são uma opção",
       lead: "O que você tolera define o padrão do time — transparência e respeito sempre.",
       kpy: "Venda Certa / IQ",
       paragraphs: [
@@ -422,7 +454,7 @@
     },
     {
       n: 6,
-      title: "Tempo",
+      title: "Praticidade e otimização do tempo",
       lead: "Foque no que muda o ponteiro — priorize impacto, saúde mental e equilíbrio.",
       kpy: "—",
       paragraphs: [
@@ -441,7 +473,7 @@
     },
     {
       n: 7,
-      title: "Execução",
+      title: "Execução impecável",
       lead: "Rapidez com cuidado nos detalhes que importam — excelência vira valor.",
       kpy: "—",
       paragraphs: [
@@ -461,7 +493,7 @@
     },
     {
       n: 8,
-      title: "Barra alta",
+      title: "Barra alta sempre",
       lead: "Padrão elevado, ambição relevante e repertório constante.",
       kpy: "—",
       paragraphs: [
@@ -481,7 +513,7 @@
     },
     {
       n: 9,
-      title: "Cultura",
+      title: "Cultura é o comportamento da liderança",
       lead: "A cultura se consolida pelo exemplo — ego fica em casa.",
       kpy: "—",
       paragraphs: [
@@ -498,7 +530,7 @@
     },
     {
       n: 10,
-      title: "Jornada",
+      title: "Fazer muito, sempre certo e curtir a jornada",
       lead: "Excelência com energia positiva — celebrar e evoluir.",
       kpy: "—",
       paragraphs: [
@@ -516,8 +548,6 @@
   ];
 
   const grid = document.getElementById("grid");
-
-  // Cards: número + título + lead (igual à lógica do PDF)
   grid.innerHTML = rules.map((r, idx) => `
     <article class="card" data-i="${idx}" tabindex="0" role="button" aria-label="Abrir item ${r.n}">
       <div class="head">
@@ -530,6 +560,7 @@
 
   // Modal refs
   const overlay = document.getElementById("overlay");
+  const modal = document.getElementById("modal");
   const btnClose = document.getElementById("btnClose");
   const modalN = document.getElementById("modalN");
   const modalH2 = document.getElementById("modalH2");
@@ -542,6 +573,10 @@
     if(!r) return;
 
     lastFocusEl = document.activeElement;
+
+    // ✅ Sempre abrir o modal do topo (corrige o bug do scroll “grudado no fim”)
+    modal.scrollTop = 0;
+    modalBody.scrollTop = 0;
 
     modalN.textContent = r.n;
     modalH2.textContent = r.title;
@@ -564,6 +599,10 @@
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden","false");
     document.body.style.overflow = "hidden";
+
+    // Garante topo após inserir HTML (alguns navegadores “recalculam”)
+    requestAnimationFrame(()=> { modal.scrollTop = 0; });
+
     btnClose.focus();
   }
 
@@ -597,7 +636,7 @@
   // Fechar pelo X
   btnClose.addEventListener("click", closeModal);
 
-  // Fechar clicando fora do modal (no overlay)
+  // Fechar clicando fora do modal
   overlay.addEventListener("click", (e)=>{
     if(e.target === overlay) closeModal();
   });
