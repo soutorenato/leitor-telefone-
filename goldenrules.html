@@ -7,21 +7,24 @@
 
 <style>
   :root{
-    --bg-0:#2a0000;
-    --bg-1:#5d0000;
-    --bg-2:#a10a0a;
+    /* ✅ FUNDO BRANCO */
+    --bg-0:#ffffff;
+    --bg-1:#ffffff;
+    --bg-2:#ffffff;
 
     --gold:#d6b25b;
     --gold-2:#f0d58a;
 
-    --text:#ffffff;
-    --muted:rgba(255,255,255,.84);
+    /* ✅ TEXTO ESCURO NO SITE (cards) */
+    --text:#111111;
+    --muted: rgba(0,0,0,.68);
 
-    --card: rgba(0,0,0,.40);
-    --stroke: rgba(214,178,91,.22);
+    /* ✅ CARD CLARO */
+    --card: rgba(255,255,255,.92);
+    --stroke: rgba(214,178,91,.35);
 
     --radius: 22px;
-    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --shadow: 0 10px 30px rgba(0,0,0,.10);
 
     --max: 1250px;
     --cardH: 158px;   /* altura fixa para padronizar */
@@ -32,10 +35,7 @@
     margin:0;
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
     color: var(--text);
-    background:
-      radial-gradient(1000px 600px at 50% 15%, rgba(255,255,255,.08), transparent 60%),
-      radial-gradient(900px 540px at 10% 80%, rgba(214,178,91,.10), transparent 60%),
-      linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+    background: var(--bg-0);
     overflow-x:hidden;
     -webkit-font-smoothing: antialiased;
     text-rendering: geometricPrecision;
@@ -46,9 +46,9 @@
     position: sticky;
     top:0;
     z-index: 10;
-    background: rgba(0,0,0,.68);
+    background: rgba(255,255,255,.86);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(214,178,91,.16);
+    border-bottom: 1px solid rgba(214,178,91,.22);
   }
   .topbar-inner{
     max-width: var(--max);
@@ -56,17 +56,18 @@
     padding: 14px 16px;
     font-weight: 900;
     letter-spacing: .3px;
+    color:#111;
   }
 
   /* Hero (capa) */
   .hero{
     height: 300px;
     background:
-      linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.60)),
+      linear-gradient(180deg, rgba(255,255,255,.40), rgba(255,255,255,.72)),
       url("capa.jpg");
     background-position:center;
     background-size:cover;
-    border-bottom: 1px solid rgba(214,178,91,.12);
+    border-bottom: 1px solid rgba(214,178,91,.18);
   }
   @media (max-width: 720px){
     .hero{ height: 220px; }
@@ -98,18 +99,18 @@
     .grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* Card (altura igual) */
+  /* ✅ Card (altura igual) */
   .card{
     height: var(--cardH);
     border-radius: var(--radius);
     background:
       radial-gradient(600px 260px at 30% 0%, rgba(214,178,91,.10), transparent 60%),
-      linear-gradient(180deg, rgba(0,0,0,.44), rgba(0,0,0,.34));
+      linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.92));
     border: 1px solid var(--stroke);
     box-shadow: var(--shadow);
     padding: 18px 18px 16px;
     cursor:pointer;
-    transition: transform .15s ease, border-color .15s ease;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
     outline: none;
     user-select:none;
 
@@ -120,55 +121,36 @@
   }
   .card:hover{
     transform: translateY(-2px);
-    border-color: rgba(214,178,91,.40);
+    border-color: rgba(214,178,91,.55);
+    box-shadow: 0 14px 34px rgba(0,0,0,.14);
   }
 
   .head{
     display:flex;
     align-items:flex-start;
     gap: 10px;
-    margin-bottom: 10px;
+    margin: 0; /* ✅ sem espaço extra, já que não tem lead */
   }
   .n{
     font-weight: 1000;
-    color: var(--gold-2);
+    color: #b78b17;
     font-size: 22px;
     line-height:1;
     min-width: 18px;
     margin-top: 2px;
   }
 
-  /* título do card (ajustável p/ caber) */
+  /* ✅ título do card sempre visível */
   .title{
     margin:0;
     font-weight: 1000;
     letter-spacing: .1px;
     line-height: 1.18;
 
-    /* Base: já menor para caber nos maiores */
-    font-size: 16px;
-
-    /* Clamp para não ficar enorme nem minúsculo */
     font-size: clamp(14px, 1.25vw, 16px);
 
-    /* Limita linhas p/ estética e caber */
-    display: -webkit-box;
-    -webkit-line-clamp: 3; /* até 3 linhas */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* lead do card (texto curto) */
-  .lead{
-    margin:0;
-    color: var(--muted);
-    font-size: 13.5px;
-    line-height: 1.32;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 3; /* até 3 linhas */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    /* ✅ sem clamp de linhas para não "sumir" (mas ainda cabe pela altura fixa) */
+    overflow: visible;
   }
 
   /* Ajustes finos por viewport */
@@ -182,8 +164,7 @@
     :root{ --cardH: 170px; }
     .card{ padding: 16px 14px 14px; border-radius: 20px; }
     .n{ font-size: 20px; }
-    .title{ font-size: 15px; -webkit-line-clamp: 3; }
-    .lead{ font-size: 13px; -webkit-line-clamp: 3; }
+    .title{ font-size: 15px; }
   }
 
   /* ===== MODAL ===== */
@@ -210,6 +191,7 @@
       linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.52));
     border: 1px solid rgba(214,178,91,.26);
     box-shadow: 0 18px 60px rgba(0,0,0,.55);
+    color: #fff; /* modal continua escuro */
   }
 
   .modal-head{
@@ -257,7 +239,7 @@
   .close{
     border: 1px solid rgba(214,178,91,.30);
     background: rgba(0,0,0,.25);
-    color: var(--text);
+    color: #fff;
     width: 42px;
     height: 42px;
     border-radius: 14px;
@@ -517,13 +499,14 @@
   ];
 
   const grid = document.getElementById("grid");
+
+  /* ✅ Cards: apenas número + título (sem lead) */
   grid.innerHTML = rules.map((r, idx) => `
     <article class="card" data-i="${idx}" tabindex="0" role="button" aria-label="Abrir item ${r.n}">
       <div class="head">
         <div class="n">${r.n}</div>
         <h3 class="title">${escapeHtml(r.title)}</h3>
       </div>
-      <p class="lead">${escapeHtml(r.lead)}</p>
     </article>
   `).join("");
 
@@ -543,7 +526,6 @@
 
     lastFocusEl = document.activeElement;
 
-    // ✅ Sempre abrir o modal do topo (corrige o bug do scroll “grudado no fim”)
     modal.scrollTop = 0;
     modalBody.scrollTop = 0;
 
@@ -569,7 +551,6 @@
     overlay.setAttribute("aria-hidden","false");
     document.body.style.overflow = "hidden";
 
-    // Garante topo após inserir HTML (alguns navegadores “recalculam”)
     requestAnimationFrame(()=> { modal.scrollTop = 0; });
 
     btnClose.focus();
@@ -586,14 +567,12 @@
     }
   }
 
-  // Clique nos cards abre modal
   grid.addEventListener("click", (e)=>{
     const card = e.target.closest(".card");
     if(!card) return;
     openModal(Number(card.getAttribute("data-i")));
   });
 
-  // Teclado: Enter/Space abre modal
   grid.addEventListener("keydown", (e)=>{
     if(e.key !== "Enter" && e.key !== " ") return;
     const card = e.target.closest(".card");
@@ -602,15 +581,12 @@
     openModal(Number(card.getAttribute("data-i")));
   });
 
-  // Fechar pelo X
   btnClose.addEventListener("click", closeModal);
 
-  // Fechar clicando fora do modal
   overlay.addEventListener("click", (e)=>{
     if(e.target === overlay) closeModal();
   });
 
-  // Fechar com ESC
   document.addEventListener("keydown", (e)=>{
     if(e.key === "Escape" && overlay.classList.contains("open")){
       closeModal();
