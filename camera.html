@@ -3,51 +3,47 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Verificação Facial (1:1) — Cadastro + Nome</title>
+  <title>Cadastro + Verificação Facial (1:1)</title>
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
+    body { font-family: system-ui, -apple-system, Arial, sans-serif; margin: 16px; }
     .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    video, canvas { width: 100%; max-width: 900px; border-radius: 12px; background:#111; }
-    button, input { padding: 10px 14px; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
+    button, input { padding: 10px 14px; border-radius: 10px; border: 1px solid #cfcfcf; background: #fff; }
     button { cursor: pointer; }
-    .card { border:1px solid #ddd; border-radius:12px; padding:12px; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    video, canvas { width: 100%; max-width: 900px; border-radius: 12px; background:#111; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:12px; max-width:900px; }
     .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#f2f2f2; }
     .ok { background:#e9f7ef; }
     .bad { background:#fdecea; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .mono { font-family: ui-monospace, Menlo, SFMono-Regular, monospace; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h2>Cadastro + verificação facial (1:1) — mostra o nome do perfil cadastrado</h2>
+  <h2>Cadastro + verificação facial (1:1)</h2>
 
   <div class="row">
-    <button id="btnStart">Iniciar câmera</button>
-
-    <input id="nameInput" placeholder="Digite o nome para cadastrar" />
-    <button id="btnEnroll" disabled>Cadastrar rosto + nome</button>
-
-    <button id="btnClear" disabled>Apagar cadastro</button>
+    <button id="btnStart">Abrir câmera</button>
     <button id="btnStop" disabled>Parar</button>
 
-    <label class="card">
+    <input id="nameInput" placeholder="Nome para cadastrar" />
+    <button id="btnEnroll" disabled>Cadastrar rosto + nome</button>
+    <button id="btnClear" disabled>Apagar cadastro</button>
+
+    <label class="card" style="max-width:420px">
       Threshold (menor = mais rígido):
       <input id="threshold" type="range" min="0.35" max="0.75" step="0.02" value="0.50"/>
       <span id="thrVal" class="mono">0.50</span>
     </label>
+  </div>
 
-    <div class="card" style="min-width:320px">
-      <div><span class="badge">Status</span> <span id="status">Aguardando…</span></div>
-      <div style="margin-top:10px">
-        <span class="badge" id="badge">Sem cadastro</span>
-        <span id="result">Cadastre um perfil para comparar.</span>
-      </div>
-      <div style="margin-top:10px">
-        <div class="mono" id="profile">Perfil ativo: —</div>
-      </div>
-      <small>
-        Isso é <b>verificação 1:1</b>: compara com o perfil cadastrado. Não identifica pessoas aleatórias.
-      </small>
+  <div class="card">
+    <div><span class="badge">Status</span> <span id="status">Clique em “Abrir câmera”.</span></div>
+    <div style="margin-top:10px">
+      <span class="badge" id="badge">—</span>
+      <span id="result">—</span>
     </div>
+    <div style="margin-top:10px" class="mono" id="profile">Perfil ativo: —</div>
+    <div style="margin-top:10px" class="mono" id="debug"></div>
   </div>
 
   <div style="position:relative; margin-top:12px;">
@@ -55,47 +51,57 @@
     <canvas id="overlay"></canvas>
   </div>
 
+  <!-- face-api -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('overlay');
-    const ctx = canvas.getContext('2d');
+    const btnStart = document.getElementById("btnStart");
+    const btnStop  = document.getElementById("btnStop");
+    const btnEnroll= document.getElementById("btnEnroll");
+    const btnClear = document.getElementById("btnClear");
 
-    const btnStart = document.getElementById('btnStart');
-    const btnEnroll = document.getElementById('btnEnroll');
-    const btnStop = document.getElementById('btnStop');
-    const btnClear = document.getElementById('btnClear');
+    const nameInput = document.getElementById("nameInput");
+    const threshold = document.getElementById("threshold");
+    const thrVal = document.getElementById("thrVal");
 
-    const nameInput = document.getElementById('nameInput');
-    const statusEl = document.getElementById('status');
-    const badge = document.getElementById('badge');
-    const result = document.getElementById('result');
-    const profileEl = document.getElementById('profile');
+    const statusEl = document.getElementById("status");
+    const badgeEl  = document.getElementById("badge");
+    const resultEl = document.getElementById("result");
+    const profileEl= document.getElementById("profile");
+    const debugEl  = document.getElementById("debug");
 
-    const threshold = document.getElementById('threshold');
-    const thrVal = document.getElementById('thrVal');
+    const video = document.getElementById("video");
+    const canvas= document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
 
     let stream = null;
     let rafId = null;
     let modelsLoaded = false;
 
-    // perfil cadastrado (1:1)
     let enrolledName = null;
     let enrolledDescriptor = null; // Float32Array
 
-    // ---------- helpers localStorage ----------
+    function log(msg) {
+      debugEl.textContent += msg + "\n";
+    }
+
+    function resetDebug() {
+      debugEl.textContent = "";
+      log("HTTPS (isSecureContext): " + window.isSecureContext);
+      log("UserAgent: " + navigator.userAgent);
+      log("mediaDevices: " + !!navigator.mediaDevices);
+      log("getUserMedia: " + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+    }
+
     function saveProfile(name, descriptor) {
-      // descriptor é Float32Array -> salvar como array normal
-      const payload = {
+      localStorage.setItem("face_profile_v1", JSON.stringify({
         name,
         descriptor: Array.from(descriptor)
-      };
-      localStorage.setItem('face_profile_v1', JSON.stringify(payload));
+      }));
     }
 
     function loadProfile() {
-      const raw = localStorage.getItem('face_profile_v1');
+      const raw = localStorage.getItem("face_profile_v1");
       if (!raw) return false;
       try {
         const parsed = JSON.parse(raw);
@@ -108,89 +114,118 @@
     }
 
     function clearProfile() {
-      localStorage.removeItem('face_profile_v1');
+      localStorage.removeItem("face_profile_v1");
       enrolledName = null;
       enrolledDescriptor = null;
     }
 
     function updateProfileUI() {
       if (enrolledName && enrolledDescriptor) {
-        profileEl.textContent = `Perfil ativo: ${enrolledName}`;
-        badge.textContent = 'Cadastrado';
-        badge.className = 'badge ok';
+        profileEl.textContent = "Perfil ativo: " + enrolledName;
         btnClear.disabled = false;
       } else {
-        profileEl.textContent = 'Perfil ativo: —';
-        badge.textContent = 'Sem cadastro';
-        badge.className = 'badge';
+        profileEl.textContent = "Perfil ativo: —";
         btnClear.disabled = true;
       }
     }
 
-    threshold.addEventListener('input', () => {
+    threshold.addEventListener("input", () => {
       thrVal.textContent = Number(threshold.value).toFixed(2);
     });
 
     async function loadModels() {
       if (modelsLoaded) return;
-
-      statusEl.textContent = 'Carregando modelos…';
-      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-
+      statusEl.textContent = "Carregando modelos…";
+      const MODEL_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights";
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
       await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
       modelsLoaded = true;
-      statusEl.textContent = 'Modelos carregados.';
+      statusEl.textContent = "Modelos carregados.";
     }
 
-    async function startCamera() {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false
-      });
-      video.srcObject = stream;
+    async function openCamera() {
+      resetDebug();
 
-      await new Promise(resolve => video.onloadedmetadata = resolve);
+      // IMPORTANTE: pedir câmera somente após clique (gesto do usuário)
+      statusEl.textContent = "Solicitando permissão da câmera… (aparecerá um pop-up)";
+      badgeEl.textContent = "—";
+      resultEl.textContent = "—";
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      try {
+        // iOS Safari: mais compatível
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
 
-      statusEl.textContent = 'Câmera ligada. Se tiver cadastro, vai comparar em tempo real.';
-      loop();
+        log("✅ getUserMedia OK");
+        video.srcObject = stream;
+
+        // iOS: garantir play após interação
+        await video.play().catch(e => log("video.play() falhou: " + e.name));
+
+        await new Promise(r => video.onloadedmetadata = r);
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+
+        log("Video size: " + canvas.width + "x" + canvas.height);
+
+        statusEl.textContent = "Câmera ligada ✅";
+        btnEnroll.disabled = false;
+
+        loop();
+      } catch (err) {
+        console.error(err);
+        log("❌ ERRO: " + err.name);
+        log("Mensagem: " + (err.message || "—"));
+
+        if (err.name === "NotAllowedError") {
+          statusEl.textContent = "Permissão negada. Libere a câmera para este site nas configurações do Safari.";
+        } else if (err.name === "NotReadableError") {
+          statusEl.textContent = "A câmera está em uso por outro app. Feche outros apps e tente novamente.";
+        } else {
+          statusEl.textContent = "Erro ao abrir a câmera: " + err.name;
+        }
+
+        throw err;
+      }
     }
 
     function stopCamera() {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = null;
 
-      if (stream) stream.getTracks().forEach(t => t.stop());
-      stream = null;
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
 
       video.srcObject = null;
       ctx.clearRect(0,0,canvas.width,canvas.height);
 
-      statusEl.textContent = 'Parado.';
-      result.textContent = '—';
+      statusEl.textContent = "Parado.";
+      badgeEl.textContent = "—";
+      resultEl.textContent = "—";
+      btnEnroll.disabled = true;
     }
 
     async function enroll() {
-      const name = (nameInput.value || '').trim();
+      const name = (nameInput.value || "").trim();
       if (!name) {
-        statusEl.textContent = 'Digite um nome antes de cadastrar.';
+        statusEl.textContent = "Digite um nome antes de cadastrar.";
+        return;
+      }
+      if (!stream) {
+        statusEl.textContent = "Abra a câmera primeiro.";
         return;
       }
 
-      statusEl.textContent = 'Cadastrando… centralize o rosto e fique parado por 1s.';
-
+      statusEl.textContent = "Cadastrando… olhe para a câmera.";
       const det = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
       if (!det) {
-        statusEl.textContent = 'Não detectei um rosto. Tente com mais luz e o rosto mais centralizado.';
+        statusEl.textContent = "Não detectei rosto. Melhore a luz e centralize o rosto.";
         return;
       }
 
@@ -200,23 +235,22 @@
       saveProfile(enrolledName, enrolledDescriptor);
       updateProfileUI();
 
-      statusEl.textContent = 'Cadastro concluído! Agora comparando em tempo real.';
-      result.textContent = 'Aproxime/afaste para testar.';
+      statusEl.textContent = "Cadastro feito ✅ Agora comparando em tempo real.";
     }
 
-    function setMatchUI(state, text) {
-      if (state === 'match') {
-        badge.textContent = 'MATCH';
-        badge.className = 'badge ok';
-        result.textContent = text;
-      } else if (state === 'nomatch') {
-        badge.textContent = 'DESCONHECIDO';
-        badge.className = 'badge bad';
-        result.textContent = text;
-      } else if (state === 'norosto') {
-        badge.textContent = enrolledDescriptor ? 'SEM ROSTO' : 'Sem cadastro';
-        badge.className = 'badge';
-        result.textContent = text;
+    function setUI(type, text) {
+      if (type === "match") {
+        badgeEl.textContent = "MATCH";
+        badgeEl.className = "badge ok";
+        resultEl.textContent = text;
+      } else if (type === "nomatch") {
+        badgeEl.textContent = "DESCONHECIDO";
+        badgeEl.className = "badge bad";
+        resultEl.textContent = text;
+      } else {
+        badgeEl.textContent = "—";
+        badgeEl.className = "badge";
+        resultEl.textContent = text;
       }
     }
 
@@ -228,87 +262,77 @@
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      // redraw
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      if (det) {
-        const box = det.detection.box;
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#00ff88';
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-        if (enrolledDescriptor) {
-          const dist = faceapi.euclideanDistance(enrolledDescriptor, det.descriptor);
-          const thr = Number(threshold.value);
-
-          const isMatch = dist <= thr;
-
-          // etiqueta no canvas
-          const label = isMatch ? `MATCH: ${enrolledName}` : `DESCONHECIDO`;
-          ctx.font = '18px system-ui';
-          const tw = ctx.measureText(label).width;
-          ctx.fillStyle = 'rgba(0,0,0,0.55)';
-          ctx.fillRect(box.x, Math.max(0, box.y - 26), tw + 10, 26);
-          ctx.fillStyle = '#fff';
-          ctx.fillText(label, box.x + 5, Math.max(18, box.y - 7));
-
-          if (isMatch) {
-            setMatchUI('match', `${enrolledName} (distância: ${dist.toFixed(3)})`);
-          } else {
-            setMatchUI('nomatch', `Não confere com o perfil cadastrado (distância: ${dist.toFixed(3)})`);
-          }
-        } else {
-          setMatchUI('nomatch', 'Sem perfil cadastrado. Cadastre para comparar.');
-        }
-      } else {
-        setMatchUI('norosto', 'Não detectei rosto (melhore luz / centralize).');
+      if (!det) {
+        setUI("neutral", "Sem rosto detectado.");
+        rafId = requestAnimationFrame(loop);
+        return;
       }
+
+      const box = det.detection.box;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#00ff88";
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+      if (!enrolledDescriptor) {
+        setUI("neutral", "Sem perfil cadastrado. Cadastre para comparar.");
+        rafId = requestAnimationFrame(loop);
+        return;
+      }
+
+      const dist = faceapi.euclideanDistance(enrolledDescriptor, det.descriptor);
+      const thr = Number(threshold.value);
+      const isMatch = dist <= thr;
+
+      const label = isMatch ? `MATCH: ${enrolledName}` : "DESCONHECIDO";
+      ctx.font = "18px system-ui";
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(box.x, Math.max(0, box.y - 26), tw + 10, 26);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(label, box.x + 5, Math.max(18, box.y - 7));
+
+      if (isMatch) setUI("match", `${enrolledName} (distância: ${dist.toFixed(3)})`);
+      else setUI("nomatch", `Não confere (distância: ${dist.toFixed(3)})`);
 
       rafId = requestAnimationFrame(loop);
     }
 
-    // ---------- UI wiring ----------
-    btnStart.addEventListener('click', async () => {
+    // --------- Botões ----------
+    btnStart.addEventListener("click", async () => {
       btnStart.disabled = true;
       btnStop.disabled = false;
 
       try {
         await loadModels();
-        await startCamera();
-
-        // se existir cadastro no navegador, carregar
         loadProfile();
         updateProfileUI();
 
-        btnEnroll.disabled = false;
-        statusEl.textContent = 'Pronto. Cadastre ou teste o perfil já salvo.';
-      } catch (e) {
-        console.error(e);
-        statusEl.textContent = 'Erro ao iniciar. Verifique permissão da câmera.';
+        await openCamera(); // aqui deve aparecer o "Permitir câmera"
+      } catch {
         btnStart.disabled = false;
         btnStop.disabled = true;
-        btnEnroll.disabled = true;
       }
     });
 
-    btnEnroll.addEventListener('click', enroll);
-
-    btnClear.addEventListener('click', () => {
-      clearProfile();
-      updateProfileUI();
-      setMatchUI('nomatch', 'Cadastro apagado. Cadastre novamente.');
-    });
-
-    btnStop.addEventListener('click', () => {
+    btnStop.addEventListener("click", () => {
       stopCamera();
       btnStart.disabled = false;
       btnStop.disabled = true;
-      btnEnroll.disabled = true;
     });
 
-    // Inicializa UI com cadastro existente (sem câmera)
-    if (loadProfile()) updateProfileUI();
-    else updateProfileUI();
+    btnEnroll.addEventListener("click", enroll);
+
+    btnClear.addEventListener("click", () => {
+      clearProfile();
+      updateProfileUI();
+      setUI("neutral", "Cadastro apagado.");
+    });
+
+    // UI inicial
+    loadProfile();
+    updateProfileUI();
   </script>
 </body>
 </html>
