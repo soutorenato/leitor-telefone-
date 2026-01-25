@@ -1,89 +1,92 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Detector: TV / Sofá / Quadro</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Verificação facial (1:1) - Demo</title>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
-    .wrap { display: grid; gap: 12px; max-width: 900px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    video, canvas { width: 100%; max-width: 900px; border-radius: 12px; background: #111; }
-    .card { padding: 12px; border: 1px solid #ddd; border-radius: 12px; }
-    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #f2f2f2; margin-right: 8px; }
-    .ok { background: #e9f7ef; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    video, canvas { width: 100%; max-width: 900px; border-radius: 12px; background:#111; }
     button { padding: 10px 14px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-    small { color: #666; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:12px; }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#f2f2f2; }
+    .ok { background:#e9f7ef; }
+    .bad { background:#fdecea; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h2>Detecção em tempo real: Televisão • Sofá • Quadro</h2>
+  <h2>Verificação facial (1:1) no navegador</h2>
 
-    <div class="row">
-      <button id="btnStart">Iniciar câmera</button>
-      <button id="btnStop" disabled>Parar</button>
+  <div class="row">
+    <button id="btnStart">Iniciar câmera</button>
+    <button id="btnEnroll" disabled>Cadastrar meu rosto</button>
+    <button id="btnStop" disabled>Parar</button>
 
-      <label class="card">
-        Confiança mínima:
-        <input id="minScore" type="range" min="0.30" max="0.90" step="0.05" value="0.55" />
-        <span id="minScoreVal">0.55</span>
-      </label>
+    <label class="card">
+      Threshold (quanto menor, mais rígido):
+      <input id="threshold" type="range" min="0.35" max="0.75" step="0.02" value="0.50"/>
+      <span id="thrVal">0.50</span>
+    </label>
 
-      <div class="card">
-        <div><span class="badge">Status</span> <span id="status">Aguardando iniciar…</span></div>
-        <div style="margin-top:8px">
-          <span class="badge ok">Detectados</span>
-          <span id="detected">—</span>
-        </div>
-        <small>Obs.: “Televisão” costuma vir como <b>tv</b> ou <b>monitor</b> no modelo.</small>
+    <div class="card">
+      <div><span class="badge">Status</span> <span id="status">Aguardando…</span></div>
+      <div style="margin-top:8px">
+        <span class="badge" id="matchBadge">Sem cadastro</span>
+        <span id="matchText">Cadastre seu rosto para comparar.</span>
       </div>
-    </div>
-
-    <div style="position: relative;">
-      <video id="video" autoplay playsinline muted></video>
-      <canvas id="canvas"></canvas>
+      <small>Isso é 1:1 (confere/não confere). Não identifica “quem é”.</small>
     </div>
   </div>
 
-  <!-- TensorFlow.js + modelo COCO-SSD -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+  <div style="position:relative; margin-top:12px;">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <!-- face-api.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('overlay');
+    const ctx = canvas.getContext('2d');
 
-    const btnStart = document.getElementById("btnStart");
-    const btnStop = document.getElementById("btnStop");
-    const statusEl = document.getElementById("status");
-    const detectedEl = document.getElementById("detected");
-    const minScore = document.getElementById("minScore");
-    const minScoreVal = document.getElementById("minScoreVal");
+    const btnStart = document.getElementById('btnStart');
+    const btnEnroll = document.getElementById('btnEnroll');
+    const btnStop = document.getElementById('btnStop');
 
-    // Mapeia classes do COCO-SSD para PT-BR
-    // (o modelo costuma retornar: "tv", "couch", "potted plant", "person", etc.)
-    const targetMap = new Map([
-      ["tv", "Televisão"],
-      ["monitor", "Televisão"], // fallback (nem sempre aparece)
-      ["couch", "Sofá"],
-      ["sofa", "Sofá"],         // fallback (nem sempre aparece)
-      ["picture frame", "Quadro"],
-      ["painting", "Quadro"]    // fallback (nem sempre aparece)
-    ]);
+    const statusEl = document.getElementById('status');
+    const matchBadge = document.getElementById('matchBadge');
+    const matchText = document.getElementById('matchText');
+
+    const threshold = document.getElementById('threshold');
+    const thrVal = document.getElementById('thrVal');
 
     let stream = null;
-    let model = null;
     let rafId = null;
 
-    minScore.addEventListener("input", () => {
-      minScoreVal.textContent = Number(minScore.value).toFixed(2);
+    // descritor do rosto cadastrado (Float32Array)
+    let enrolledDescriptor = null;
+
+    threshold.addEventListener('input', () => {
+      thrVal.textContent = Number(threshold.value).toFixed(2);
     });
+
+    async function loadModels() {
+      statusEl.textContent = 'Carregando modelos…';
+      // Usando modelos do próprio CDN (weights embutidos no face-api via fetch)
+      // Para produção, o ideal é hospedar os modelos localmente.
+      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      statusEl.textContent = 'Modelos carregados.';
+    }
 
     async function startCamera() {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { facingMode: 'user' },
         audio: false
       });
       video.srcObject = stream;
@@ -92,14 +95,11 @@
         video.onloadedmetadata = () => resolve();
       });
 
-      // Ajusta canvas ao vídeo
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      statusEl.textContent = "Carregando modelo…";
-      model = await cocoSsd.load();
-      statusEl.textContent = "Rodando detecção…";
-
+      btnEnroll.disabled = false;
+      statusEl.textContent = 'Câmera ligada. Pronto para cadastrar.';
       loop();
     }
 
@@ -107,75 +107,114 @@
       if (rafId) cancelAnimationFrame(rafId);
       rafId = null;
 
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-      }
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = null;
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
       video.srcObject = null;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      detectedEl.textContent = "—";
-      statusEl.textContent = "Parado.";
+
+      statusEl.textContent = 'Parado.';
+      btnEnroll.disabled = true;
+      matchBadge.textContent = enrolledDescriptor ? 'Cadastro mantido' : 'Sem cadastro';
+      matchBadge.className = 'badge';
+      matchText.textContent = '—';
     }
 
-    function drawBox(pred, labelPT) {
-      const [x, y, w, h] = pred.bbox;
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "#00ff88";
-      ctx.strokeRect(x, y, w, h);
+    async function enrollFace() {
+      statusEl.textContent = 'Cadastrando… centralize o rosto e olhe para a câmera.';
+      // pega um descritor do rosto atual
+      const det = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
 
-      const text = `${labelPT} (${Math.round(pred.score * 100)}%)`;
-      ctx.font = "18px system-ui";
-      const tw = ctx.measureText(text).width;
+      if (!det) {
+        statusEl.textContent = 'Não encontrei um rosto. Tente novamente com mais luz.';
+        return;
+      }
 
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(x, Math.max(0, y - 26), tw + 10, 26);
-      ctx.fillStyle = "#fff";
-      ctx.fillText(text, x + 5, Math.max(18, y - 7));
+      enrolledDescriptor = det.descriptor;
+      statusEl.textContent = 'Rosto cadastrado! Agora comparando em tempo real.';
+      matchBadge.textContent = 'Cadastrado';
+      matchBadge.className = 'badge ok';
+      matchText.textContent = 'Aproxime/afaste e veja se dá match.';
+    }
+
+    function setMatchUI(isMatch, dist) {
+      if (!enrolledDescriptor) {
+        matchBadge.textContent = 'Sem cadastro';
+        matchBadge.className = 'badge';
+        matchText.textContent = 'Cadastre seu rosto para comparar.';
+        return;
+      }
+
+      if (isMatch) {
+        matchBadge.textContent = 'MATCH';
+        matchBadge.className = 'badge ok';
+        matchText.textContent = `Confere (distância: ${dist.toFixed(3)})`;
+      } else {
+        matchBadge.textContent = 'NÃO MATCH';
+        matchBadge.className = 'badge bad';
+        matchText.textContent = `Não confere (distância: ${dist.toFixed(3)})`;
+      }
     }
 
     async function loop() {
-      // Desenha o frame atual no canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const predictions = await model.detect(canvas);
-      const threshold = Number(minScore.value);
+      const det = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
 
-      // Filtra só TV / Sofá / Quadro acima do threshold
-      const hits = predictions
-        .filter(p => p.score >= threshold)
-        .map(p => ({
-          raw: p.class,
-          pt: targetMap.get(p.class),
-          pred: p
-        }))
-        .filter(x => Boolean(x.pt));
-
-      // Mostra lista (sem repetir)
-      const unique = [...new Set(hits.map(h => h.pt))];
-      detectedEl.textContent = unique.length ? unique.join(" • ") : "—";
-
-      // Redesenha frame e caixas (para ficar por cima)
+      // desenha caixa do rosto se detectou
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      hits.forEach(h => drawBox(h.pred, h.pt));
+      if (det) {
+        const box = det.detection.box;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#00ff88';
+        ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+        // compara com o cadastrado
+        if (enrolledDescriptor) {
+          const dist = faceapi.euclideanDistance(enrolledDescriptor, det.descriptor);
+          const thr = Number(threshold.value);
+          const isMatch = dist <= thr;
+          setMatchUI(isMatch, dist);
+        } else {
+          setMatchUI(false, 999);
+        }
+      } else {
+        // sem rosto
+        if (enrolledDescriptor) {
+          matchBadge.textContent = 'SEM ROSTO';
+          matchBadge.className = 'badge';
+          matchText.textContent = 'Não detectei rosto (melhore a luz).';
+        } else {
+          setMatchUI(false, 999);
+        }
+      }
 
       rafId = requestAnimationFrame(loop);
     }
 
-    btnStart.addEventListener("click", async () => {
+    btnStart.addEventListener('click', async () => {
       btnStart.disabled = true;
       btnStop.disabled = false;
-
       try {
+        await loadModels();
         await startCamera();
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Erro ao iniciar (verifique permissão da câmera).";
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = 'Erro ao iniciar. Verifique permissão da câmera.';
         btnStart.disabled = false;
         btnStop.disabled = true;
       }
     });
 
-    btnStop.addEventListener("click", () => {
+    btnEnroll.addEventListener('click', enrollFace);
+
+    btnStop.addEventListener('click', () => {
       stopCamera();
       btnStart.disabled = false;
       btnStop.disabled = true;
