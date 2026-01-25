@@ -1,55 +1,299 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Teste de Câmera (iPhone)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cadastro + verificação facial (1:1)</title>
   <style>
-    body { font-family: system-ui, -apple-system, Arial; margin: 16px; }
-    button { padding: 12px 16px; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
-    video { width: 100%; max-width: 900px; border-radius: 12px; background: #111; margin-top: 12px; }
-    pre { white-space: pre-wrap; border: 1px solid #ddd; padding: 10px; border-radius: 12px; margin-top: 12px; }
+    body { font-family: system-ui, -apple-system, Arial, sans-serif; margin: 16px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button, input { padding: 12px 14px; border-radius: 10px; border: 1px solid #cfcfcf; background: #fff; }
+    button { cursor: pointer; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    video, canvas { width:100%; max-width: 900px; border-radius: 12px; background:#111; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:12px; max-width:900px; }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#f2f2f2; }
+    .ok { background:#e9f7ef; }
+    .bad { background:#fdecea; }
+    .mono { font-family: ui-monospace, Menlo, SFMono-Regular, monospace; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h2>Teste de câmera (Safari iPhone)</h2>
-  <button id="btn">Abrir câmera</button>
+  <h2>Cadastro + verificação facial (1:1) — mostra nome do perfil cadastrado</h2>
 
-  <video id="v" autoplay playsinline muted></video>
-  <pre id="log"></pre>
+  <div class="row">
+    <button id="btnStart">Abrir câmera</button>
+    <button id="btnStop" disabled>Parar</button>
+
+    <input id="nameInput" placeholder="Nome para cadastrar" />
+    <button id="btnEnroll" disabled>Cadastrar rosto + nome</button>
+    <button id="btnClear" disabled>Apagar cadastro</button>
+
+    <label class="card" style="max-width:420px">
+      Threshold (menor = mais rígido):
+      <input id="threshold" type="range" min="0.35" max="0.75" step="0.02" value="0.50"/>
+      <span id="thrVal" class="mono">0.50</span>
+    </label>
+  </div>
+
+  <div class="card">
+    <div><span class="badge">Status</span> <span id="status">Clique em “Abrir câmera”.</span></div>
+    <div style="margin-top:10px">
+      <span class="badge" id="badge">—</span>
+      <span id="result">—</span>
+    </div>
+    <div style="margin-top:10px" class="mono" id="profile">Perfil ativo: —</div>
+    <div style="margin-top:10px" class="mono" id="debug"></div>
+  </div>
+
+  <div style="position:relative; margin-top:12px;">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
-    const btn = document.getElementById("btn");
-    const v = document.getElementById("v");
-    const log = document.getElementById("log");
-    let stream;
+    const btnStart = document.getElementById("btnStart");
+    const btnStop  = document.getElementById("btnStop");
+    const btnEnroll= document.getElementById("btnEnroll");
+    const btnClear = document.getElementById("btnClear");
 
-    function p(s){ log.textContent += s + "\n"; }
+    const nameInput = document.getElementById("nameInput");
+    const threshold = document.getElementById("threshold");
+    const thrVal = document.getElementById("thrVal");
 
-    btn.addEventListener("click", async () => {
-      log.textContent = "";
-      p("isSecureContext: " + window.isSecureContext);
-      p("UA: " + navigator.userAgent);
-      p("mediaDevices: " + !!navigator.mediaDevices);
-      p("getUserMedia: " + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+    const statusEl = document.getElementById("status");
+    const badgeEl  = document.getElementById("badge");
+    const resultEl = document.getElementById("result");
+    const profileEl= document.getElementById("profile");
+    const debugEl  = document.getElementById("debug");
+
+    const video = document.getElementById("video");
+    const canvas= document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
+
+    let stream = null;
+    let rafId = null;
+    let modelsLoaded = false;
+
+    // Perfil cadastrado (1:1)
+    let enrolledName = null;
+    let enrolledDescriptor = null; // Float32Array
+
+    function log(msg){ debugEl.textContent += msg + "\n"; }
+    function resetDebug(){
+      debugEl.textContent = "";
+      log("isSecureContext: " + window.isSecureContext);
+      log("UA: " + navigator.userAgent);
+    }
+
+    function saveProfile(name, descriptor){
+      localStorage.setItem("face_profile_v1", JSON.stringify({
+        name,
+        descriptor: Array.from(descriptor)
+      }));
+    }
+    function loadProfile(){
+      const raw = localStorage.getItem("face_profile_v1");
+      if (!raw) return false;
+      try {
+        const p = JSON.parse(raw);
+        enrolledName = p.name;
+        enrolledDescriptor = new Float32Array(p.descriptor);
+        return true;
+      } catch { return false; }
+    }
+    function clearProfile(){
+      localStorage.removeItem("face_profile_v1");
+      enrolledName = null;
+      enrolledDescriptor = null;
+    }
+    function updateProfileUI(){
+      if (enrolledName && enrolledDescriptor) {
+        profileEl.textContent = "Perfil ativo: " + enrolledName;
+        btnClear.disabled = false;
+      } else {
+        profileEl.textContent = "Perfil ativo: —";
+        btnClear.disabled = true;
+      }
+    }
+
+    threshold.addEventListener("input", () => {
+      thrVal.textContent = Number(threshold.value).toFixed(2);
+    });
+
+    async function loadModels(){
+      if (modelsLoaded) return;
+      statusEl.textContent = "Carregando modelos…";
+      const MODEL_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights";
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      modelsLoaded = true;
+      statusEl.textContent = "Modelos carregados ✅";
+    }
+
+    function setUI(type, text){
+      if (type === "match") {
+        badgeEl.textContent = "MATCH";
+        badgeEl.className = "badge ok";
+        resultEl.textContent = text;
+      } else if (type === "nomatch") {
+        badgeEl.textContent = "DESCONHECIDO";
+        badgeEl.className = "badge bad";
+        resultEl.textContent = text;
+      } else {
+        badgeEl.textContent = "—";
+        badgeEl.className = "badge";
+        resultEl.textContent = text;
+      }
+    }
+
+    async function openCamera(){
+      resetDebug();
+      statusEl.textContent = "Solicitando permissão da câmera…";
+      setUI("neutral", "—");
+
+      // iOS compat: video: true
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      video.srcObject = stream;
+
+      // iOS: garantir play após gesto
+      await video.play();
+
+      await new Promise(r => video.onloadedmetadata = r);
+
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+
+      statusEl.textContent = "Câmera ligada ✅";
+      btnEnroll.disabled = false;
+
+      loop();
+    }
+
+    function stopCamera(){
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+      video.srcObject = null;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      statusEl.textContent = "Parado.";
+      setUI("neutral", "—");
+      btnEnroll.disabled = true;
+    }
+
+    async function enroll(){
+      const name = (nameInput.value || "").trim();
+      if (!name) { statusEl.textContent = "Digite um nome antes de cadastrar."; return; }
+      if (!stream) { statusEl.textContent = "Abra a câmera primeiro."; return; }
+
+      statusEl.textContent = "Cadastrando… centralize o rosto.";
+      const det = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!det) {
+        statusEl.textContent = "Não detectei rosto. Melhore a luz e centralize.";
+        return;
+      }
+
+      enrolledName = name;
+      enrolledDescriptor = det.descriptor;
+      saveProfile(enrolledName, enrolledDescriptor);
+      updateProfileUI();
+
+      statusEl.textContent = "Cadastro feito ✅ Agora comparando…";
+    }
+
+    async function loop(){
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const det = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      if (!det) {
+        setUI("neutral", "Sem rosto detectado.");
+        rafId = requestAnimationFrame(loop);
+        return;
+      }
+
+      const box = det.detection.box;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#00ff88";
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+      if (!enrolledDescriptor) {
+        setUI("neutral", "Sem cadastro. Cadastre para comparar.");
+        rafId = requestAnimationFrame(loop);
+        return;
+      }
+
+      const dist = faceapi.euclideanDistance(enrolledDescriptor, det.descriptor);
+      const thr  = Number(threshold.value);
+      const isMatch = dist <= thr;
+
+      const label = isMatch ? `MATCH: ${enrolledName}` : "DESCONHECIDO";
+      ctx.font = "18px system-ui";
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(box.x, Math.max(0, box.y - 26), tw + 10, 26);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(label, box.x + 5, Math.max(18, box.y - 7));
+
+      if (isMatch) setUI("match", enrolledName + " (dist: " + dist.toFixed(3) + ")");
+      else setUI("nomatch", "Não confere (dist: " + dist.toFixed(3) + ")");
+
+      rafId = requestAnimationFrame(loop);
+    }
+
+    // Botões
+    btnStart.addEventListener("click", async () => {
+      btnStart.disabled = true;
+      btnStop.disabled = false;
 
       try {
-        // MAIS COMPATÍVEL NO iOS
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-
-        p("✅ getUserMedia OK");
-        v.srcObject = stream;
-
-        // iOS: garante que o vídeo realmente inicie após o gesto
-        await v.play();
-
-        p("✅ video.play OK");
-        p("Video size: " + (v.videoWidth || "?") + "x" + (v.videoHeight || "?"));
+        await loadModels();
+        loadProfile();
+        updateProfileUI();
+        await openCamera();
       } catch (e) {
-        p("❌ ERRO: " + e.name);
-        p("Mensagem: " + (e.message || "—"));
+        console.error(e);
+        statusEl.textContent = "Erro ao abrir câmera: " + e.name;
+        log("ERRO: " + e.name + " — " + (e.message || "—"));
+        btnStart.disabled = false;
+        btnStop.disabled = true;
       }
     });
+
+    btnStop.addEventListener("click", () => {
+      stopCamera();
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+    });
+
+    btnEnroll.addEventListener("click", enroll);
+
+    btnClear.addEventListener("click", () => {
+      clearProfile();
+      updateProfileUI();
+      setUI("neutral", "Cadastro apagado.");
+    });
+
+    // Inicial
+    loadProfile();
+    updateProfileUI();
   </script>
 </body>
 </html>
