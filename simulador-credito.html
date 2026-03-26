@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Simulador Comitê de Crédito</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#f4f6fb;
+margin:0;
+padding:30px;
+}
+
+h1{
+margin-bottom:25px;
+}
+
+.container{
+display:flex;
+gap:20px;
+}
+
+.card{
+background:white;
+border-radius:10px;
+padding:20px;
+width:30%;
+box-shadow:0 6px 15px rgba(0,0,0,0.08);
+}
+
+.card button{
+margin-top:10px;
+padding:10px 14px;
+border:none;
+background:#2f66f2;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.queue{
+margin-top:40px;
+display:flex;
+gap:40px;
+}
+
+.panel{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 6px 15px rgba(0,0,0,0.08);
+width:45%;
+}
+
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+.modal-content{
+background:white;
+padding:25px;
+border-radius:10px;
+width:500px;
+}
+
+input,textarea,select{
+width:100%;
+padding:8px;
+margin-top:5px;
+margin-bottom:10px;
+}
+
+button.close{
+background:#ccc;
+color:black;
+}
+
+.badge{
+padding:5px 10px;
+background:#eee;
+border-radius:5px;
+font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Simulador de Comitê de Crédito</h1>
+
+<div class="container" id="cases"></div>
+
+<div class="queue">
+
+<div class="panel">
+<h3>Propostas pendentes — Gerente Geral</h3>
+<div id="gg"></div>
+</div>
+
+<div class="panel">
+<h3>Propostas pendentes — Analista de Crédito</h3>
+<div id="analista"></div>
+</div>
+
+</div>
+
+
+<!-- Modal Cliente -->
+
+<div class="modal" id="clienteModal">
+<div class="modal-content">
+
+<h2 id="clienteNome"></h2>
+
+<div id="clienteDados"></div>
+
+<button onclick="abrirProposta()">Subir proposta</button>
+<button class="close" onclick="fecharModal()">Fechar</button>
+
+</div>
+</div>
+
+
+<!-- Modal Proposta -->
+
+<div class="modal" id="propostaModal">
+<div class="modal-content">
+
+<h2>Subir proposta</h2>
+
+<label>Gerente</label>
+<input id="gerente">
+
+<label>Valor</label>
+<input id="valor">
+
+<label>Produtos</label>
+<select id="produto" multiple>
+
+<option>Cartão de crédito</option>
+<option>Empréstimo pessoal</option>
+<option>Crédito com garantia de imóvel</option>
+<option>Crédito com garantia de veículo</option>
+
+</select>
+
+<label>Finalidade</label>
+<textarea id="finalidade"></textarea>
+
+<button onclick="enviarProposta()">Enviar proposta</button>
+
+<button class="close" onclick="fecharProposta()">Cancelar</button>
+
+</div>
+</div>
+
+
+<script>
+
+const clientes=[
+
+{
+id:1,
+nome:"Marcelo Andrade",
+cpf:"123.456.789-00",
+idade:44,
+renda:28500,
+data:"14/09/2021",
+comprovacao:"Holerite"
+},
+
+{
+id:2,
+nome:"Fernanda Costa",
+cpf:"222.456.789-00",
+idade:35,
+renda:19800,
+data:"18/01/2026",
+comprovacao:"Imposto de renda"
+},
+
+{
+id:3,
+nome:"João Pedro",
+cpf:"333.456.789-00",
+idade:37,
+renda:12400,
+data:"22/06/2025",
+comprovacao:"Extrato bancário"
+}
+
+]
+
+let clienteAtual=null
+
+function renderCases(){
+
+const div=document.getElementById("cases")
+div.innerHTML=""
+
+clientes.forEach(c=>{
+
+div.innerHTML+=`
+
+<div class="card">
+
+<h3>Case ${c.id}</h3>
+
+<p>${c.nome}</p>
+
+<p>Renda: R$ ${c.renda}</p>
+
+<p>Atualização: ${c.data}</p>
+
+<p>Comprovação: ${c.comprovacao}</p>
+
+<button onclick="abrirCliente(${c.id})">Abrir ficha</button>
+
+</div>
+
+`
+
+})
+
+}
+
+function abrirCliente(id){
+
+clienteAtual=clientes.find(c=>c.id==id)
+
+document.getElementById("clienteNome").innerText=clienteAtual.nome
+
+document.getElementById("clienteDados").innerHTML=`
+
+CPF: ${clienteAtual.cpf}<br>
+Idade: ${clienteAtual.idade}<br>
+Renda: R$ ${clienteAtual.renda}<br>
+Atualização: ${clienteAtual.data}<br>
+Comprovação: ${clienteAtual.comprovacao}
+
+`
+
+document.getElementById("clienteModal").style.display="flex"
+
+}
+
+function fecharModal(){
+
+document.getElementById("clienteModal").style.display="none"
+
+}
+
+function abrirProposta(){
+
+document.getElementById("propostaModal").style.display="flex"
+
+}
+
+function fecharProposta(){
+
+document.getElementById("propostaModal").style.display="none"
+
+}
+
+function enviarProposta(){
+
+const gerente=document.getElementById("gerente").value
+const valor=document.getElementById("valor").value
+const produto=document.getElementById("produto").value
+
+const proposta={
+
+cliente:clienteAtual.nome,
+gerente:gerente,
+valor:valor,
+produto:produto,
+status:"GG"
+
+}
+
+let propostas=JSON.parse(localStorage.getItem("propostas")||"[]")
+
+propostas.push(proposta)
+
+localStorage.setItem("propostas",JSON.stringify(propostas))
+
+fecharProposta()
+fecharModal()
+
+renderFilas()
+
+}
+
+function renderFilas(){
+
+const propostas=JSON.parse(localStorage.getItem("propostas")||"[]")
+
+const gg=document.getElementById("gg")
+const analista=document.getElementById("analista")
+
+gg.innerHTML=""
+analista.innerHTML=""
+
+propostas.forEach(p=>{
+
+if(p.status=="GG"){
+
+gg.innerHTML+=`
+
+<div>
+
+${p.cliente} | ${p.valor}
+
+<button onclick="aprovarGG('${p.cliente}')">Aprovar</button>
+
+</div>
+
+`
+
+}
+
+if(p.status=="ANALISTA"){
+
+analista.innerHTML+=`
+
+<div>
+
+${p.cliente} | ${p.valor}
+
+<button onclick="aprovarAnalista('${p.cliente}')">Aprovar</button>
+
+</div>
+
+`
+
+}
+
+})
+
+}
+
+function aprovarGG(cliente){
+
+let propostas=JSON.parse(localStorage.getItem("propostas"))
+
+propostas.forEach(p=>{
+
+if(p.cliente==cliente){
+p.status="ANALISTA"
+}
+
+})
+
+localStorage.setItem("propostas",JSON.stringify(propostas))
+
+renderFilas()
+
+}
+
+function aprovarAnalista(cliente){
+
+let propostas=JSON.parse(localStorage.getItem("propostas"))
+
+propostas.forEach(p=>{
+
+if(p.cliente==cliente){
+p.status="APROVADO"
+}
+
+})
+
+localStorage.setItem("propostas",JSON.stringify(propostas))
+
+renderFilas()
+
+}
+
+renderCases()
+renderFilas()
+
+</script>
+
+</body>
+</html>
