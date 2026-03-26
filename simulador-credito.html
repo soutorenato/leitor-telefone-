@@ -44,6 +44,7 @@
     .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
     .btn-warning{background:#fff5e6;color:var(--warning);border:1px solid #ffd8a8}
     .btn-danger{background:#fff1f1;color:var(--danger);border:1px solid #ffd3d3}
+    .btn-success{background:#eaf8ef;color:var(--success);border:1px solid #bde5c8}
 
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
     .card{
@@ -81,6 +82,7 @@
     .badge.devolvida{background:#fff2e8;color:#bf5f00}
     .badge.aprovada{background:#e9fbef;color:#117a42}
     .badge.reprovada{background:#fff0f0;color:#b42318}
+    .badge.formalizada{background:#e6fffb;color:#0f766e}
 
     .queues{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     .panel{padding:18px}
@@ -187,6 +189,10 @@
     .proposal-summary h3{margin:0 0 12px;font-size:18px}
     .muted{color:var(--muted);font-size:13px}
     .hidden{display:none !important}
+    .success-box{
+      background:#ecfdf3;border:1px solid #b7e4c7;color:#166534;
+      padding:14px 16px;border-radius:14px;font-weight:700;margin-top:12px;
+    }
 
     @media (max-width: 1024px){
       .grid,.queues,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
@@ -229,7 +235,7 @@
   <div class="overlay" id="decisionOverlay"></div>
 
   <script>
-    const STORAGE_KEY = "simulador_credito_propostas_v4";
+    const STORAGE_KEY = "simulador_credito_propostas_v5";
 
     const CASES = [
       {
@@ -340,6 +346,7 @@
         rejected_gg: { text:"Reprovada pela GG", className:"reprovada" },
         rejected_analyst: { text:"Reprovada pelo Analista", className:"reprovada" },
         approved: { text:"Aprovada", className:"aprovada" },
+        formalized: { text:"Formalizada", className:"formalizada" },
         none: { text:"Sem proposta", className:"sem" }
       };
       return map[status] || map.none;
@@ -366,10 +373,8 @@
       const PV = Number(valor || 0);
       const i = Number(taxaPercentual || 0) / 100;
       const n = Number(prazo || 0);
-
       if (!PV || !n) return 0;
       if (!i) return PV / n;
-
       const parcela = PV * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
       return parcela;
     }
@@ -517,6 +522,7 @@
             ${proposals.map(p => {
               const st = statusInfo(p.status);
               const podeEditar = p.status === "returned_gg" || p.status === "returned_analyst";
+              const podeFormalizar = p.status === "approved";
               return `
                 <tr>
                   <td>${new Date(p.createdAt).toLocaleString("pt-BR")}</td>
@@ -524,7 +530,12 @@
                   <td>${money(p.amount)}</td>
                   <td><span class="badge ${st.className}">${st.text}</span></td>
                   <td>
-                    ${podeEditar ? `<button class="btn-warning" onclick="editProposal('${p.id}')">Responder e reenviar</button>` : `-`}
+                    ${podeEditar
+                      ? `<button class="btn-warning" onclick="editProposal('${p.id}')">Responder e reenviar</button>`
+                      : podeFormalizar
+                        ? `<button class="btn-success" onclick="formalizeProposal('${p.id}', ${p.caseId})">Formalizar</button>`
+                        : `-`
+                    }
                   </td>
                 </tr>
               `;
@@ -543,6 +554,7 @@
               ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Complemento do gerente:</strong> ${p.managerResponse}</div>` : ""}
               ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
               ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
+              ${p.status === "formalized" ? `<div class="success-box">Proposta contratada com sucesso.</div>` : ""}
               ${(p.history || []).length ? `
                 <div style="margin-top:8px;">
                   <strong>Registro da proposta:</strong>
@@ -735,7 +747,7 @@
                 ${editing ? `
                   <div class="form-group full">
                     <label>Complemento do gerente</label>
-                    <textarea name="managerResponse" placeholder="Inclua novas informações para responder aos apontamentos" required>${proposal?.managerResponse || ""}</textarea>
+                    <textarea name="managerResponse" placeholder="Inclua novas informações para responder aos apontamentos" required></textarea>
                   </div>
                 ` : `
                   <div class="form-group full">
@@ -996,6 +1008,25 @@
       closeOverlay("decisionOverlay");
       renderCases();
       renderQueues();
+    }
+
+    window.formalizeProposal = function(proposalId, caseId){
+      const list = getProposals();
+      const idx = list.findIndex(p => p.id === proposalId);
+      if (idx === -1) return;
+
+      list[idx].status = "formalized";
+      list[idx].updatedAt = nowIso();
+      list[idx].history = list[idx].history || [];
+      list[idx].history.push({
+        at: nowLabel(),
+        text: "Proposta contratada com sucesso."
+      });
+
+      saveProposals(list);
+      renderCases();
+      renderQueues();
+      openClient(caseId);
     }
 
     document.getElementById("resetBtn").addEventListener("click", () => {
