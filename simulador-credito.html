@@ -1,395 +1,1402 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Simulador Comitê de Crédito</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Comitê de Crédito</title>
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --line:#d9e2ec;
+      --text:#102a43;
+      --muted:#627d98;
+      --primary:#1f5fbf;
+      --primary-dark:#174a93;
+      --success:#15803d;
+      --warning:#b7791f;
+      --danger:#b42318;
+      --shadow:0 12px 28px rgba(16,42,67,.08);
+      --radius:18px;
+    }
 
-<style>
+    *{box-sizing:border-box}
 
-body{
-font-family: Arial, sans-serif;
-background:#f4f6fb;
-margin:0;
-padding:30px;
-}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#edf3fb 0%, #f8fafc 100%);
+      color:var(--text);
+    }
 
-h1{
-margin-bottom:25px;
-}
+    .wrap{
+      max-width:1300px;
+      margin:0 auto;
+      padding:24px;
+    }
 
-.container{
-display:flex;
-gap:20px;
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    }
 
-.card{
-background:white;
-border-radius:10px;
-padding:20px;
-width:30%;
-box-shadow:0 6px 15px rgba(0,0,0,0.08);
-}
+    .topbar h1{
+      margin:0;
+      font-size:30px;
+      letter-spacing:-.02em;
+    }
 
-.card button{
-margin-top:10px;
-padding:10px 14px;
-border:none;
-background:#2f66f2;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
+    .topbar p{
+      margin:6px 0 0;
+      color:var(--muted);
+    }
 
-.queue{
-margin-top:40px;
-display:flex;
-gap:40px;
-}
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.panel{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 6px 15px rgba(0,0,0,0.08);
-width:45%;
-}
+    button{
+      border:0;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+      font-family:inherit;
+    }
 
-.modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-display:none;
-align-items:center;
-justify-content:center;
-}
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(31,95,191,.18);
+    }
 
-.modal-content{
-background:white;
-padding:25px;
-border-radius:10px;
-width:500px;
-}
+    .btn-primary:hover{background:var(--primary-dark)}
 
-input,textarea,select{
-width:100%;
-padding:8px;
-margin-top:5px;
-margin-bottom:10px;
-}
+    .btn-secondary{
+      background:#e9f1fb;
+      color:var(--primary-dark);
+    }
 
-button.close{
-background:#ccc;
-color:black;
-}
+    .btn-light{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
 
-.badge{
-padding:5px 10px;
-background:#eee;
-border-radius:5px;
-font-size:12px;
-}
+    .btn-warning{
+      background:#fff5e6;
+      color:var(--warning);
+      border:1px solid #ffd8a8;
+    }
 
-</style>
+    .btn-danger{
+      background:#fff1f1;
+      color:var(--danger);
+      border:1px solid #ffd3d3;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-bottom:24px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid rgba(217,226,236,.95);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .case-card{
+      padding:20px;
+      position:relative;
+      min-height:255px;
+      overflow:hidden;
+    }
+
+    .case-card:before{
+      content:"";
+      position:absolute;
+      right:-35px;
+      top:-35px;
+      width:130px;
+      height:130px;
+      border-radius:50%;
+      background:radial-gradient(circle,#dbeafe 0,#eef5ff 58%, transparent 59%);
+    }
+
+    .case-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+
+    .case-title{
+      font-size:22px;
+      font-weight:800;
+      margin:0 0 4px;
+    }
+
+    .mini{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .metrics{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .metric{
+      background:#f8fbff;
+      border:1px solid #e3edf8;
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .metric .k{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .metric .v{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .row-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding-top:10px;
+      margin-top:8px;
+      border-top:1px dashed var(--line);
+      font-size:13px;
+    }
+
+    .row-meta span:first-child{color:var(--muted)}
+
+    .card-footer{
+      display:flex;
+      justify-content:flex-end;
+      margin-top:16px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .badge.sem{background:#edf2f7;color:#486581}
+    .badge.gg{background:#fff7db;color:#8d6200}
+    .badge.analista{background:#eaf5ff;color:#145ea8}
+    .badge.devolvida{background:#fff2e8;color:#bf5f00}
+    .badge.aprovada{background:#e9fbef;color:#117a42}
+    .badge.reprovada{background:#fff0f0;color:#b42318}
+
+    .queues{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .panel{
+      padding:18px;
+    }
+
+    .panel h2{
+      margin:0 0 6px;
+      font-size:20px;
+    }
+
+    .panel p{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:120px;
+    }
+
+    .proposal-item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      background:#fcfdff;
+    }
+
+    .proposal-item h3{
+      margin:0 0 6px;
+      font-size:16px;
+    }
+
+    .proposal-meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .empty{
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      background:#fafcff;
+      border:1px dashed var(--line);
+      border-radius:14px;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(11,29,52,.48);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:1000;
+    }
+
+    .overlay.show{display:flex}
+
+    .modal{
+      width:min(1180px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 30px 80px rgba(16,42,67,.28);
+      border:1px solid rgba(255,255,255,.35);
+      position:relative;
+    }
+
+    .modal.small{
+      width:min(780px,100%);
+    }
+
+    .modal-header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:rgba(255,255,255,.96);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid #edf2f7;
+      border-radius:24px 24px 0 0;
+      padding:20px 24px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+
+    .modal-header h2{
+      margin:0;
+      font-size:25px;
+    }
+
+    .modal-header p{
+      margin:6px 0 0;
+      color:var(--muted);
+    }
+
+    .close{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#f7fafc;
+      color:#486581;
+      border:1px solid var(--line);
+      font-size:20px;
+      line-height:1;
+      padding:0;
+    }
+
+    .modal-body{
+      padding:22px 24px 24px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#17395e 0%, #244d79 55%, #305f91 100%);
+      color:#fff;
+      border-radius:22px;
+      padding:22px;
+      margin-bottom:18px;
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .avatar{
+      width:56px;
+      height:56px;
+      border-radius:16px;
+      background:rgba(255,255,255,.16);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .hero-ident{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .hero-name{
+      font-size:24px;
+      font-weight:800;
+      margin:0 0 6px;
+    }
+
+    .hero-meta{
+      display:flex;
+      gap:10px 16px;
+      flex-wrap:wrap;
+      font-size:13px;
+      color:rgba(255,255,255,.85);
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .hero-box{
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .hero-box .k{
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      margin-bottom:6px;
+    }
+
+    .hero-box .v{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .section{
+      background:#fbfdff;
+      border:1px solid #e6edf6;
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .section-title{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#486581;
+      font-weight:800;
+      margin:0 0 14px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .field{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .field .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .field .value{
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .timeline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .step{
+      padding:10px 12px;
+      border-radius:999px;
+      background:#f4f7fb;
+      color:#486581;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid #e2e8f0;
+    }
+
+    .step.active{
+      background:#e7f1ff;
+      color:#145ea8;
+      border-color:#cde0fb;
+    }
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+      overflow:hidden;
+      border-radius:14px;
+    }
+
+    .table th,
+    .table td{
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      padding:12px 10px;
+      vertical-align:top;
+    }
+
+    .table th{
+      color:#486581;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      background:#f8fbff;
+    }
+
+    .history-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .history-item{
+      border-left:4px solid #c9dcf8;
+      background:#f9fbff;
+      border-radius:0 14px 14px 0;
+      padding:12px 14px;
+      font-size:14px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .form-group.full{
+      grid-column:1/-1;
+    }
+
+    label{
+      font-size:13px;
+      font-weight:700;
+      color:#334e68;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 13px;
+      font:inherit;
+      color:var(--text);
+      background:#fff;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .check-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#fbfdff;
+    }
+
+    .check input{
+      width:auto;
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+
+    .proposal-summary{
+      border:1px solid var(--line);
+      background:#fbfdff;
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .proposal-summary h3{
+      margin:0 0 12px;
+      font-size:18px;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    @media (max-width: 1024px){
+      .grid, .queues, .hero-grid, .grid-2, .grid-3, .grid-4, .form-grid, .check-grid{
+        grid-template-columns:1fr;
+      }
+
+      .proposal-item{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
 </head>
-
 <body>
-
-<h1>Simulador de Comitê de Crédito</h1>
-
-<div class="container" id="cases"></div>
-
-<div class="queue">
-
-<div class="panel">
-<h3>Propostas pendentes — Gerente Geral</h3>
-<div id="gg"></div>
-</div>
-
-<div class="panel">
-<h3>Propostas pendentes — Analista de Crédito</h3>
-<div id="analista"></div>
-</div>
-
-</div>
-
-
-<!-- Modal Cliente -->
-
-<div class="modal" id="clienteModal">
-<div class="modal-content">
-
-<h2 id="clienteNome"></h2>
-
-<div id="clienteDados"></div>
-
-<button onclick="abrirProposta()">Subir proposta</button>
-<button class="close" onclick="fecharModal()">Fechar</button>
-
-</div>
-</div>
-
-
-<!-- Modal Proposta -->
-
-<div class="modal" id="propostaModal">
-<div class="modal-content">
-
-<h2>Subir proposta</h2>
-
-<label>Gerente</label>
-<input id="gerente">
-
-<label>Valor</label>
-<input id="valor">
-
-<label>Produtos</label>
-<select id="produto" multiple>
-
-<option>Cartão de crédito</option>
-<option>Empréstimo pessoal</option>
-<option>Crédito com garantia de imóvel</option>
-<option>Crédito com garantia de veículo</option>
-
-</select>
-
-<label>Finalidade</label>
-<textarea id="finalidade"></textarea>
-
-<button onclick="enviarProposta()">Enviar proposta</button>
-
-<button class="close" onclick="fecharProposta()">Cancelar</button>
-
-</div>
-</div>
-
-
-<script>
-
-const clientes=[
-
-{
-id:1,
-nome:"Marcelo Andrade",
-cpf:"123.456.789-00",
-idade:44,
-renda:28500,
-data:"14/09/2021",
-comprovacao:"Holerite"
-},
-
-{
-id:2,
-nome:"Fernanda Costa",
-cpf:"222.456.789-00",
-idade:35,
-renda:19800,
-data:"18/01/2026",
-comprovacao:"Imposto de renda"
-},
-
-{
-id:3,
-nome:"João Pedro",
-cpf:"333.456.789-00",
-idade:37,
-renda:12400,
-data:"22/06/2025",
-comprovacao:"Extrato bancário"
-}
-
-]
-
-let clienteAtual=null
-
-function renderCases(){
-
-const div=document.getElementById("cases")
-div.innerHTML=""
-
-clientes.forEach(c=>{
-
-div.innerHTML+=`
-
-<div class="card">
-
-<h3>Case ${c.id}</h3>
-
-<p>${c.nome}</p>
-
-<p>Renda: R$ ${c.renda}</p>
-
-<p>Atualização: ${c.data}</p>
-
-<p>Comprovação: ${c.comprovacao}</p>
-
-<button onclick="abrirCliente(${c.id})">Abrir ficha</button>
-
-</div>
-
-`
-
-})
-
-}
-
-function abrirCliente(id){
-
-clienteAtual=clientes.find(c=>c.id==id)
-
-document.getElementById("clienteNome").innerText=clienteAtual.nome
-
-document.getElementById("clienteDados").innerHTML=`
-
-CPF: ${clienteAtual.cpf}<br>
-Idade: ${clienteAtual.idade}<br>
-Renda: R$ ${clienteAtual.renda}<br>
-Atualização: ${clienteAtual.data}<br>
-Comprovação: ${clienteAtual.comprovacao}
-
-`
-
-document.getElementById("clienteModal").style.display="flex"
-
-}
-
-function fecharModal(){
-
-document.getElementById("clienteModal").style.display="none"
-
-}
-
-function abrirProposta(){
-
-document.getElementById("propostaModal").style.display="flex"
-
-}
-
-function fecharProposta(){
-
-document.getElementById("propostaModal").style.display="none"
-
-}
-
-function enviarProposta(){
-
-const gerente=document.getElementById("gerente").value
-const valor=document.getElementById("valor").value
-const produto=document.getElementById("produto").value
-
-const proposta={
-
-cliente:clienteAtual.nome,
-gerente:gerente,
-valor:valor,
-produto:produto,
-status:"GG"
-
-}
-
-let propostas=JSON.parse(localStorage.getItem("propostas")||"[]")
-
-propostas.push(proposta)
-
-localStorage.setItem("propostas",JSON.stringify(propostas))
-
-fecharProposta()
-fecharModal()
-
-renderFilas()
-
-}
-
-function renderFilas(){
-
-const propostas=JSON.parse(localStorage.getItem("propostas")||"[]")
-
-const gg=document.getElementById("gg")
-const analista=document.getElementById("analista")
-
-gg.innerHTML=""
-analista.innerHTML=""
-
-propostas.forEach(p=>{
-
-if(p.status=="GG"){
-
-gg.innerHTML+=`
-
-<div>
-
-${p.cliente} | ${p.valor}
-
-<button onclick="aprovarGG('${p.cliente}')">Aprovar</button>
-
-</div>
-
-`
-
-}
-
-if(p.status=="ANALISTA"){
-
-analista.innerHTML+=`
-
-<div>
-
-${p.cliente} | ${p.valor}
-
-<button onclick="aprovarAnalista('${p.cliente}')">Aprovar</button>
-
-</div>
-
-`
-
-}
-
-})
-
-}
-
-function aprovarGG(cliente){
-
-let propostas=JSON.parse(localStorage.getItem("propostas"))
-
-propostas.forEach(p=>{
-
-if(p.cliente==cliente){
-p.status="ANALISTA"
-}
-
-})
-
-localStorage.setItem("propostas",JSON.stringify(propostas))
-
-renderFilas()
-
-}
-
-function aprovarAnalista(cliente){
-
-let propostas=JSON.parse(localStorage.getItem("propostas"))
-
-propostas.forEach(p=>{
-
-if(p.cliente==cliente){
-p.status="APROVADO"
-}
-
-})
-
-localStorage.setItem("propostas",JSON.stringify(propostas))
-
-renderFilas()
-
-}
-
-renderCases()
-renderFilas()
-
-</script>
-
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1>Simulador de Comitê de Crédito</h1>
+        <p>Protótipo visual para aula online com cases, proposta, gerência geral, analista de crédito e histórico completo.</p>
+      </div>
+      <div class="actions">
+        <button class="btn-secondary" id="refreshBtn">Atualizar tela</button>
+        <button class="btn-danger" id="resetBtn">Limpar propostas</button>
+      </div>
+    </div>
+
+    <section class="grid" id="caseGrid"></section>
+
+    <section class="queues">
+      <div class="card panel">
+        <h2>Propostas pendentes — Gerente Geral</h2>
+        <p>Propostas enviadas pelo gerente de relacionamento aguardando parecer da gerência geral.</p>
+        <div class="list" id="ggList"></div>
+      </div>
+
+      <div class="card panel">
+        <h2>Propostas pendentes — Analista de Crédito</h2>
+        <p>Propostas encaminhadas pela gerência geral aguardando análise técnica final.</p>
+        <div class="list" id="analystList"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="overlay" id="clientOverlay"></div>
+  <div class="overlay" id="proposalOverlay"></div>
+  <div class="overlay" id="decisionOverlay"></div>
+
+  <script>
+    const STORAGE_KEY = "simulador_credito_propostas_v2";
+
+    const CASES = [
+      {
+        id: 1,
+        title: "Case 1",
+        nome: "Marcelo Andrade Lima",
+        cpf: "183.456.920-11",
+        nascimento: "14/03/1982",
+        idade: 44,
+        profissao: "Médico cardiologista",
+        renda: 28500,
+        rendaAtualizacao: "14/09/2021",
+        comprovacao: "Holerite",
+        saldo: 96340,
+        investido: 487000,
+        creditoTomado: 78200,
+        usoCartao: 9240,
+        limiteDisponivel: 28000,
+        comprometimento: "27%",
+        relacionamento: "8 anos",
+        perfil: "Alta renda",
+        observacao: "Renda elevada, porém com atualização cadastral antiga.",
+        objetivoSugestao: "Expansão da clínica, reforço de caixa e análise de cartão premium."
+      },
+      {
+        id: 2,
+        title: "Case 2",
+        nome: "Fernanda Costa Ribeiro",
+        cpf: "402.998.650-34",
+        nascimento: "09/11/1990",
+        idade: 35,
+        profissao: "Empresária do varejo",
+        renda: 19800,
+        rendaAtualizacao: "18/01/2026",
+        comprovacao: "Imposto de Renda",
+        saldo: 28420,
+        investido: 156000,
+        creditoTomado: 18000,
+        usoCartao: 7480,
+        limiteDisponivel: 22000,
+        comprometimento: "18%",
+        relacionamento: "4 anos",
+        perfil: "Relacionamento crescente",
+        observacao: "Dados recentes, boa consistência documental e boa dinâmica de movimentação.",
+        objetivoSugestao: "Capital de giro, reforço de estoque e eventual limite de cartão empresarial."
+      },
+      {
+        id: 3,
+        title: "Case 3",
+        nome: "João Pedro Nogueira",
+        cpf: "055.741.330-92",
+        nascimento: "21/06/1988",
+        idade: 37,
+        profissao: "Consultor autônomo",
+        renda: 12400,
+        rendaAtualizacao: "22/06/2025",
+        comprovacao: "Extrato bancário",
+        saldo: 12480,
+        investido: 32000,
+        creditoTomado: 18000,
+        usoCartao: 5680,
+        limiteDisponivel: 6400,
+        comprometimento: "39%",
+        relacionamento: "3 anos",
+        perfil: "Renda variável",
+        observacao: "Renda oscilante, comprovação por extrato e maior sensibilidade no comprometimento.",
+        objetivoSugestao: "Organização de fluxo de caixa, consolidação de dívida e revisão de limite."
+      }
+    ];
+
+    const PRODUCTS = [
+      "Cartão de crédito",
+      "Empréstimo pessoal",
+      "Empréstimo com garantia de imóvel",
+      "Empréstimo com garantia de veículo",
+      "Limite pré-aprovado",
+      "Capital de giro",
+      "Crédito consignado",
+      "Financiamento"
+    ];
+
+    function money(v){
+      return new Intl.NumberFormat("pt-BR", {
+        style:"currency",
+        currency:"BRL"
+      }).format(Number(v || 0));
+    }
+
+    function nowIso(){
+      return new Date().toISOString();
+    }
+
+    function nowLabel(){
+      return new Date().toLocaleString("pt-BR");
+    }
+
+    function getProposals(){
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
+
+    function saveProposals(list){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function getCaseById(id){
+      return CASES.find(c => c.id === id);
+    }
+
+    function statusInfo(status){
+      const map = {
+        pending_gg: { text:"Em análise GG", className:"gg" },
+        pending_analyst: { text:"Em análise Crédito", className:"analista" },
+        returned_gg: { text:"Devolvida pela GG", className:"devolvida" },
+        returned_analyst: { text:"Devolvida pelo Analista", className:"devolvida" },
+        rejected_gg: { text:"Reprovada pela GG", className:"reprovada" },
+        rejected_analyst: { text:"Reprovada pelo Analista", className:"reprovada" },
+        approved: { text:"Aprovada", className:"aprovada" },
+        none: { text:"Sem proposta", className:"sem" }
+      };
+      return map[status] || map.none;
+    }
+
+    function getLatestProposalForCase(caseId){
+      const proposals = getProposals()
+        .filter(p => p.caseId === caseId)
+        .sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      return proposals[0] || null;
+    }
+
+    function getCaseBadge(caseId){
+      const last = getLatestProposalForCase(caseId);
+      if (!last) return statusInfo("none");
+      return statusInfo(last.status);
+    }
+
+    function flowSteps(status){
+      const idxMap = {
+        pending_gg: 1,
+        returned_gg: 1,
+        rejected_gg: 1,
+        pending_analyst: 2,
+        returned_analyst: 2,
+        rejected_analyst: 2,
+        approved: 3
+      };
+      const idx = idxMap[status] || 0;
+      return `
+        <div class="timeline">
+          <span class="step ${idx >= 0 ? "active" : ""}">Subida pelo gerente</span>
+          <span class="step ${idx >= 1 ? "active" : ""}">Gerência geral</span>
+          <span class="step ${idx >= 2 ? "active" : ""}">Analista de crédito</span>
+          <span class="step ${idx >= 3 ? "active" : ""}">Desfecho final</span>
+        </div>
+      `;
+    }
+
+    function renderCases(){
+      const grid = document.getElementById("caseGrid");
+      grid.innerHTML = "";
+
+      CASES.forEach(c => {
+        const badge = getCaseBadge(c.id);
+
+        const card = document.createElement("article");
+        card.className = "card case-card";
+        card.innerHTML = `
+          <div class="case-head">
+            <div>
+              <div class="case-title">${c.title}</div>
+              <div class="mini">${c.nome}</div>
+            </div>
+            <span class="badge ${badge.className}">${badge.text}</span>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="k">Renda mensal</div>
+              <div class="v">${money(c.renda)}</div>
+            </div>
+            <div class="metric">
+              <div class="k">Investimentos</div>
+              <div class="v">${money(c.investido)}</div>
+            </div>
+          </div>
+
+          <div class="row-meta">
+            <span>Atualização da renda</span>
+            <strong>${c.rendaAtualizacao}</strong>
+          </div>
+
+          <div class="row-meta">
+            <span>Comprovação</span>
+            <strong>${c.comprovacao}</strong>
+          </div>
+
+          <div class="card-footer">
+            <button class="btn-primary" onclick="openClient(${c.id})">Abrir ficha</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function buildProposalItem(p, role){
+      const c = getCaseById(p.caseId);
+      const badge = statusInfo(p.status);
+      const item = document.createElement("div");
+      item.className = "proposal-item";
+      item.innerHTML = `
+        <div>
+          <h3>${c.title} — ${c.nome}</h3>
+          <div class="proposal-meta">
+            <span><strong>Gerente:</strong> ${p.managerName}</span>
+            <span><strong>Produtos:</strong> ${p.products.join(", ")}</span>
+            <span><strong>Valor:</strong> ${money(p.amount)}</span>
+            <span><strong>Data:</strong> ${new Date(p.createdAt).toLocaleString("pt-BR")}</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="badge ${badge.className}">${badge.text}</span>
+          <button class="btn-primary" onclick="openDecision('${p.id}','${role}')">Analisar</button>
+        </div>
+      `;
+      return item;
+    }
+
+    function renderQueues(){
+      const proposals = getProposals();
+      const ggList = document.getElementById("ggList");
+      const analystList = document.getElementById("analystList");
+
+      const pendingGG = proposals.filter(p => p.status === "pending_gg");
+      const pendingAnalyst = proposals.filter(p => p.status === "pending_analyst");
+
+      ggList.innerHTML = "";
+      analystList.innerHTML = "";
+
+      if (!pendingGG.length){
+        ggList.innerHTML = `<div class="empty">Nenhuma proposta pendente para a gerência geral.</div>`;
+      } else {
+        pendingGG.forEach(p => ggList.appendChild(buildProposalItem(p, "gg")));
+      }
+
+      if (!pendingAnalyst.length){
+        analystList.innerHTML = `<div class="empty">Nenhuma proposta pendente para o analista de crédito.</div>`;
+      } else {
+        pendingAnalyst.forEach(p => analystList.appendChild(buildProposalItem(p, "analyst")));
+      }
+    }
+
+    function openOverlay(id, html){
+      const ov = document.getElementById(id);
+      ov.innerHTML = html;
+      ov.classList.add("show");
+    }
+
+    function closeOverlay(id){
+      const ov = document.getElementById(id);
+      ov.classList.remove("show");
+      ov.innerHTML = "";
+    }
+
+    function getProposalsForCase(caseId){
+      return getProposals()
+        .filter(p => p.caseId === caseId)
+        .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    window.openClient = function(caseId){
+      const c = getCaseById(caseId);
+      const proposals = getProposalsForCase(caseId);
+      const latest = proposals[0];
+      const badge = latest ? statusInfo(latest.status) : statusInfo("none");
+
+      const historyTable = proposals.length ? `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Produto(s)</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${proposals.map(p => {
+              const st = statusInfo(p.status);
+              return `
+                <tr>
+                  <td>${new Date(p.createdAt).toLocaleString("pt-BR")}</td>
+                  <td>${p.products.join(", ")}</td>
+                  <td>${money(p.amount)}</td>
+                  <td><span class="badge ${st.className}">${st.text}</span></td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="empty">Ainda não há propostas registradas para este case.</div>`;
+
+      const detailedHistory = proposals.length ? `
+        <div class="history-list">
+          ${proposals.map(p => `
+            <div class="history-item">
+              <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.products.join(", ")}</strong> • <strong>${money(p.amount)}</strong></div>
+              <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
+              <div style="margin-top:8px;"><strong>Defesa do gerente:</strong> ${p.managerOpinion}</div>
+              ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
+              ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
+              ${(p.history || []).length ? `
+                <div style="margin-top:8px;">
+                  <strong>Registro da proposta:</strong>
+                  <ul style="margin:8px 0 0 18px; padding:0;">
+                    ${p.history.map(h => `<li style="margin-bottom:6px;"><strong>${h.at}</strong> — ${h.text}</li>`).join("")}
+                  </ul>
+                </div>
+              ` : ""}
+            </div>
+          `).join("")}
+        </div>
+      ` : "";
+
+      openOverlay("clientOverlay", `
+        <div class="modal">
+          <div class="modal-header">
+            <div>
+              <h2>${c.title} — Dashboard do Cliente</h2>
+              <p>Ficha visual do cliente com dados fictícios e histórico de propostas.</p>
+            </div>
+            <button class="close" onclick="closeOverlay('clientOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="hero">
+              <div class="hero-top">
+                <div class="hero-ident">
+                  <div class="avatar">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
+                  <div>
+                    <div class="hero-name">${c.nome}</div>
+                    <div class="hero-meta">
+                      <span>CPF: ${c.cpf}</span>
+                      <span>Nascimento: ${c.nascimento}</span>
+                      <span>Idade: ${c.idade} anos</span>
+                      <span>Profissão: ${c.profissao}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span class="badge ${badge.className}">${badge.text}</span>
+                </div>
+              </div>
+
+              <div class="hero-grid">
+                <div class="hero-box">
+                  <div class="k">Renda mensal</div>
+                  <div class="v">${money(c.renda)}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Atualização da renda</div>
+                  <div class="v">${c.rendaAtualizacao}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Comprovação</div>
+                  <div class="v">${c.comprovacao}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Perfil</div>
+                  <div class="v">${c.perfil}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Resumo financeiro</div>
+              <div class="grid-4">
+                <div class="field">
+                  <div class="label">Saldo em conta</div>
+                  <div class="value">${money(c.saldo)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Valor investido</div>
+                  <div class="value">${money(c.investido)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Crédito já tomado</div>
+                  <div class="value">${money(c.creditoTomado)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Uso atual do cartão</div>
+                  <div class="value">${money(c.usoCartao)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Limite disponível</div>
+                  <div class="value">${money(c.limiteDisponivel)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Comprometimento estimado</div>
+                  <div class="value">${c.comprometimento}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Relacionamento</div>
+                  <div class="value">${c.relacionamento}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Objetivo sugerido</div>
+                  <div class="value" style="font-size:13px;">${c.objetivoSugestao}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="section">
+                <div class="section-title">Leitura do case</div>
+                <div class="grid-3">
+                  <div class="field">
+                    <div class="label">Perfil</div>
+                    <div class="value">${c.perfil}</div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Relacionamento</div>
+                    <div class="value">${c.relacionamento}</div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Comprovação</div>
+                    <div class="value">${c.comprovacao}</div>
+                  </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                  <div class="label">Ponto de atenção</div>
+                  <div class="value" style="font-size:14px;">${c.observacao}</div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                  <div class="label">Objetivo sugerido para discussão</div>
+                  <div class="value" style="font-size:14px;">${c.objetivoSugestao}</div>
+                </div>
+
+                <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+                  <button class="btn-primary" onclick="openProposal(${c.id})">Subir proposta</button>
+                </div>
+
+                ${latest ? flowSteps(latest.status) : ""}
+              </div>
+
+              <div class="section">
+                <div class="section-title">Histórico de propostas</div>
+                ${historyTable}
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Registro detalhado das propostas</div>
+              ${detailedHistory || `<div class="empty">Sem registros detalhados até o momento.</div>`}
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    window.openProposal = function(caseId){
+      const c = getCaseById(caseId);
+      const checks = PRODUCTS.map((p, i) => `
+        <label class="check">
+          <input type="checkbox" name="products" value="${p}" ${i === 0 ? "checked" : ""}>
+          <span>${p}</span>
+        </label>
+      `).join("");
+
+      openOverlay("proposalOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>Subir proposta — ${c.title}</h2>
+              <p>Preencha os dados da operação e registre a defesa do gerente de relacionamento.</p>
+            </div>
+            <button class="close" onclick="closeOverlay('proposalOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <form id="proposalForm">
+              <input type="hidden" name="caseId" value="${c.id}">
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Gerente de relacionamento</label>
+                  <input type="text" name="managerName" placeholder="Ex.: Renato Souto" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Valor solicitado</label>
+                  <input type="number" min="0" step="0.01" name="amount" placeholder="Ex.: 150000" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Prazo</label>
+                  <input type="text" name="term" placeholder="Ex.: 48 meses" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Garantia</label>
+                  <input type="text" name="guarantee" placeholder="Ex.: imóvel, veículo ou sem garantia">
+                </div>
+
+                <div class="form-group full">
+                  <label>Produtos de crédito</label>
+                  <div class="check-grid">${checks}</div>
+                </div>
+
+                <div class="form-group full">
+                  <label>Finalidade</label>
+                  <textarea name="purpose" required>${c.objetivoSugestao}</textarea>
+                </div>
+
+                <div class="form-group full">
+                  <label>Defesa do gerente</label>
+                  <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required></textarea>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-light" onclick="closeOverlay('proposalOverlay')">Cancelar</button>
+                <button type="submit" class="btn-primary">Enviar proposta</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `);
+
+      document.getElementById("proposalForm").onsubmit = function(e){
+        e.preventDefault();
+
+        const fd = new FormData(e.target);
+        const selectedProducts = [...document.querySelectorAll('input[name="products"]:checked')].map(el => el.value);
+
+        if (!selectedProducts.length){
+          alert("Selecione pelo menos um produto.");
+          return;
+        }
+
+        const list = getProposals();
+        const proposal = {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          caseId: Number(fd.get("caseId")),
+          managerName: fd.get("managerName").trim(),
+          amount: Number(fd.get("amount")),
+          term: fd.get("term").trim(),
+          guarantee: fd.get("guarantee").trim(),
+          products: selectedProducts,
+          purpose: fd.get("purpose").trim(),
+          managerOpinion: fd.get("managerOpinion").trim(),
+          generalManagerOpinion: "",
+          analystOpinion: "",
+          status: "pending_gg",
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
+          history: [
+            { at: nowLabel(), text: "Proposta criada pelo gerente de relacionamento e enviada para a gerência geral." }
+          ]
+        };
+
+        list.push(proposal);
+        saveProposals(list);
+
+        closeOverlay("proposalOverlay");
+        renderCases();
+        renderQueues();
+        openClient(caseId);
+      };
+    }
+
+    window.openDecision = function(proposalId, role){
+      const proposal = getProposals().find(p => p.id === proposalId);
+      const c = getCaseById(proposal.caseId);
+
+      const title = role === "gg" ? "Análise — Gerência Geral" : "Análise — Analista de Crédito";
+      const actionButtons = role === "gg"
+        ? `
+          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','gg','forward')">Encaminhar para analista</button>
+          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','gg','return')">Devolver ao gerente</button>
+          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','gg','reject')">Reprovar</button>
+        `
+        : `
+          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','analyst','approve')">Aprovar</button>
+          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','analyst','return')">Devolver ao gerente</button>
+          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','analyst','reject')">Reprovar</button>
+        `;
+
+      openOverlay("decisionOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>${title}</h2>
+              <p>${c.title} — ${c.nome}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('decisionOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="proposal-summary">
+              <h3>Resumo da proposta</h3>
+              <div class="grid-3">
+                <div class="field">
+                  <div class="label">Gerente responsável</div>
+                  <div class="value">${proposal.managerName}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Valor solicitado</div>
+                  <div class="value">${money(proposal.amount)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Prazo</div>
+                  <div class="value">${proposal.term}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Produtos</div>
+                  <div class="value">${proposal.products.join(", ")}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Garantia</div>
+                  <div class="value">${proposal.guarantee || "Não informada"}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Atualização da renda</div>
+                  <div class="value">${c.rendaAtualizacao}</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;" class="muted"><strong>Finalidade:</strong> ${proposal.purpose}</div>
+              <div style="margin-top:8px;" class="muted"><strong>Defesa do gerente:</strong> ${proposal.managerOpinion}</div>
+              ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
+            </div>
+
+            <div class="form-group full" style="margin-top:16px;">
+              <label>Registro da decisão</label>
+              <textarea id="decisionOpinion" placeholder="Escreva o parecer obrigatório desta decisão"></textarea>
+            </div>
+
+            <div class="modal-actions">
+              ${actionButtons}
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    window.submitDecision = function(proposalId, role, action){
+      const opinion = document.getElementById("decisionOpinion").value.trim();
+
+      if (!opinion){
+        alert("Preencha o registro da decisão antes de continuar.");
+        return;
+      }
+
+      const list = getProposals();
+      const idx = list.findIndex(p => p.id === proposalId);
+      const proposal = list[idx];
+
+      let historyText = "";
+
+      if (role === "gg"){
+        proposal.generalManagerOpinion = opinion;
+
+        if (action === "forward"){
+          proposal.status = "pending_analyst";
+          historyText = "Gerência geral encaminhou a proposta ao analista de crédito.";
+        }
+
+        if (action === "return"){
+          proposal.status = "returned_gg";
+          historyText = "Gerência geral devolveu a proposta ao gerente de relacionamento.";
+        }
+
+        if (action === "reject"){
+          proposal.status = "rejected_gg";
+          historyText = "Gerência geral reprovou a proposta.";
+        }
+      }
+
+      if (role === "analyst"){
+        proposal.analystOpinion = opinion;
+
+        if (action === "approve"){
+          proposal.status = "approved";
+          historyText = "Analista de crédito aprovou a proposta.";
+        }
+
+        if (action === "return"){
+          proposal.status = "returned_analyst";
+          historyText = "Analista de crédito devolveu a proposta ao gerente de relacionamento.";
+        }
+
+        if (action === "reject"){
+          proposal.status = "rejected_analyst";
+          historyText = "Analista de crédito reprovou a proposta.";
+        }
+      }
+
+      proposal.updatedAt = nowIso();
+      proposal.history = proposal.history || [];
+      proposal.history.push({
+        at: nowLabel(),
+        text: `${historyText} Parecer: ${opinion}`
+      });
+
+      list[idx] = proposal;
+      saveProposals(list);
+
+      closeOverlay("decisionOverlay");
+      renderCases();
+      renderQueues();
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (confirm("Deseja limpar todas as propostas salvas nesta simulação?")){
+        localStorage.removeItem(STORAGE_KEY);
+        renderCases();
+        renderQueues();
+      }
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      renderCases();
+      renderQueues();
+    });
+
+    ["clientOverlay","proposalOverlay","decisionOverlay"].forEach(id => {
+      document.getElementById(id).addEventListener("click", (e) => {
+        if (e.target.id === id){
+          closeOverlay(id);
+        }
+      });
+    });
+
+    renderCases();
+    renderQueues();
+  </script>
 </body>
 </html>
