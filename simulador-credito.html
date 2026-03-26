@@ -157,13 +157,6 @@
     .field .label{font-size:12px;color:var(--muted);margin-bottom:4px}
     .field .value{font-size:15px;font-weight:800}
 
-    .timeline{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-    .step{
-      padding:10px 12px;border-radius:999px;background:#f4f7fb;color:#486581;
-      font-size:12px;font-weight:800;border:1px solid #e2e8f0;
-    }
-    .step.active{background:#e7f1ff;color:#145ea8;border-color:#cde0fb}
-
     .table{
       width:100%;border-collapse:collapse;font-size:14px;overflow:hidden;border-radius:14px;
     }
@@ -236,7 +229,7 @@
   <div class="overlay" id="decisionOverlay"></div>
 
   <script>
-    const STORAGE_KEY = "simulador_credito_propostas_v3";
+    const STORAGE_KEY = "simulador_credito_propostas_v4";
 
     const CASES = [
       {
@@ -363,27 +356,6 @@
       const last = getLatestProposalForCase(caseId);
       if (!last) return statusInfo("none");
       return statusInfo(last.status);
-    }
-
-    function flowSteps(status){
-      const idxMap = {
-        pending_gg: 1,
-        returned_gg: 1,
-        rejected_gg: 1,
-        pending_analyst: 2,
-        returned_analyst: 2,
-        rejected_analyst: 2,
-        approved: 3
-      };
-      const idx = idxMap[status] || 0;
-      return `
-        <div class="timeline">
-          <span class="step ${idx >= 0 ? "active" : ""}">Subida pelo gerente</span>
-          <span class="step ${idx >= 1 ? "active" : ""}">Gerência geral</span>
-          <span class="step ${idx >= 2 ? "active" : ""}">Analista de crédito</span>
-          <span class="step ${idx >= 3 ? "active" : ""}">Desfecho final</span>
-        </div>
-      `;
     }
 
     function isRotativo(product){
@@ -567,8 +539,8 @@
             <div class="history-item">
               <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.product}</strong> • <strong>${money(p.amount)}</strong></div>
               <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
-              <div style="margin-top:8px;"><strong>Defesa do gerente:</strong> ${p.managerOpinion}</div>
-              ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Resposta do gerente aos apontamentos:</strong> ${p.managerResponse}</div>` : ""}
+              <div style="margin-top:8px;"><strong>Defesa inicial do gerente:</strong> ${p.originalManagerOpinion || p.managerOpinion}</div>
+              ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Complemento do gerente:</strong> ${p.managerResponse}</div>` : ""}
               ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
               ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
               ${(p.history || []).length ? `
@@ -670,8 +642,6 @@
                 <div style="margin-top:16px; display:flex; justify-content:flex-end;">
                   <button class="btn-primary" onclick="openProposal(${c.id})">Subir proposta</button>
                 </div>
-
-                ${latest ? flowSteps(latest.status) : ""}
               </div>
 
               <div class="section">
@@ -703,7 +673,7 @@
           <div class="modal-header">
             <div>
               <h2>${editing ? "Responder apontamentos e reenviar" : "Subir proposta"} — ${c.title}</h2>
-              <p>${editing ? "Ajuste a proposta com base nos questionamentos e reenvie para análise." : "Preencha os dados da operação e registre a defesa do gerente de relacionamento."}</p>
+              <p>${editing ? "Inclua apenas novas informações para responder aos apontamentos e reenvie para análise." : "Preencha os dados da operação e registre a defesa do gerente de relacionamento."}</p>
             </div>
             <button class="close" onclick="closeOverlay('proposalOverlay')">×</button>
           </div>
@@ -716,9 +686,13 @@
               ${editing ? `
                 <div class="section" style="margin-bottom:18px;">
                   <div class="section-title">Apontamentos para ajuste</div>
-                  <div class="field">
+                  <div class="field" style="margin-bottom:12px;">
                     <div class="label">Último retorno recebido</div>
                     <div class="value" style="font-size:14px;">${getLastReturnMessage(proposal) || "Sem apontamento registrado."}</div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Defesa inicial do gerente</div>
+                    <div class="value" style="font-size:14px;">${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
                   </div>
                 </div>
               ` : ""}
@@ -731,25 +705,26 @@
 
                 <div class="form-group">
                   <label>Produto de crédito</label>
-                  <select name="product" id="productField" required>
+                  <select name="product" id="productField" required ${editing ? "disabled" : ""}>
                     <option value="">Selecione</option>
                     ${productOptions}
                   </select>
+                  ${editing ? `<input type="hidden" name="product" value="${proposal.product}">` : ""}
                 </div>
 
                 <div class="form-group">
                   <label>Valor solicitado</label>
-                  <input type="number" min="0" step="0.01" name="amount" id="amountField" value="${proposal?.amount || ""}" placeholder="Ex.: 150000" required>
+                  <input type="number" min="0" step="0.01" name="amount" id="amountField" value="${proposal?.amount || ""}" placeholder="Ex.: 150000" required ${editing ? "readonly" : ""}>
                 </div>
 
                 <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="termGroup">
                   <label>Prazo (meses)</label>
-                  <input type="number" min="1" step="1" name="term" id="termField" value="${proposal?.term || ""}" placeholder="Ex.: 48">
+                  <input type="number" min="1" step="1" name="term" id="termField" value="${proposal?.term || ""}" placeholder="Ex.: 48" ${editing ? "readonly" : ""}>
                 </div>
 
                 <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="rateGroup">
                   <label>Taxa de juros ao mês (%)</label>
-                  <input type="number" min="0" step="0.01" name="interestRate" id="rateField" value="${proposal?.interestRate || ""}" placeholder="Ex.: 2.15">
+                  <input type="number" min="0" step="0.01" name="interestRate" id="rateField" value="${proposal?.interestRate || ""}" placeholder="Ex.: 2.15" ${editing ? "readonly" : ""}>
                 </div>
 
                 <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="installmentGroup">
@@ -757,22 +732,17 @@
                   <input type="text" id="installmentField" value="${proposal?.installment ? money(proposal.installment) : ""}" readonly>
                 </div>
 
-                <div class="form-group full">
-                  <label>Finalidade</label>
-                  <textarea name="purpose" required>${proposal?.purpose || c.objetivoSugestao}</textarea>
-                </div>
-
-                <div class="form-group full">
-                  <label>Defesa do gerente</label>
-                  <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required>${proposal?.managerOpinion || ""}</textarea>
-                </div>
-
                 ${editing ? `
                   <div class="form-group full">
-                    <label>Resposta do gerente aos apontamentos</label>
-                    <textarea name="managerResponse" placeholder="Explique o que foi ajustado e responda aos questionamentos" required>${proposal?.managerResponse || ""}</textarea>
+                    <label>Complemento do gerente</label>
+                    <textarea name="managerResponse" placeholder="Inclua novas informações para responder aos apontamentos" required>${proposal?.managerResponse || ""}</textarea>
                   </div>
-                ` : ""}
+                ` : `
+                  <div class="form-group full">
+                    <label>Defesa do gerente</label>
+                    <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required>${proposal?.managerOpinion || ""}</textarea>
+                  </div>
+                `}
               </div>
 
               <div class="modal-actions">
@@ -786,81 +756,76 @@
     }
 
     function bindProposalForm(caseId, proposal = null){
-      const productField = document.getElementById("productField");
-      const termGroup = document.getElementById("termGroup");
-      const rateGroup = document.getElementById("rateGroup");
-      const installmentGroup = document.getElementById("installmentGroup");
-      const termField = document.getElementById("termField");
-      const rateField = document.getElementById("rateField");
-      const amountField = document.getElementById("amountField");
-      const installmentField = document.getElementById("installmentField");
+      const editing = !!proposal;
 
-      function refreshVisibility(){
-        const rotativo = isRotativo(productField.value);
-        termGroup.classList.toggle("hidden", rotativo);
-        rateGroup.classList.toggle("hidden", rotativo);
-        installmentGroup.classList.toggle("hidden", rotativo);
+      if (!editing){
+        const productField = document.getElementById("productField");
+        const termGroup = document.getElementById("termGroup");
+        const rateGroup = document.getElementById("rateGroup");
+        const installmentGroup = document.getElementById("installmentGroup");
+        const termField = document.getElementById("termField");
+        const rateField = document.getElementById("rateField");
+        const amountField = document.getElementById("amountField");
+        const installmentField = document.getElementById("installmentField");
 
-        if (rotativo){
-          termField.value = "";
-          rateField.value = "";
-          installmentField.value = "";
-          termField.required = false;
-          rateField.required = false;
-        } else {
-          termField.required = true;
-          rateField.required = true;
-          updateInstallment();
+        function refreshVisibility(){
+          const rotativo = isRotativo(productField.value);
+          termGroup.classList.toggle("hidden", rotativo);
+          rateGroup.classList.toggle("hidden", rotativo);
+          installmentGroup.classList.toggle("hidden", rotativo);
+
+          if (rotativo){
+            termField.value = "";
+            rateField.value = "";
+            installmentField.value = "";
+            termField.required = false;
+            rateField.required = false;
+          } else {
+            termField.required = true;
+            rateField.required = true;
+            updateInstallment();
+          }
         }
-      }
 
-      function updateInstallment(){
-        if (isRotativo(productField.value)){
-          installmentField.value = "";
-          return;
+        function updateInstallment(){
+          if (isRotativo(productField.value)){
+            installmentField.value = "";
+            return;
+          }
+          const parcela = calcularParcela(amountField.value, rateField.value, termField.value);
+          installmentField.value = parcela ? money(parcela) : "";
         }
-        const parcela = calcularParcela(amountField.value, rateField.value, termField.value);
-        installmentField.value = parcela ? money(parcela) : "";
+
+        productField.addEventListener("change", refreshVisibility);
+        amountField.addEventListener("input", updateInstallment);
+        termField.addEventListener("input", updateInstallment);
+        rateField.addEventListener("input", updateInstallment);
+
+        refreshVisibility();
       }
-
-      productField.addEventListener("change", refreshVisibility);
-      amountField.addEventListener("input", updateInstallment);
-      termField.addEventListener("input", updateInstallment);
-      rateField.addEventListener("input", updateInstallment);
-
-      refreshVisibility();
 
       document.getElementById("proposalForm").onsubmit = function(e){
         e.preventDefault();
-
         const fd = new FormData(e.target);
-        const product = fd.get("product");
-        const editing = !!proposal;
-        const rotativo = isRotativo(product);
-        const amount = Number(fd.get("amount"));
-
-        const baseData = {
-          managerName: fd.get("managerName").trim(),
-          product,
-          amount,
-          term: rotativo ? null : Number(fd.get("term")),
-          interestRate: rotativo ? null : Number(fd.get("interestRate")),
-          installment: rotativo ? null : calcularParcela(amount, fd.get("interestRate"), fd.get("term")),
-          purpose: fd.get("purpose").trim(),
-          managerOpinion: fd.get("managerOpinion").trim()
-        };
-
-        if (editing){
-          baseData.managerResponse = fd.get("managerResponse").trim();
-        }
-
         const list = getProposals();
 
         if (!editing){
+          const product = fd.get("product");
+          const rotativo = isRotativo(product);
+          const amount = Number(fd.get("amount"));
+
           const proposalObj = {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
             caseId: Number(fd.get("caseId")),
-            ...baseData,
+            managerName: fd.get("managerName").trim(),
+            product,
+            amount,
+            term: rotativo ? null : Number(fd.get("term")),
+            interestRate: rotativo ? null : Number(fd.get("interestRate")),
+            installment: rotativo ? null : calcularParcela(amount, fd.get("interestRate"), fd.get("term")),
+            managerOpinion: fd.get("managerOpinion").trim(),
+            originalManagerOpinion: fd.get("managerOpinion").trim(),
+            managerResponse: "",
             generalManagerOpinion: "",
             analystOpinion: "",
             status: "pending_gg",
@@ -874,14 +839,17 @@
         } else {
           const idx = list.findIndex(p => p.id === proposal.id);
           const existing = list[idx];
+          const response = fd.get("managerResponse").trim();
+
           list[idx] = {
             ...existing,
-            ...baseData,
+            managerName: fd.get("managerName").trim(),
+            managerResponse: response,
             status: "pending_gg",
             updatedAt: nowIso(),
             history: [
               ...(existing.history || []),
-              { at: nowLabel(), text: `Gerente de relacionamento ajustou a proposta e reenviou para nova análise. Resposta: ${baseData.managerResponse}` }
+              { at: nowLabel(), text: `Gerente de relacionamento incluiu complemento e reenviou a proposta. Complemento: ${response}` }
             ]
           };
         }
@@ -949,9 +917,8 @@
                 <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
               </div>
 
-              <div style="margin-top:12px;" class="muted"><strong>Finalidade:</strong> ${proposal.purpose}</div>
-              <div style="margin-top:8px;" class="muted"><strong>Defesa do gerente:</strong> ${proposal.managerOpinion}</div>
-              ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Resposta do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
+              <div style="margin-top:12px;" class="muted"><strong>Defesa inicial do gerente:</strong> ${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
+              ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Complemento do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
               ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
             </div>
 
