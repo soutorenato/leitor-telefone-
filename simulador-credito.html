@@ -5,1051 +5,1095 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simulador de Comitê de Crédito</title>
   <style>
-    :root{
-      --bg:#f3f6fb;
-      --card:#ffffff;
-      --line:#d9e2ec;
-      --text:#102a43;
-      --muted:#627d98;
-      --primary:#1f5fbf;
-      --primary-dark:#174a93;
-      --success:#15803d;
-      --warning:#b7791f;
-      --danger:#b42318;
-      --shadow:0 12px 28px rgba(16,42,67,.08);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:linear-gradient(180deg,#edf3fb 0%, #f8fafc 100%);
-      color:var(--text);
-    }
-    .wrap{max-width:1300px;margin:0 auto;padding:24px}
-    .topbar{
-      display:flex;justify-content:space-between;gap:16px;align-items:flex-start;
-      margin-bottom:22px;flex-wrap:wrap;
-    }
-    .topbar h1{margin:0;font-size:30px;letter-spacing:-.02em}
-    .topbar p{margin:6px 0 0;color:var(--muted)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    button{
-      border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;
-      transition:.18s ease;font-family:inherit;
-    }
-    .btn-primary{background:var(--primary);color:#fff;box-shadow:0 10px 20px rgba(31,95,191,.18)}
-    .btn-primary:hover{background:var(--primary-dark)}
-    .btn-secondary{background:#e9f1fb;color:var(--primary-dark)}
-    .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
-    .btn-warning{background:#fff5e6;color:var(--warning);border:1px solid #ffd8a8}
-    .btn-danger{background:#fff1f1;color:var(--danger);border:1px solid #ffd3d3}
-    .btn-success{background:#eaf8ef;color:var(--success);border:1px solid #bde5c8}
-
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
-    .card{
-      background:var(--card);border:1px solid rgba(217,226,236,.95);
-      border-radius:var(--radius);box-shadow:var(--shadow);
-    }
-    .case-card{padding:20px;position:relative;min-height:255px;overflow:hidden}
-    .case-card:before{
-      content:"";position:absolute;right:-35px;top:-35px;width:130px;height:130px;
-      border-radius:50%;background:radial-gradient(circle,#dbeafe 0,#eef5ff 58%, transparent 59%);
-    }
-    .case-head{
-      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:14px;
-    }
-    .case-title{font-size:22px;font-weight:800;margin:0 0 4px}
-    .mini{font-size:13px;color:var(--muted)}
-    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-    .metric{background:#f8fbff;border:1px solid #e3edf8;border-radius:14px;padding:12px}
-    .metric .k{font-size:12px;color:var(--muted);margin-bottom:6px}
-    .metric .v{font-size:18px;font-weight:800}
-    .row-meta{
-      display:flex;justify-content:space-between;gap:10px;padding-top:10px;margin-top:8px;
-      border-top:1px dashed var(--line);font-size:13px;
-    }
-    .row-meta span:first-child{color:var(--muted)}
-    .card-footer{display:flex;justify-content:flex-end;margin-top:16px}
-
-    .badge{
-      display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;
-      font-size:12px;font-weight:800;white-space:nowrap;
-    }
-    .badge.sem{background:#edf2f7;color:#486581}
-    .badge.gg{background:#fff7db;color:#8d6200}
-    .badge.analista{background:#eaf5ff;color:#145ea8}
-    .badge.devolvida{background:#fff2e8;color:#bf5f00}
-    .badge.aprovada{background:#e9fbef;color:#117a42}
-    .badge.reprovada{background:#fff0f0;color:#b42318}
-    .badge.formalizada{background:#e6fffb;color:#0f766e}
-
-    .queues{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .panel{padding:18px}
-    .panel h2{margin:0 0 6px;font-size:20px}
-    .panel p{margin:0 0 14px;color:var(--muted);font-size:14px}
-    .list{display:flex;flex-direction:column;gap:12px;min-height:120px}
-    .proposal-item{
-      border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;
-      justify-content:space-between;gap:12px;align-items:center;background:#fcfdff;
-    }
-    .proposal-item h3{margin:0 0 6px;font-size:16px}
-    .proposal-meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
-    .empty{
-      padding:18px;text-align:center;color:var(--muted);background:#fafcff;
-      border:1px dashed var(--line);border-radius:14px;
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1e2a3a;
+      --muted: #6b7788;
+      --border: #dbe3ef;
+      --primary: #1f5eff;
+      --primary-soft: #eaf0ff;
+      --success: #198754;
+      --warning: #d97706;
+      --danger: #dc3545;
+      --shadow: 0 14px 40px rgba(17, 34, 68, 0.10);
+      --radius: 18px;
     }
 
-    .overlay{
-      position:fixed;inset:0;background:rgba(11,29,52,.48);display:none;
-      align-items:center;justify-content:center;padding:20px;z-index:1000;
-    }
-    .overlay.show{display:flex}
-    .modal{
-      width:min(1180px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;
-      box-shadow:0 30px 80px rgba(16,42,67,.28);border:1px solid rgba(255,255,255,.35);position:relative;
-    }
-    .modal.small{width:min(820px,100%)}
-    .modal-header{
-      position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter: blur(8px);
-      border-bottom:1px solid #edf2f7;border-radius:24px 24px 0 0;padding:20px 24px 16px;
-      display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
-    }
-    .modal-header h2{margin:0;font-size:25px}
-    .modal-header p{margin:6px 0 0;color:var(--muted)}
-    .close{
-      width:42px;height:42px;border-radius:12px;background:#f7fafc;color:#486581;
-      border:1px solid var(--line);font-size:20px;line-height:1;padding:0;
-    }
-    .modal-body{padding:22px 24px 24px}
-
-    .hero{
-      background:linear-gradient(135deg,#17395e 0%, #244d79 55%, #305f91 100%);
-      color:#fff;border-radius:22px;padding:22px;margin-bottom:18px;
-    }
-    .hero-top{
-      display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;
-    }
-    .avatar{
-      width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.16);
-      display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;
-    }
-    .hero-ident{display:flex;gap:14px;align-items:flex-start}
-    .hero-name{font-size:24px;font-weight:800;margin:0 0 6px}
-    .hero-meta{display:flex;gap:10px 16px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.85)}
-    .hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
-    .hero-box{
-      background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);
-      border-radius:16px;padding:14px;
-    }
-    .hero-box .k{font-size:12px;color:rgba(255,255,255,.78);margin-bottom:6px}
-    .hero-box .v{font-size:18px;font-weight:800}
-
-    .section{
-      background:#fbfdff;border:1px solid #e6edf6;border-radius:18px;padding:18px;margin-bottom:16px;
-    }
-    .section-title{
-      font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#486581;
-      font-weight:800;margin:0 0 14px;
-    }
-    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .field{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
-    .field .label{font-size:12px;color:var(--muted);margin-bottom:4px}
-    .field .value{font-size:15px;font-weight:800}
-
-    .table{
-      width:100%;border-collapse:collapse;font-size:14px;overflow:hidden;border-radius:14px;
-    }
-    .table th,.table td{
-      border-bottom:1px solid #edf2f7;text-align:left;padding:12px 10px;vertical-align:top;
-    }
-    .table th{
-      color:#486581;font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:#f8fbff;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #edf3fb 0%, #f7f9fc 100%);
+      color: var(--text);
     }
 
-    .history-list{display:flex;flex-direction:column;gap:10px}
-    .history-item{
-      border-left:4px solid #c9dcf8;background:#f9fbff;border-radius:0 14px 14px 0;
-      padding:12px 14px;font-size:14px;
+    .app {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px;
     }
 
-    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .form-group{display:flex;flex-direction:column;gap:8px}
-    .form-group.full{grid-column:1/-1}
-    label{font-size:13px;font-weight:700;color:#334e68}
-    input, textarea, select{
-      width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;
-      font:inherit;color:var(--text);background:#fff;
-    }
-    textarea{min-height:110px;resize:vertical}
-    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
-    .proposal-summary{border:1px solid var(--line);background:#fbfdff;border-radius:18px;padding:16px}
-    .proposal-summary h3{margin:0 0 12px;font-size:18px}
-    .muted{color:var(--muted);font-size:13px}
-    .hidden{display:none !important}
-    .success-box{
-      background:#ecfdf3;border:1px solid #b7e4c7;color:#166534;
-      padding:14px 16px;border-radius:14px;font-weight:700;margin-top:12px;
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 1024px){
-      .grid,.queues,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
-      .proposal-item{flex-direction:column;align-items:flex-start}
+    .title-wrap h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: -0.02em;
+    }
+
+    .title-wrap p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.7);
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      color: var(--muted);
+      backdrop-filter: blur(10px);
+    }
+
+    .grid-cases {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .case-card,
+    .queue-card {
+      background: var(--card);
+      border: 1px solid rgba(219, 227, 239, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .case-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .case-card::after {
+      content: "";
+      position: absolute;
+      top: -30px;
+      right: -20px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(31,94,255,.18) 0%, rgba(31,94,255,0) 70%);
+      pointer-events: none;
+    }
+
+    .case-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .case-title {
+      font-size: 21px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+
+    .case-name {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .status-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-sem-proposta { background: #eef2f7; color: #566070; }
+    .status-analise-gg { background: #fff4e6; color: #9a5b00; }
+    .status-analise-credito { background: #eaf0ff; color: #1f5eff; }
+    .status-aprovada { background: #e8f7ef; color: #167447; }
+    .status-devolvida { background: #fff3cd; color: #856404; }
+    .status-recusada { background: #fdecec; color: #b42318; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .muted-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      padding-top: 2px;
+      flex-wrap: wrap;
+    }
+
+    .card-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 10px 22px rgba(31,94,255,.22);
+    }
+    .btn-secondary {
+      background: #eef3fb;
+      color: #29415f;
+      border: 1px solid var(--border);
+    }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .queues {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .queue-card {
+      padding: 18px;
+      min-height: 240px;
+    }
+
+    .queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+
+    .queue-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .proposal-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f9fbff;
+      padding: 14px;
+    }
+
+    .proposal-item h3 {
+      font-size: 15px;
+      margin: 0 0 6px;
+    }
+
+    .proposal-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .proposal-products {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      background: #eef4ff;
+      color: #2f5ac7;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .proposal-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      background: #fbfcfe;
+      font-size: 14px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 20, 38, .48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      width: min(1100px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 32px 80px rgba(5, 16, 34, 0.24);
+      border: 1px solid rgba(255,255,255,.6);
+    }
+
+    .modal.small { width: min(760px, 100%); }
+
+    .modal-header {
+      padding: 22px 24px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .modal-title h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .modal-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .close-btn {
+      background: #f2f5fa;
+      color: #415066;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      font-size: 18px;
+      padding: 0;
+      border: 1px solid var(--border);
+      flex: 0 0 auto;
+    }
+
+    .modal-body {
+      padding: 22px 24px 26px;
+    }
+
+    .client-summary {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fcfdff;
+      padding: 18px;
+    }
+
+    .panel h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .data-item {
+      padding: 12px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .data-item strong {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .timeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .step {
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eff3f8;
+      color: #556174;
+    }
+
+    .step.active { background: #eaf0ff; color: #1f5eff; }
+    .step.done { background: #e8f7ef; color: #167447; }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 6px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .proposal-history {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .history-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: white;
+    }
+
+    .history-item p { margin: 6px 0 0; color: var(--muted); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 13px;
+      color: #425066;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      color: var(--text);
+    }
+
+    textarea { resize: vertical; min-height: 96px; }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .checkbox-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      color: #314156;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .checkbox-item input { width: 18px; height: 18px; margin-top: 2px; }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-cases,
+      .queues,
+      .client-summary { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .app { padding: 18px; }
+      .metrics,
+      .form-grid,
+      .data-grid,
+      .checkbox-grid { grid-template-columns: 1fr; }
+      .modal-header,
+      .modal-body { padding-left: 18px; padding-right: 18px; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div>
+  <div class="app">
+    <div class="header">
+      <div class="title-wrap">
         <h1>Simulador de Comitê de Crédito</h1>
-        <p>Protótipo visual para aula online com cases, proposta, gerência geral, analista de crédito e histórico completo.</p>
+        <p>Protótipo visual em uma única página para aula por videoconferência.</p>
       </div>
-      <div class="actions">
-        <button class="btn-secondary" id="refreshBtn">Atualizar tela</button>
-        <button class="btn-danger" id="resetBtn">Limpar propostas</button>
-      </div>
+      <div class="badge">HTML + CSS + JavaScript • Persistência local no navegador</div>
     </div>
 
-    <section class="grid" id="caseGrid"></section>
+    <section class="grid-cases" id="casesGrid"></section>
 
     <section class="queues">
-      <div class="card panel">
-        <h2>Propostas pendentes — Gerente Geral</h2>
-        <p>Propostas enviadas pelo gerente de relacionamento aguardando parecer da gerência geral.</p>
-        <div class="list" id="ggList"></div>
+      <div class="queue-card">
+        <div class="queue-header">
+          <h2>Propostas pendentes • Gerente Geral</h2>
+          <span class="badge" id="ggCount">0 pendentes</span>
+        </div>
+        <div class="queue-list" id="ggQueue"></div>
       </div>
 
-      <div class="card panel">
-        <h2>Propostas pendentes — Analista de Crédito</h2>
-        <p>Propostas encaminhadas pela gerência geral aguardando análise técnica final.</p>
-        <div class="list" id="analystList"></div>
+      <div class="queue-card">
+        <div class="queue-header">
+          <h2>Propostas pendentes • Analista de Crédito</h2>
+          <span class="badge" id="creditCount">0 pendentes</span>
+        </div>
+        <div class="queue-list" id="creditQueue"></div>
       </div>
     </section>
   </div>
 
-  <div class="overlay" id="clientOverlay"></div>
-  <div class="overlay" id="proposalOverlay"></div>
-  <div class="overlay" id="decisionOverlay"></div>
+  <div class="modal-overlay" id="clientModalOverlay">
+    <div class="modal" id="clientModal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2 id="clientModalTitle">Ficha do cliente</h2>
+          <p id="clientModalSubtitle">Resumo cadastral e financeiro</p>
+        </div>
+        <button class="close-btn" onclick="closeClientModal()">×</button>
+      </div>
+      <div class="modal-body" id="clientModalBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="proposalModalOverlay">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2 id="proposalModalTitle">Subir proposta</h2>
+          <p>Selecione os produtos e envie para análise.</p>
+        </div>
+        <button class="close-btn" onclick="closeProposalModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="proposalForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="managerName">Gerente de relacionamento</label>
+              <input id="managerName" placeholder="Ex.: Renato Souto" required />
+            </div>
+            <div class="field">
+              <label for="requestedValue">Valor total solicitado</label>
+              <input id="requestedValue" type="number" min="0" step="0.01" placeholder="50000" required />
+            </div>
+
+            <div class="field full">
+              <label>Produtos de crédito</label>
+              <div class="checkbox-grid" id="productsGrid"></div>
+              <div class="hint">É possível selecionar mais de um produto.</div>
+            </div>
+
+            <div class="field">
+              <label for="term">Prazo</label>
+              <select id="term" required>
+                <option value="">Selecione</option>
+                <option>12 meses</option>
+                <option>24 meses</option>
+                <option>36 meses</option>
+                <option>48 meses</option>
+                <option>60 meses</option>
+                <option>72 meses</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="guarantee">Garantia</label>
+              <select id="guarantee">
+                <option>Sem garantia</option>
+                <option>Imóvel</option>
+                <option>Veículo</option>
+                <option>Investimentos</option>
+                <option>Recebíveis</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="purpose">Finalidade</label>
+              <textarea id="purpose" placeholder="Descreva o objetivo da operação" required></textarea>
+            </div>
+            <div class="field full">
+              <label for="managerOpinion">Parecer do gerente</label>
+              <textarea id="managerOpinion" placeholder="Explique por que a proposta deve seguir para análise" required></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="closeProposalModal()">Cancelar</button>
+            <button type="submit" class="btn-primary">Enviar proposta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="decisionModalOverlay">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2 id="decisionTitle">Parecer</h2>
+          <p id="decisionSubtitle">Registre o parecer para prosseguir.</p>
+        </div>
+        <button class="close-btn" onclick="closeDecisionModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="decisionOpinion">Parecer obrigatório</label>
+            <textarea id="decisionOpinion" placeholder="Digite o parecer"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeDecisionModal()">Cancelar</button>
+          <button type="button" class="btn-primary" id="confirmDecisionBtn">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const STORAGE_KEY = "simulador_credito_propostas_v5";
+    const STORAGE_KEY = 'simulador_comite_credito_v1';
+    const products = [
+      'Cartão de crédito',
+      'Empréstimo pessoal',
+      'Empréstimo com garantia de imóvel',
+      'Empréstimo com garantia de veículo',
+      'Cheque especial / limite',
+      'Crédito consignado'
+    ];
 
-    const CASES = [
+    const initialCases = [
       {
-        id: 1,
-        title: "Case 1",
-        nome: "Marcelo Andrade Lima",
-        cpf: "183.456.920-11",
-        nascimento: "14/03/1982",
-        idade: 44,
-        profissao: "Médico cardiologista",
+        id: 'case-1',
+        title: 'Case 1',
+        nome: 'Marcelo Andrade Soares',
+        cpf: '184.552.770-19',
+        nascimento: '12/03/1982',
+        idade: 43,
+        profissao: 'Médico cardiologista',
+        perfil: 'Alta renda com relacionamento consolidado',
         renda: 28500,
-        rendaAtualizacao: "14/09/2021",
-        comprovacao: "Holerite",
-        saldo: 96340,
-        investido: 487000,
-        creditoTomado: 78200,
-        usoCartao: 9240,
-        limiteDisponivel: 28000,
-        comprometimento: "27%",
-        relacionamento: "8 anos",
-        perfil: "Alta renda",
-        observacao: "Renda elevada, porém com atualização cadastral antiga.",
-        objetivoSugestao: "Expansão da clínica, reforço de caixa e análise de cartão premium."
+        rendaAtualizacao: '14/09/2021',
+        comprovacao: 'Holerite',
+        saldo: 84250,
+        investimentos: 486000,
+        emprestimosAtivos: 'Financiamento de equipamento médico',
+        parcelaAtual: 4200,
+        limite: 90000,
+        score: 'AA',
+        observacoes: 'Cliente com boa movimentação histórica e patrimônio relevante, porém com renda desatualizada.',
+        status: 'Sem proposta'
       },
       {
-        id: 2,
-        title: "Case 2",
-        nome: "Fernanda Costa Ribeiro",
-        cpf: "402.998.650-34",
-        nascimento: "09/11/1990",
+        id: 'case-2',
+        title: 'Case 2',
+        nome: 'Patrícia Nogueira Lima',
+        cpf: '307.228.640-55',
+        nascimento: '21/08/1990',
         idade: 35,
-        profissao: "Empresária do varejo",
+        profissao: 'Empresária do ramo de estética',
+        perfil: 'Relacionamento em expansão',
         renda: 19800,
-        rendaAtualizacao: "18/01/2026",
-        comprovacao: "Imposto de Renda",
-        saldo: 28420,
-        investido: 156000,
-        creditoTomado: 18000,
-        usoCartao: 7480,
-        limiteDisponivel: 22000,
-        comprometimento: "18%",
-        relacionamento: "4 anos",
-        perfil: "Relacionamento crescente",
-        observacao: "Dados recentes, boa consistência documental e boa dinâmica de movimentação.",
-        objetivoSugestao: "Capital de giro, reforço de estoque e eventual limite de cartão empresarial."
+        rendaAtualizacao: '18/01/2026',
+        comprovacao: 'Imposto de Renda',
+        saldo: 26700,
+        investimentos: 138500,
+        emprestimosAtivos: 'Capital de giro PJ e cartão empresarial',
+        parcelaAtual: 2800,
+        limite: 45000,
+        score: 'A',
+        observacoes: 'Documentação robusta e atualização recente. Caso indicado para boa defesa comercial.',
+        status: 'Sem proposta'
       },
       {
-        id: 3,
-        title: "Case 3",
-        nome: "João Pedro Nogueira",
-        cpf: "055.741.330-92",
-        nascimento: "21/06/1988",
+        id: 'case-3',
+        title: 'Case 3',
+        nome: 'João Victor Ferreira',
+        cpf: '509.331.820-62',
+        nascimento: '04/11/1988',
         idade: 37,
-        profissao: "Consultor autônomo",
+        profissao: 'Arquiteto autônomo',
+        perfil: 'Renda variável com necessidade de aprofundamento',
         renda: 12400,
-        rendaAtualizacao: "22/06/2025",
-        comprovacao: "Extrato bancário",
-        saldo: 12480,
-        investido: 32000,
-        creditoTomado: 18000,
-        usoCartao: 5680,
-        limiteDisponivel: 6400,
-        comprometimento: "39%",
-        relacionamento: "3 anos",
-        perfil: "Renda variável",
-        observacao: "Renda oscilante, comprovação por extrato e maior sensibilidade no comprometimento.",
-        objetivoSugestao: "Organização de fluxo de caixa, consolidação de dívida e revisão de limite."
+        rendaAtualizacao: '22/06/2025',
+        comprovacao: 'Extrato bancário',
+        saldo: 9650,
+        investimentos: 52400,
+        emprestimosAtivos: 'Sem operações ativas',
+        parcelaAtual: 0,
+        limite: 18000,
+        score: 'BBB',
+        observacoes: 'Caso sensível para debate sobre estabilidade de renda e consistência de movimentação.',
+        status: 'Sem proposta'
       }
     ];
 
-    const PRODUCTS = [
-      "Cartão de crédito",
-      "Cheque especial",
-      "Empréstimo pessoal",
-      "Empréstimo com garantia de imóvel",
-      "Empréstimo com garantia de veículo",
-      "Limite pré-aprovado",
-      "Capital de giro",
-      "Crédito consignado",
-      "Financiamento"
-    ];
+    let state = loadState();
+    let currentClientId = null;
+    let pendingDecision = null;
 
-    function money(v){
-      return new Intl.NumberFormat("pt-BR", { style:"currency", currency:"BRL" }).format(Number(v || 0));
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+      const fresh = {
+        cases: initialCases,
+        proposals: []
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+      return fresh;
     }
 
-    function nowIso(){ return new Date().toISOString(); }
-    function nowLabel(){ return new Date().toLocaleString("pt-BR"); }
-
-    function getProposals(){
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function saveProposals(list){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
 
-    function getCaseById(id){
-      return CASES.find(c => c.id === id);
-    }
-
-    function statusInfo(status){
+    function statusClass(status) {
       const map = {
-        pending_gg: { text:"Em análise GG", className:"gg" },
-        pending_analyst: { text:"Em análise Crédito", className:"analista" },
-        returned_gg: { text:"Devolvida pela GG", className:"devolvida" },
-        returned_analyst: { text:"Devolvida pelo Analista", className:"devolvida" },
-        rejected_gg: { text:"Reprovada pela GG", className:"reprovada" },
-        rejected_analyst: { text:"Reprovada pelo Analista", className:"reprovada" },
-        approved: { text:"Aprovada", className:"aprovada" },
-        formalized: { text:"Formalizada", className:"formalizada" },
-        none: { text:"Sem proposta", className:"sem" }
+        'Sem proposta': 'status-sem-proposta',
+        'Em análise GG': 'status-analise-gg',
+        'Em análise Crédito': 'status-analise-credito',
+        'Aprovada': 'status-aprovada',
+        'Devolvida': 'status-devolvida',
+        'Recusada': 'status-recusada'
       };
-      return map[status] || map.none;
+      return map[status] || 'status-sem-proposta';
     }
 
-    function getLatestProposalForCase(caseId){
-      const proposals = getProposals()
-        .filter(p => p.caseId === caseId)
-        .sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-      return proposals[0] || null;
+    function lastProposalForCase(caseId) {
+      const proposals = state.proposals.filter(p => p.caseId === caseId);
+      return proposals.length ? proposals[proposals.length - 1] : null;
     }
 
-    function getCaseBadge(caseId){
-      const last = getLatestProposalForCase(caseId);
-      if (!last) return statusInfo("none");
-      return statusInfo(last.status);
+    function updateCaseStatus(caseId) {
+      const proposal = lastProposalForCase(caseId);
+      const client = state.cases.find(c => c.id === caseId);
+      client.status = proposal ? proposal.status : 'Sem proposta';
     }
 
-    function isRotativo(product){
-      return product === "Cartão de crédito" || product === "Cheque especial";
-    }
-
-    function calcularParcela(valor, taxaPercentual, prazo){
-      const PV = Number(valor || 0);
-      const i = Number(taxaPercentual || 0) / 100;
-      const n = Number(prazo || 0);
-      if (!PV || !n) return 0;
-      if (!i) return PV / n;
-      const parcela = PV * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
-      return parcela;
-    }
-
-    function renderCases(){
-      const grid = document.getElementById("caseGrid");
-      grid.innerHTML = "";
-
-      CASES.forEach(c => {
-        const badge = getCaseBadge(c.id);
-
-        const card = document.createElement("article");
-        card.className = "card case-card";
-        card.innerHTML = `
-          <div class="case-head">
-            <div>
-              <div class="case-title">${c.title}</div>
-              <div class="mini">${c.nome}</div>
-            </div>
-            <span class="badge ${badge.className}">${badge.text}</span>
-          </div>
-
-          <div class="metrics">
-            <div class="metric">
-              <div class="k">Renda mensal</div>
-              <div class="v">${money(c.renda)}</div>
-            </div>
-            <div class="metric">
-              <div class="k">Investimentos</div>
-              <div class="v">${money(c.investido)}</div>
-            </div>
-          </div>
-
-          <div class="row-meta">
-            <span>Atualização da renda</span>
-            <strong>${c.rendaAtualizacao}</strong>
-          </div>
-
-          <div class="row-meta">
-            <span>Comprovação</span>
-            <strong>${c.comprovacao}</strong>
-          </div>
-
-          <div class="card-footer">
-            <button class="btn-primary" onclick="openClient(${c.id})">Abrir ficha</button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function buildProposalItem(p, role){
-      const c = getCaseById(p.caseId);
-      const badge = statusInfo(p.status);
-      const item = document.createElement("div");
-      item.className = "proposal-item";
-      item.innerHTML = `
-        <div>
-          <h3>${c.title} — ${c.nome}</h3>
-          <div class="proposal-meta">
-            <span><strong>Gerente:</strong> ${p.managerName}</span>
-            <span><strong>Produto:</strong> ${p.product}</span>
-            <span><strong>Valor:</strong> ${money(p.amount)}</span>
-            ${p.installment ? `<span><strong>Parcela:</strong> ${money(p.installment)}</span>` : ""}
-            <span><strong>Data:</strong> ${new Date(p.createdAt).toLocaleString("pt-BR")}</span>
-          </div>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <span class="badge ${badge.className}">${badge.text}</span>
-          <button class="btn-primary" onclick="openDecision('${p.id}','${role}')">Analisar</button>
-        </div>
-      `;
-      return item;
-    }
-
-    function renderQueues(){
-      const proposals = getProposals();
-      const ggList = document.getElementById("ggList");
-      const analystList = document.getElementById("analystList");
-
-      const pendingGG = proposals.filter(p => p.status === "pending_gg");
-      const pendingAnalyst = proposals.filter(p => p.status === "pending_analyst");
-
-      ggList.innerHTML = "";
-      analystList.innerHTML = "";
-
-      if (!pendingGG.length){
-        ggList.innerHTML = `<div class="empty">Nenhuma proposta pendente para a gerência geral.</div>`;
-      } else {
-        pendingGG.forEach(p => ggList.appendChild(buildProposalItem(p, "gg")));
-      }
-
-      if (!pendingAnalyst.length){
-        analystList.innerHTML = `<div class="empty">Nenhuma proposta pendente para o analista de crédito.</div>`;
-      } else {
-        pendingAnalyst.forEach(p => analystList.appendChild(buildProposalItem(p, "analyst")));
-      }
-    }
-
-    function openOverlay(id, html){
-      const ov = document.getElementById(id);
-      ov.innerHTML = html;
-      ov.classList.add("show");
-    }
-
-    function closeOverlay(id){
-      const ov = document.getElementById(id);
-      ov.classList.remove("show");
-      ov.innerHTML = "";
-    }
-
-    function getProposalsForCase(caseId){
-      return getProposals()
-        .filter(p => p.caseId === caseId)
-        .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-
-    function getLastReturnMessage(proposal){
-      const history = proposal.history || [];
-      const reversed = [...history].reverse();
-      const item = reversed.find(h =>
-        h.text.includes("devolveu a proposta ao gerente de relacionamento")
-      );
-      return item ? item.text : "";
-    }
-
-    window.openClient = function(caseId){
-      const c = getCaseById(caseId);
-      const proposals = getProposalsForCase(caseId);
-      const latest = proposals[0];
-      const badge = latest ? statusInfo(latest.status) : statusInfo("none");
-
-      const historyTable = proposals.length ? `
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Produto</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${proposals.map(p => {
-              const st = statusInfo(p.status);
-              const podeEditar = p.status === "returned_gg" || p.status === "returned_analyst";
-              const podeFormalizar = p.status === "approved";
-              return `
-                <tr>
-                  <td>${new Date(p.createdAt).toLocaleString("pt-BR")}</td>
-                  <td>${p.product}</td>
-                  <td>${money(p.amount)}</td>
-                  <td><span class="badge ${st.className}">${st.text}</span></td>
-                  <td>
-                    ${podeEditar
-                      ? `<button class="btn-warning" onclick="editProposal('${p.id}')">Responder e reenviar</button>`
-                      : podeFormalizar
-                        ? `<button class="btn-success" onclick="formalizeProposal('${p.id}', ${p.caseId})">Formalizar</button>`
-                        : `-`
-                    }
-                  </td>
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>
-      ` : `<div class="empty">Ainda não há propostas registradas para este case.</div>`;
-
-      const detailedHistory = proposals.length ? `
-        <div class="history-list">
-          ${proposals.map(p => `
-            <div class="history-item">
-              <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.product}</strong> • <strong>${money(p.amount)}</strong></div>
-              <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
-              <div style="margin-top:8px;"><strong>Defesa inicial do gerente:</strong> ${p.originalManagerOpinion || p.managerOpinion}</div>
-              ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Complemento do gerente:</strong> ${p.managerResponse}</div>` : ""}
-              ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
-              ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
-              ${p.status === "formalized" ? `<div class="success-box">Proposta contratada com sucesso.</div>` : ""}
-              ${(p.history || []).length ? `
-                <div style="margin-top:8px;">
-                  <strong>Registro da proposta:</strong>
-                  <ul style="margin:8px 0 0 18px; padding:0;">
-                    ${p.history.map(h => `<li style="margin-bottom:6px;"><strong>${h.at}</strong> — ${h.text}</li>`).join("")}
-                  </ul>
-                </div>
-              ` : ""}
-            </div>
-          `).join("")}
-        </div>
-      ` : "";
-
-      openOverlay("clientOverlay", `
-        <div class="modal">
-          <div class="modal-header">
-            <div>
-              <h2>${c.title} — Dashboard do Cliente</h2>
-              <p>Ficha visual do cliente com dados fictícios e histórico de propostas.</p>
-            </div>
-            <button class="close" onclick="closeOverlay('clientOverlay')">×</button>
-          </div>
-
-          <div class="modal-body">
-            <div class="hero">
-              <div class="hero-top">
-                <div class="hero-ident">
-                  <div class="avatar">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
-                  <div>
-                    <div class="hero-name">${c.nome}</div>
-                    <div class="hero-meta">
-                      <span>CPF: ${c.cpf}</span>
-                      <span>Nascimento: ${c.nascimento}</span>
-                      <span>Idade: ${c.idade} anos</span>
-                      <span>Profissão: ${c.profissao}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <span class="badge ${badge.className}">${badge.text}</span>
-                </div>
+    function renderCases() {
+      const grid = document.getElementById('casesGrid');
+      grid.innerHTML = state.cases.map(client => {
+        const proposal = lastProposalForCase(client.id);
+        return `
+          <article class="case-card">
+            <div class="case-top">
+              <div>
+                <div class="case-title">${client.title}</div>
+                <p class="case-name">${client.nome}</p>
               </div>
+              <span class="status-pill ${statusClass(client.status)}">${client.status}</span>
+            </div>
 
-              <div class="hero-grid">
-                <div class="hero-box">
-                  <div class="k">Renda mensal</div>
-                  <div class="v">${money(c.renda)}</div>
-                </div>
-                <div class="hero-box">
-                  <div class="k">Atualização da renda</div>
-                  <div class="v">${c.rendaAtualizacao}</div>
-                </div>
-                <div class="hero-box">
-                  <div class="k">Comprovação</div>
-                  <div class="v">${c.comprovacao}</div>
-                </div>
-                <div class="hero-box">
-                  <div class="k">Perfil</div>
-                  <div class="v">${c.perfil}</div>
-                </div>
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-label">Renda mensal</div>
+                <div class="metric-value">${formatCurrency(client.renda)}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Comprovação</div>
+                <div class="metric-value" style="font-size:15px;">${client.comprovacao}</div>
               </div>
             </div>
 
-            <div class="section">
-              <div class="section-title">Resumo financeiro</div>
-              <div class="grid-4">
-                <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
-                <div class="field"><div class="label">Valor investido</div><div class="value">${money(c.investido)}</div></div>
-                <div class="field"><div class="label">Crédito já tomado</div><div class="value">${money(c.creditoTomado)}</div></div>
-                <div class="field"><div class="label">Uso atual do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
-                <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
-                <div class="field"><div class="label">Comprometimento estimado</div><div class="value">${c.comprometimento}</div></div>
-                <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
-                <div class="field"><div class="label">Objetivo sugerido</div><div class="value" style="font-size:13px;">${c.objetivoSugestao}</div></div>
-              </div>
+            <div class="muted-row"><span>Atualização da renda</span><strong>${client.rendaAtualizacao}</strong></div>
+            <div class="muted-row"><span>Investimentos</span><strong>${formatCurrency(client.investimentos)}</strong></div>
+            <div class="muted-row"><span>Saldo em conta</span><strong>${formatCurrency(client.saldo)}</strong></div>
+            <div class="muted-row"><span>Última proposta</span><strong>${proposal ? proposal.products.join(', ') : 'Nenhuma'}</strong></div>
+
+            <div class="card-actions">
+              <button class="btn-primary" onclick="openClientModal('${client.id}')">Abrir ficha</button>
             </div>
-
-            <div class="grid-2">
-              <div class="section">
-                <div class="section-title">Leitura do case</div>
-                <div class="grid-3">
-                  <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
-                  <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
-                  <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
-                </div>
-
-                <div class="field" style="margin-top:12px;">
-                  <div class="label">Ponto de atenção</div>
-                  <div class="value" style="font-size:14px;">${c.observacao}</div>
-                </div>
-
-                <div class="field" style="margin-top:12px;">
-                  <div class="label">Objetivo sugerido para discussão</div>
-                  <div class="value" style="font-size:14px;">${c.objetivoSugestao}</div>
-                </div>
-
-                <div style="margin-top:16px; display:flex; justify-content:flex-end;">
-                  <button class="btn-primary" onclick="openProposal(${c.id})">Subir proposta</button>
-                </div>
-              </div>
-
-              <div class="section">
-                <div class="section-title">Histórico de propostas</div>
-                ${historyTable}
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="section-title">Registro detalhado das propostas</div>
-              ${detailedHistory || `<div class="empty">Sem registros detalhados até o momento.</div>`}
-            </div>
-          </div>
-        </div>
-      `);
+          </article>`;
+      }).join('');
     }
 
-    function buildProposalFormHtml(c, proposal = null){
-      const editing = !!proposal;
-      const currentProduct = proposal?.product || "";
-      const productOptions = PRODUCTS.map(p => `
-        <option value="${p}" ${currentProduct === p ? "selected" : ""}>${p}</option>
-      `).join("");
-
-      const isCurrentRotativo = isRotativo(currentProduct);
-
-      return `
-        <div class="modal small">
-          <div class="modal-header">
-            <div>
-              <h2>${editing ? "Responder apontamentos e reenviar" : "Subir proposta"} — ${c.title}</h2>
-              <p>${editing ? "Inclua apenas novas informações para responder aos apontamentos e reenvie para análise." : "Preencha os dados da operação e registre a defesa do gerente de relacionamento."}</p>
-            </div>
-            <button class="close" onclick="closeOverlay('proposalOverlay')">×</button>
-          </div>
-
-          <div class="modal-body">
-            <form id="proposalForm">
-              <input type="hidden" name="caseId" value="${c.id}">
-              ${editing ? `<input type="hidden" name="proposalId" value="${proposal.id}">` : ""}
-
-              ${editing ? `
-                <div class="section" style="margin-bottom:18px;">
-                  <div class="section-title">Apontamentos para ajuste</div>
-                  <div class="field" style="margin-bottom:12px;">
-                    <div class="label">Último retorno recebido</div>
-                    <div class="value" style="font-size:14px;">${getLastReturnMessage(proposal) || "Sem apontamento registrado."}</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Defesa inicial do gerente</div>
-                    <div class="value" style="font-size:14px;">${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
-                  </div>
-                </div>
-              ` : ""}
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Gerente de relacionamento</label>
-                  <input type="text" name="managerName" value="${proposal?.managerName || ""}" placeholder="Ex.: Renato Souto" required>
-                </div>
-
-                <div class="form-group">
-                  <label>Produto de crédito</label>
-                  <select name="product" id="productField" required ${editing ? "disabled" : ""}>
-                    <option value="">Selecione</option>
-                    ${productOptions}
-                  </select>
-                  ${editing ? `<input type="hidden" name="product" value="${proposal.product}">` : ""}
-                </div>
-
-                <div class="form-group">
-                  <label>Valor solicitado</label>
-                  <input type="number" min="0" step="0.01" name="amount" id="amountField" value="${proposal?.amount || ""}" placeholder="Ex.: 150000" required ${editing ? "readonly" : ""}>
-                </div>
-
-                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="termGroup">
-                  <label>Prazo (meses)</label>
-                  <input type="number" min="1" step="1" name="term" id="termField" value="${proposal?.term || ""}" placeholder="Ex.: 48" ${editing ? "readonly" : ""}>
-                </div>
-
-                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="rateGroup">
-                  <label>Taxa de juros ao mês (%)</label>
-                  <input type="number" min="0" step="0.01" name="interestRate" id="rateField" value="${proposal?.interestRate || ""}" placeholder="Ex.: 2.15" ${editing ? "readonly" : ""}>
-                </div>
-
-                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="installmentGroup">
-                  <label>Parcela estimada</label>
-                  <input type="text" id="installmentField" value="${proposal?.installment ? money(proposal.installment) : ""}" readonly>
-                </div>
-
-                ${editing ? `
-                  <div class="form-group full">
-                    <label>Complemento do gerente</label>
-                    <textarea name="managerResponse" placeholder="Inclua novas informações para responder aos apontamentos" required></textarea>
-                  </div>
-                ` : `
-                  <div class="form-group full">
-                    <label>Defesa do gerente</label>
-                    <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required>${proposal?.managerOpinion || ""}</textarea>
-                  </div>
-                `}
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" class="btn-light" onclick="closeOverlay('proposalOverlay')">Cancelar</button>
-                <button type="submit" class="btn-primary">${editing ? "Reenviar proposta" : "Enviar proposta"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      `;
-    }
-
-    function bindProposalForm(caseId, proposal = null){
-      const editing = !!proposal;
-
-      if (!editing){
-        const productField = document.getElementById("productField");
-        const termGroup = document.getElementById("termGroup");
-        const rateGroup = document.getElementById("rateGroup");
-        const installmentGroup = document.getElementById("installmentGroup");
-        const termField = document.getElementById("termField");
-        const rateField = document.getElementById("rateField");
-        const amountField = document.getElementById("amountField");
-        const installmentField = document.getElementById("installmentField");
-
-        function refreshVisibility(){
-          const rotativo = isRotativo(productField.value);
-          termGroup.classList.toggle("hidden", rotativo);
-          rateGroup.classList.toggle("hidden", rotativo);
-          installmentGroup.classList.toggle("hidden", rotativo);
-
-          if (rotativo){
-            termField.value = "";
-            rateField.value = "";
-            installmentField.value = "";
-            termField.required = false;
-            rateField.required = false;
-          } else {
-            termField.required = true;
-            rateField.required = true;
-            updateInstallment();
-          }
-        }
-
-        function updateInstallment(){
-          if (isRotativo(productField.value)){
-            installmentField.value = "";
-            return;
-          }
-          const parcela = calcularParcela(amountField.value, rateField.value, termField.value);
-          installmentField.value = parcela ? money(parcela) : "";
-        }
-
-        productField.addEventListener("change", refreshVisibility);
-        amountField.addEventListener("input", updateInstallment);
-        termField.addEventListener("input", updateInstallment);
-        rateField.addEventListener("input", updateInstallment);
-
-        refreshVisibility();
-      }
-
-      document.getElementById("proposalForm").onsubmit = function(e){
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const list = getProposals();
-
-        if (!editing){
-          const product = fd.get("product");
-          const rotativo = isRotativo(product);
-          const amount = Number(fd.get("amount"));
-
-          const proposalObj = {
-            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-            caseId: Number(fd.get("caseId")),
-            managerName: fd.get("managerName").trim(),
-            product,
-            amount,
-            term: rotativo ? null : Number(fd.get("term")),
-            interestRate: rotativo ? null : Number(fd.get("interestRate")),
-            installment: rotativo ? null : calcularParcela(amount, fd.get("interestRate"), fd.get("term")),
-            managerOpinion: fd.get("managerOpinion").trim(),
-            originalManagerOpinion: fd.get("managerOpinion").trim(),
-            managerResponse: "",
-            generalManagerOpinion: "",
-            analystOpinion: "",
-            status: "pending_gg",
-            createdAt: nowIso(),
-            updatedAt: nowIso(),
-            history: [
-              { at: nowLabel(), text: "Proposta criada pelo gerente de relacionamento e enviada para a gerência geral." }
-            ]
-          };
-          list.push(proposalObj);
+    function proposalTimeline(status) {
+      const order = ['Rascunho', 'Em análise GG', 'Em análise Crédito', 'Aprovada'];
+      return ['Rascunho', 'Em análise GG', 'Em análise Crédito', 'Aprovada'].map(step => {
+        let cls = '';
+        if (status === 'Devolvida' || status === 'Recusada') {
+          if (step === 'Rascunho') cls = 'done';
+          if (status === 'Devolvida' && step === 'Em análise GG') cls = 'active';
         } else {
-          const idx = list.findIndex(p => p.id === proposal.id);
-          const existing = list[idx];
-          const response = fd.get("managerResponse").trim();
-
-          list[idx] = {
-            ...existing,
-            managerName: fd.get("managerName").trim(),
-            managerResponse: response,
-            status: "pending_gg",
-            updatedAt: nowIso(),
-            history: [
-              ...(existing.history || []),
-              { at: nowLabel(), text: `Gerente de relacionamento incluiu complemento e reenviou a proposta. Complemento: ${response}` }
-            ]
-          };
+          const currentIndex = order.indexOf(status);
+          const stepIndex = order.indexOf(step);
+          if (stepIndex < currentIndex) cls = 'done';
+          if (stepIndex === currentIndex) cls = 'active';
         }
-
-        saveProposals(list);
-        closeOverlay("proposalOverlay");
-        renderCases();
-        renderQueues();
-        openClient(caseId);
-      };
+        return `<span class="step ${cls}">${step}</span>`;
+      }).join('');
     }
 
-    window.openProposal = function(caseId){
-      const c = getCaseById(caseId);
-      openOverlay("proposalOverlay", buildProposalFormHtml(c));
-      bindProposalForm(caseId);
-    }
-
-    window.editProposal = function(proposalId){
-      const proposal = getProposals().find(p => p.id === proposalId);
-      const c = getCaseById(proposal.caseId);
-      openOverlay("proposalOverlay", buildProposalFormHtml(c, proposal));
-      bindProposalForm(proposal.caseId, proposal);
-    }
-
-    window.openDecision = function(proposalId, role){
-      const proposal = getProposals().find(p => p.id === proposalId);
-      const c = getCaseById(proposal.caseId);
-
-      const title = role === "gg" ? "Análise — Gerência Geral" : "Análise — Analista de Crédito";
-      const actionButtons = role === "gg"
-        ? `
-          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','gg','forward')">Encaminhar para analista</button>
-          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','gg','return')">Devolver ao gerente</button>
-          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','gg','reject')">Reprovar</button>
-        `
-        : `
-          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','analyst','approve')">Aprovar</button>
-          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','analyst','return')">Devolver ao gerente</button>
-          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','analyst','reject')">Reprovar</button>
-        `;
-
-      openOverlay("decisionOverlay", `
-        <div class="modal small">
-          <div class="modal-header">
-            <div>
-              <h2>${title}</h2>
-              <p>${c.title} — ${c.nome}</p>
+    function renderClientModal(client) {
+      const proposal = lastProposalForCase(client.id);
+      document.getElementById('clientModalTitle').textContent = `${client.title} • ${client.nome}`;
+      document.getElementById('clientModalSubtitle').textContent = `${client.profissao} • ${client.perfil}`;
+      document.getElementById('clientModalBody').innerHTML = `
+        <div class="client-summary">
+          <div class="panel">
+            <h3>Ficha do cliente</h3>
+            <div class="data-grid">
+              <div class="data-item"><strong>CPF</strong>${client.cpf}</div>
+              <div class="data-item"><strong>Data de nascimento</strong>${client.nascimento}</div>
+              <div class="data-item"><strong>Idade</strong>${client.idade} anos</div>
+              <div class="data-item"><strong>Profissão</strong>${client.profissao}</div>
+              <div class="data-item"><strong>Renda mensal</strong>${formatCurrency(client.renda)}</div>
+              <div class="data-item"><strong>Comprovação</strong>${client.comprovacao}</div>
+              <div class="data-item"><strong>Atualização da renda</strong>${client.rendaAtualizacao}</div>
+              <div class="data-item"><strong>Score interno</strong>${client.score}</div>
+              <div class="data-item"><strong>Saldo em conta</strong>${formatCurrency(client.saldo)}</div>
+              <div class="data-item"><strong>Investimentos</strong>${formatCurrency(client.investimentos)}</div>
+              <div class="data-item"><strong>Limite atual</strong>${formatCurrency(client.limite)}</div>
+              <div class="data-item"><strong>Parcela atual</strong>${formatCurrency(client.parcelaAtual)}</div>
             </div>
-            <button class="close" onclick="closeOverlay('decisionOverlay')">×</button>
           </div>
-
-          <div class="modal-body">
-            <div class="proposal-summary">
-              <h3>Resumo da proposta</h3>
-              <div class="grid-3">
-                <div class="field"><div class="label">Gerente responsável</div><div class="value">${proposal.managerName}</div></div>
-                <div class="field"><div class="label">Produto</div><div class="value">${proposal.product}</div></div>
-                <div class="field"><div class="label">Valor solicitado</div><div class="value">${money(proposal.amount)}</div></div>
-                <div class="field"><div class="label">Prazo</div><div class="value">${proposal.term ? proposal.term + " meses" : "Não aplicável"}</div></div>
-                <div class="field"><div class="label">Taxa ao mês</div><div class="value">${proposal.interestRate != null ? proposal.interestRate + "%" : "Não aplicável"}</div></div>
-                <div class="field"><div class="label">Parcela estimada</div><div class="value">${proposal.installment ? money(proposal.installment) : "Não aplicável"}</div></div>
-                <div class="field"><div class="label">Atualização da renda</div><div class="value">${c.rendaAtualizacao}</div></div>
-                <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
-                <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
-              </div>
-
-              <div style="margin-top:12px;" class="muted"><strong>Defesa inicial do gerente:</strong> ${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
-              ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Complemento do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
-              ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
+          <div class="panel">
+            <h3>Visão resumida</h3>
+            <div class="data-grid" style="grid-template-columns:1fr;">
+              <div class="data-item"><strong>Empréstimos ativos</strong>${client.emprestimosAtivos}</div>
+              <div class="data-item"><strong>Observações</strong>${client.observacoes}</div>
+              <div class="data-item"><strong>Status atual</strong><span class="status-pill ${statusClass(client.status)}">${client.status}</span></div>
             </div>
-
-            <div class="form-group full" style="margin-top:16px;">
-              <label>Registro da decisão</label>
-              <textarea id="decisionOpinion" placeholder="Escreva o parecer obrigatório desta decisão"></textarea>
+            <div class="section-title" style="margin-top:14px;">
+              <strong>Andamento</strong>
             </div>
-
-            <div class="modal-actions">
-              ${actionButtons}
+            <div class="timeline">${proposal ? proposalTimeline(proposal.status) : '<span class="step active">Sem proposta</span>'}</div>
+            <div class="form-actions" style="justify-content:flex-start; margin-top:18px;">
+              <button class="btn-primary" onclick="openProposalModal('${client.id}')">Subir proposta</button>
             </div>
           </div>
         </div>
-      `);
+
+        <div class="panel">
+          <div class="section-title">
+            <h3 style="margin:0;">Histórico de propostas</h3>
+          </div>
+          <div class="proposal-history">
+            ${renderProposalHistory(client.id)}
+          </div>
+        </div>
+      `;
     }
 
-    window.submitDecision = function(proposalId, role, action){
-      const opinion = document.getElementById("decisionOpinion").value.trim();
+    function renderProposalHistory(caseId) {
+      const proposals = state.proposals.filter(p => p.caseId === caseId).reverse();
+      if (!proposals.length) {
+        return '<div class="empty-state">Nenhuma proposta enviada até o momento.</div>';
+      }
+      return proposals.map(p => `
+        <div class="history-item">
+          <strong>${p.products.join(', ')}</strong>
+          <p><strong>Valor:</strong> ${formatCurrency(p.value)} • <strong>Status:</strong> ${p.status}</p>
+          <p><strong>Gerente:</strong> ${p.managerName}</p>
+          <p><strong>Parecer do gerente:</strong> ${p.managerOpinion}</p>
+          ${p.ggOpinion ? `<p><strong>Parecer da gerência geral:</strong> ${p.ggOpinion}</p>` : ''}
+          ${p.creditOpinion ? `<p><strong>Parecer do analista:</strong> ${p.creditOpinion}</p>` : ''}
+        </div>
+      `).join('');
+    }
 
-      if (!opinion){
-        alert("Preencha o registro da decisão antes de continuar.");
+    function openClientModal(clientId) {
+      currentClientId = clientId;
+      const client = state.cases.find(c => c.id === clientId);
+      renderClientModal(client);
+      document.getElementById('clientModalOverlay').classList.add('active');
+    }
+
+    function closeClientModal() {
+      document.getElementById('clientModalOverlay').classList.remove('active');
+    }
+
+    function renderProductsGrid() {
+      document.getElementById('productsGrid').innerHTML = products.map((product, index) => `
+        <label class="checkbox-item">
+          <input type="checkbox" value="${product}" name="products" />
+          <span>${product}</span>
+        </label>
+      `).join('');
+    }
+
+    function openProposalModal(clientId) {
+      currentClientId = clientId;
+      document.getElementById('proposalForm').reset();
+      renderProductsGrid();
+      document.getElementById('proposalModalTitle').textContent = `Subir proposta • ${state.cases.find(c => c.id === clientId).title}`;
+      document.getElementById('proposalModalOverlay').classList.add('active');
+    }
+
+    function closeProposalModal() {
+      document.getElementById('proposalModalOverlay').classList.remove('active');
+    }
+
+    document.getElementById('proposalForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const selectedProducts = Array.from(document.querySelectorAll('input[name="products"]:checked')).map(el => el.value);
+      if (!selectedProducts.length) {
+        alert('Selecione pelo menos um produto de crédito.');
         return;
       }
 
-      const list = getProposals();
-      const idx = list.findIndex(p => p.id === proposalId);
-      const proposal = list[idx];
+      const proposal = {
+        id: crypto.randomUUID(),
+        caseId: currentClientId,
+        managerName: document.getElementById('managerName').value.trim(),
+        value: Number(document.getElementById('requestedValue').value),
+        products: selectedProducts,
+        term: document.getElementById('term').value,
+        guarantee: document.getElementById('guarantee').value,
+        purpose: document.getElementById('purpose').value.trim(),
+        managerOpinion: document.getElementById('managerOpinion').value.trim(),
+        ggOpinion: '',
+        creditOpinion: '',
+        status: 'Em análise GG',
+        createdAt: new Date().toLocaleString('pt-BR')
+      };
 
-      let historyText = "";
+      state.proposals.push(proposal);
+      updateCaseStatus(currentClientId);
+      saveState();
+      closeProposalModal();
+      renderAll();
+      openClientModal(currentClientId);
+    });
 
-      if (role === "gg"){
-        proposal.generalManagerOpinion = opinion;
-
-        if (action === "forward"){
-          proposal.status = "pending_analyst";
-          historyText = "Gerência geral encaminhou a proposta ao analista de crédito.";
-        }
-        if (action === "return"){
-          proposal.status = "returned_gg";
-          historyText = "Gerência geral devolveu a proposta ao gerente de relacionamento.";
-        }
-        if (action === "reject"){
-          proposal.status = "rejected_gg";
-          historyText = "Gerência geral reprovou a proposta.";
-        }
-      }
-
-      if (role === "analyst"){
-        proposal.analystOpinion = opinion;
-
-        if (action === "approve"){
-          proposal.status = "approved";
-          historyText = "Analista de crédito aprovou a proposta.";
-        }
-        if (action === "return"){
-          proposal.status = "returned_analyst";
-          historyText = "Analista de crédito devolveu a proposta ao gerente de relacionamento.";
-        }
-        if (action === "reject"){
-          proposal.status = "rejected_analyst";
-          historyText = "Analista de crédito reprovou a proposta.";
-        }
-      }
-
-      proposal.updatedAt = nowIso();
-      proposal.history = proposal.history || [];
-      proposal.history.push({
-        at: nowLabel(),
-        text: `${historyText} Parecer: ${opinion}`
-      });
-
-      list[idx] = proposal;
-      saveProposals(list);
-
-      closeOverlay("decisionOverlay");
-      renderCases();
-      renderQueues();
+    function renderQueues() {
+      const ggQueue = state.proposals.filter(p => p.status === 'Em análise GG');
+      const creditQueue = state.proposals.filter(p => p.status === 'Em análise Crédito');
+      document.getElementById('ggCount').textContent = `${ggQueue.length} pendente(s)`;
+      document.getElementById('creditCount').textContent = `${creditQueue.length} pendente(s)`;
+      document.getElementById('ggQueue').innerHTML = renderQueueItems(ggQueue, 'gg');
+      document.getElementById('creditQueue').innerHTML = renderQueueItems(creditQueue, 'credit');
     }
 
-    window.formalizeProposal = function(proposalId, caseId){
-      const list = getProposals();
-      const idx = list.findIndex(p => p.id === proposalId);
-      if (idx === -1) return;
-
-      list[idx].status = "formalized";
-      list[idx].updatedAt = nowIso();
-      list[idx].history = list[idx].history || [];
-      list[idx].history.push({
-        at: nowLabel(),
-        text: "Proposta contratada com sucesso."
-      });
-
-      saveProposals(list);
-      renderCases();
-      renderQueues();
-      openClient(caseId);
+    function renderQueueItems(items, type) {
+      if (!items.length) {
+        return '<div class="empty-state">Nenhuma proposta pendente nesta fila.</div>';
+      }
+      return items.map(item => {
+        const client = state.cases.find(c => c.id === item.caseId);
+        return `
+          <div class="proposal-item">
+            <h3>${client.title} • ${client.nome}</h3>
+            <div class="proposal-meta">
+              <span><strong>Gerente:</strong> ${item.managerName}</span>
+              <span><strong>Valor:</strong> ${formatCurrency(item.value)}</span>
+              <span><strong>Renda:</strong> ${formatCurrency(client.renda)}</span>
+              <span><strong>Atualização:</strong> ${client.rendaAtualizacao}</span>
+              <span><strong>Comprovação:</strong> ${client.comprovacao}</span>
+            </div>
+            <div class="proposal-products">${item.products.map(product => `<span class="tag">${product}</span>`).join('')}</div>
+            <div class="proposal-meta"><span><strong>Finalidade:</strong> ${item.purpose}</span></div>
+            <div class="proposal-actions">
+              ${type === 'gg' ? `
+                <button class="btn-success" onclick="openDecisionModal('gg-approve','${item.id}')">Aprovar e encaminhar</button>
+                <button class="btn-warning" onclick="openDecisionModal('gg-return','${item.id}')">Devolver</button>
+              ` : `
+                <button class="btn-success" onclick="openDecisionModal('credit-approve','${item.id}')">Aprovar</button>
+                <button class="btn-warning" onclick="openDecisionModal('credit-return','${item.id}')">Devolver</button>
+                <button class="btn-danger" onclick="openDecisionModal('credit-deny','${item.id}')">Recusar</button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      if (confirm("Deseja limpar todas as propostas salvas nesta simulação?")){
-        localStorage.removeItem(STORAGE_KEY);
-        renderCases();
-        renderQueues();
+    function openDecisionModal(action, proposalId) {
+      pendingDecision = { action, proposalId };
+      const titles = {
+        'gg-approve': ['Parecer da Gerência Geral', 'Registre o parecer antes de encaminhar ao analista de crédito.'],
+        'gg-return': ['Devolução pela Gerência Geral', 'Explique o motivo da devolução para ajuste.'],
+        'credit-approve': ['Parecer do Analista de Crédito', 'Registre o parecer de aprovação da operação.'],
+        'credit-return': ['Devolução pelo Analista de Crédito', 'Explique o complemento necessário para a operação.'],
+        'credit-deny': ['Recusa pelo Analista de Crédito', 'Registre o fundamento da recusa.']
+      };
+      document.getElementById('decisionTitle').textContent = titles[action][0];
+      document.getElementById('decisionSubtitle').textContent = titles[action][1];
+      document.getElementById('decisionOpinion').value = '';
+      document.getElementById('decisionModalOverlay').classList.add('active');
+    }
+
+    function closeDecisionModal() {
+      document.getElementById('decisionModalOverlay').classList.remove('active');
+      pendingDecision = null;
+    }
+
+    document.getElementById('confirmDecisionBtn').addEventListener('click', function () {
+      const opinion = document.getElementById('decisionOpinion').value.trim();
+      if (!opinion) {
+        alert('O parecer é obrigatório.');
+        return;
       }
+      const proposal = state.proposals.find(p => p.id === pendingDecision.proposalId);
+      if (!proposal) return;
+
+      switch (pendingDecision.action) {
+        case 'gg-approve':
+          proposal.ggOpinion = opinion;
+          proposal.status = 'Em análise Crédito';
+          break;
+        case 'gg-return':
+          proposal.ggOpinion = opinion;
+          proposal.status = 'Devolvida';
+          break;
+        case 'credit-approve':
+          proposal.creditOpinion = opinion;
+          proposal.status = 'Aprovada';
+          break;
+        case 'credit-return':
+          proposal.creditOpinion = opinion;
+          proposal.status = 'Devolvida';
+          break;
+        case 'credit-deny':
+          proposal.creditOpinion = opinion;
+          proposal.status = 'Recusada';
+          break;
+      }
+
+      updateCaseStatus(proposal.caseId);
+      saveState();
+      closeDecisionModal();
+      renderAll();
     });
 
-    document.getElementById("refreshBtn").addEventListener("click", () => {
+    function renderAll() {
+      state.cases.forEach(c => updateCaseStatus(c.id));
       renderCases();
       renderQueues();
-    });
+      if (document.getElementById('clientModalOverlay').classList.contains('active') && currentClientId) {
+        const client = state.cases.find(c => c.id === currentClientId);
+        renderClientModal(client);
+      }
+    }
 
-    ["clientOverlay","proposalOverlay","decisionOverlay"].forEach(id => {
-      document.getElementById(id).addEventListener("click", (e) => {
-        if (e.target.id === id) closeOverlay(id);
-      });
-    });
+    renderAll();
 
-    renderCases();
-    renderQueues();
+    window.openClientModal = openClientModal;
+    window.closeClientModal = closeClientModal;
+    window.openProposalModal = openProposalModal;
+    window.closeProposalModal = closeProposalModal;
+    window.openDecisionModal = openDecisionModal;
+    window.closeDecisionModal = closeDecisionModal;
   </script>
 </body>
 </html>
