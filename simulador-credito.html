@@ -19,194 +19,62 @@
       --shadow:0 12px 28px rgba(16,42,67,.08);
       --radius:18px;
     }
-
     *{box-sizing:border-box}
-
     body{
       margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:linear-gradient(180deg,#edf3fb 0%, #f8fafc 100%);
       color:var(--text);
     }
-
-    .wrap{
-      max-width:1300px;
-      margin:0 auto;
-      padding:24px;
-    }
-
+    .wrap{max-width:1300px;margin:0 auto;padding:24px}
     .topbar{
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      align-items:flex-start;
-      margin-bottom:22px;
-      flex-wrap:wrap;
+      display:flex;justify-content:space-between;gap:16px;align-items:flex-start;
+      margin-bottom:22px;flex-wrap:wrap;
     }
-
-    .topbar h1{
-      margin:0;
-      font-size:30px;
-      letter-spacing:-.02em;
-    }
-
-    .topbar p{
-      margin:6px 0 0;
-      color:var(--muted);
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
+    .topbar h1{margin:0;font-size:30px;letter-spacing:-.02em}
+    .topbar p{margin:6px 0 0;color:var(--muted)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
     button{
-      border:0;
-      border-radius:12px;
-      padding:12px 16px;
-      font-weight:700;
-      cursor:pointer;
-      transition:.18s ease;
-      font-family:inherit;
+      border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;
+      transition:.18s ease;font-family:inherit;
     }
-
-    .btn-primary{
-      background:var(--primary);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(31,95,191,.18);
-    }
-
+    .btn-primary{background:var(--primary);color:#fff;box-shadow:0 10px 20px rgba(31,95,191,.18)}
     .btn-primary:hover{background:var(--primary-dark)}
+    .btn-secondary{background:#e9f1fb;color:var(--primary-dark)}
+    .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn-warning{background:#fff5e6;color:var(--warning);border:1px solid #ffd8a8}
+    .btn-danger{background:#fff1f1;color:var(--danger);border:1px solid #ffd3d3}
 
-    .btn-secondary{
-      background:#e9f1fb;
-      color:var(--primary-dark);
-    }
-
-    .btn-light{
-      background:#fff;
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-
-    .btn-warning{
-      background:#fff5e6;
-      color:var(--warning);
-      border:1px solid #ffd8a8;
-    }
-
-    .btn-danger{
-      background:#fff1f1;
-      color:var(--danger);
-      border:1px solid #ffd3d3;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin-bottom:24px;
-    }
-
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
     .card{
-      background:var(--card);
-      border:1px solid rgba(217,226,236,.95);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      background:var(--card);border:1px solid rgba(217,226,236,.95);
+      border-radius:var(--radius);box-shadow:var(--shadow);
     }
-
-    .case-card{
-      padding:20px;
-      position:relative;
-      min-height:255px;
-      overflow:hidden;
-    }
-
+    .case-card{padding:20px;position:relative;min-height:255px;overflow:hidden}
     .case-card:before{
-      content:"";
-      position:absolute;
-      right:-35px;
-      top:-35px;
-      width:130px;
-      height:130px;
-      border-radius:50%;
-      background:radial-gradient(circle,#dbeafe 0,#eef5ff 58%, transparent 59%);
+      content:"";position:absolute;right:-35px;top:-35px;width:130px;height:130px;
+      border-radius:50%;background:radial-gradient(circle,#dbeafe 0,#eef5ff 58%, transparent 59%);
     }
-
     .case-head{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      margin-bottom:14px;
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:14px;
     }
-
-    .case-title{
-      font-size:22px;
-      font-weight:800;
-      margin:0 0 4px;
-    }
-
-    .mini{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .metrics{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-bottom:10px;
-    }
-
-    .metric{
-      background:#f8fbff;
-      border:1px solid #e3edf8;
-      border-radius:14px;
-      padding:12px;
-    }
-
-    .metric .k{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    .metric .v{
-      font-size:18px;
-      font-weight:800;
-    }
-
+    .case-title{font-size:22px;font-weight:800;margin:0 0 4px}
+    .mini{font-size:13px;color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .metric{background:#f8fbff;border:1px solid #e3edf8;border-radius:14px;padding:12px}
+    .metric .k{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .metric .v{font-size:18px;font-weight:800}
     .row-meta{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding-top:10px;
-      margin-top:8px;
-      border-top:1px dashed var(--line);
-      font-size:13px;
+      display:flex;justify-content:space-between;gap:10px;padding-top:10px;margin-top:8px;
+      border-top:1px dashed var(--line);font-size:13px;
     }
-
     .row-meta span:first-child{color:var(--muted)}
-
-    .card-footer{
-      display:flex;
-      justify-content:flex-end;
-      margin-top:16px;
-    }
+    .card-footer{display:flex;justify-content:flex-end;margin-top:16px}
 
     .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border-radius:999px;
-      padding:7px 11px;
-      font-size:12px;
-      font-weight:800;
-      white-space:nowrap;
+      display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;
+      font-size:12px;font-weight:800;white-space:nowrap;
     }
-
     .badge.sem{background:#edf2f7;color:#486581}
     .badge.gg{background:#fff7db;color:#8d6200}
     .badge.analista{background:#eaf5ff;color:#145ea8}
@@ -214,414 +82,122 @@
     .badge.aprovada{background:#e9fbef;color:#117a42}
     .badge.reprovada{background:#fff0f0;color:#b42318}
 
-    .queues{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-    }
-
-    .panel{
-      padding:18px;
-    }
-
-    .panel h2{
-      margin:0 0 6px;
-      font-size:20px;
-    }
-
-    .panel p{
-      margin:0 0 14px;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-height:120px;
-    }
-
+    .queues{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .panel{padding:18px}
+    .panel h2{margin:0 0 6px;font-size:20px}
+    .panel p{margin:0 0 14px;color:var(--muted);font-size:14px}
+    .list{display:flex;flex-direction:column;gap:12px;min-height:120px}
     .proposal-item{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      background:#fcfdff;
+      border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;
+      justify-content:space-between;gap:12px;align-items:center;background:#fcfdff;
     }
-
-    .proposal-item h3{
-      margin:0 0 6px;
-      font-size:16px;
-    }
-
-    .proposal-meta{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      color:var(--muted);
-      font-size:13px;
-    }
-
+    .proposal-item h3{margin:0 0 6px;font-size:16px}
+    .proposal-meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
     .empty{
-      padding:18px;
-      text-align:center;
-      color:var(--muted);
-      background:#fafcff;
-      border:1px dashed var(--line);
-      border-radius:14px;
+      padding:18px;text-align:center;color:var(--muted);background:#fafcff;
+      border:1px dashed var(--line);border-radius:14px;
     }
 
     .overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(11,29,52,.48);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:1000;
+      position:fixed;inset:0;background:rgba(11,29,52,.48);display:none;
+      align-items:center;justify-content:center;padding:20px;z-index:1000;
     }
-
     .overlay.show{display:flex}
-
     .modal{
-      width:min(1180px,100%);
-      max-height:92vh;
-      overflow:auto;
-      background:#fff;
-      border-radius:24px;
-      box-shadow:0 30px 80px rgba(16,42,67,.28);
-      border:1px solid rgba(255,255,255,.35);
-      position:relative;
+      width:min(1180px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;
+      box-shadow:0 30px 80px rgba(16,42,67,.28);border:1px solid rgba(255,255,255,.35);position:relative;
     }
-
-    .modal.small{
-      width:min(780px,100%);
-    }
-
+    .modal.small{width:min(820px,100%)}
     .modal-header{
-      position:sticky;
-      top:0;
-      z-index:10;
-      background:rgba(255,255,255,.96);
-      backdrop-filter: blur(8px);
-      border-bottom:1px solid #edf2f7;
-      border-radius:24px 24px 0 0;
-      padding:20px 24px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:16px;
+      position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter: blur(8px);
+      border-bottom:1px solid #edf2f7;border-radius:24px 24px 0 0;padding:20px 24px 16px;
+      display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
     }
-
-    .modal-header h2{
-      margin:0;
-      font-size:25px;
-    }
-
-    .modal-header p{
-      margin:6px 0 0;
-      color:var(--muted);
-    }
-
+    .modal-header h2{margin:0;font-size:25px}
+    .modal-header p{margin:6px 0 0;color:var(--muted)}
     .close{
-      width:42px;
-      height:42px;
-      border-radius:12px;
-      background:#f7fafc;
-      color:#486581;
-      border:1px solid var(--line);
-      font-size:20px;
-      line-height:1;
-      padding:0;
+      width:42px;height:42px;border-radius:12px;background:#f7fafc;color:#486581;
+      border:1px solid var(--line);font-size:20px;line-height:1;padding:0;
     }
-
-    .modal-body{
-      padding:22px 24px 24px;
-    }
+    .modal-body{padding:22px 24px 24px}
 
     .hero{
       background:linear-gradient(135deg,#17395e 0%, #244d79 55%, #305f91 100%);
-      color:#fff;
-      border-radius:22px;
-      padding:22px;
-      margin-bottom:18px;
+      color:#fff;border-radius:22px;padding:22px;margin-bottom:18px;
     }
-
     .hero-top{
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-      align-items:flex-start;
+      display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;
     }
-
     .avatar{
-      width:56px;
-      height:56px;
-      border-radius:16px;
-      background:rgba(255,255,255,.16);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:22px;
-      font-weight:800;
+      width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.16);
+      display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;
     }
-
-    .hero-ident{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-    }
-
-    .hero-name{
-      font-size:24px;
-      font-weight:800;
-      margin:0 0 6px;
-    }
-
-    .hero-meta{
-      display:flex;
-      gap:10px 16px;
-      flex-wrap:wrap;
-      font-size:13px;
-      color:rgba(255,255,255,.85);
-    }
-
-    .hero-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-top:18px;
-    }
-
+    .hero-ident{display:flex;gap:14px;align-items:flex-start}
+    .hero-name{font-size:24px;font-weight:800;margin:0 0 6px}
+    .hero-meta{display:flex;gap:10px 16px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.85)}
+    .hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
     .hero-box{
-      background:rgba(255,255,255,.09);
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:16px;
-      padding:14px;
+      background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;padding:14px;
     }
-
-    .hero-box .k{
-      font-size:12px;
-      color:rgba(255,255,255,.78);
-      margin-bottom:6px;
-    }
-
-    .hero-box .v{
-      font-size:18px;
-      font-weight:800;
-    }
+    .hero-box .k{font-size:12px;color:rgba(255,255,255,.78);margin-bottom:6px}
+    .hero-box .v{font-size:18px;font-weight:800}
 
     .section{
-      background:#fbfdff;
-      border:1px solid #e6edf6;
-      border-radius:18px;
-      padding:18px;
-      margin-bottom:16px;
+      background:#fbfdff;border:1px solid #e6edf6;border-radius:18px;padding:18px;margin-bottom:16px;
     }
-
     .section-title{
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:#486581;
-      font-weight:800;
-      margin:0 0 14px;
+      font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#486581;
+      font-weight:800;margin:0 0 14px;
     }
+    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .field{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .field .label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .field .value{font-size:15px;font-weight:800}
 
-    .grid-2{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:16px;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .grid-4{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-    }
-
-    .field{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-    }
-
-    .field .label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:4px;
-    }
-
-    .field .value{
-      font-size:15px;
-      font-weight:800;
-    }
-
-    .timeline{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:14px;
-    }
-
+    .timeline{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
     .step{
-      padding:10px 12px;
-      border-radius:999px;
-      background:#f4f7fb;
-      color:#486581;
-      font-size:12px;
-      font-weight:800;
-      border:1px solid #e2e8f0;
+      padding:10px 12px;border-radius:999px;background:#f4f7fb;color:#486581;
+      font-size:12px;font-weight:800;border:1px solid #e2e8f0;
     }
-
-    .step.active{
-      background:#e7f1ff;
-      color:#145ea8;
-      border-color:#cde0fb;
-    }
+    .step.active{background:#e7f1ff;color:#145ea8;border-color:#cde0fb}
 
     .table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:14px;
-      overflow:hidden;
-      border-radius:14px;
+      width:100%;border-collapse:collapse;font-size:14px;overflow:hidden;border-radius:14px;
     }
-
-    .table th,
-    .table td{
-      border-bottom:1px solid #edf2f7;
-      text-align:left;
-      padding:12px 10px;
-      vertical-align:top;
+    .table th,.table td{
+      border-bottom:1px solid #edf2f7;text-align:left;padding:12px 10px;vertical-align:top;
     }
-
     .table th{
-      color:#486581;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      background:#f8fbff;
+      color:#486581;font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:#f8fbff;
     }
 
-    .history-list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
+    .history-list{display:flex;flex-direction:column;gap:10px}
     .history-item{
-      border-left:4px solid #c9dcf8;
-      background:#f9fbff;
-      border-radius:0 14px 14px 0;
-      padding:12px 14px;
-      font-size:14px;
+      border-left:4px solid #c9dcf8;background:#f9fbff;border-radius:0 14px 14px 0;
+      padding:12px 14px;font-size:14px;
     }
 
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:14px;
-    }
-
-    .form-group{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .form-group.full{
-      grid-column:1/-1;
-    }
-
-    label{
-      font-size:13px;
-      font-weight:700;
-      color:#334e68;
-    }
-
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .form-group{display:flex;flex-direction:column;gap:8px}
+    .form-group.full{grid-column:1/-1}
+    label{font-size:13px;font-weight:700;color:#334e68}
     input, textarea, select{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 13px;
-      font:inherit;
-      color:var(--text);
-      background:#fff;
+      width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+      font:inherit;color:var(--text);background:#fff;
     }
-
-    textarea{
-      min-height:110px;
-      resize:vertical;
-    }
-
-    .check-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
-    .check{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-      background:#fbfdff;
-    }
-
-    .check input{
-      width:auto;
-    }
-
-    .modal-actions{
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-      margin-top:18px;
-      flex-wrap:wrap;
-    }
-
-    .proposal-summary{
-      border:1px solid var(--line);
-      background:#fbfdff;
-      border-radius:18px;
-      padding:16px;
-    }
-
-    .proposal-summary h3{
-      margin:0 0 12px;
-      font-size:18px;
-    }
-
-    .muted{
-      color:var(--muted);
-      font-size:13px;
-    }
+    textarea{min-height:110px;resize:vertical}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .proposal-summary{border:1px solid var(--line);background:#fbfdff;border-radius:18px;padding:16px}
+    .proposal-summary h3{margin:0 0 12px;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .hidden{display:none !important}
 
     @media (max-width: 1024px){
-      .grid, .queues, .hero-grid, .grid-2, .grid-3, .grid-4, .form-grid, .check-grid{
-        grid-template-columns:1fr;
-      }
-
-      .proposal-item{
-        flex-direction:column;
-        align-items:flex-start;
-      }
+      .grid,.queues,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
+      .proposal-item{flex-direction:column;align-items:flex-start}
     }
   </style>
 </head>
@@ -660,7 +236,7 @@
   <div class="overlay" id="decisionOverlay"></div>
 
   <script>
-    const STORAGE_KEY = "simulador_credito_propostas_v2";
+    const STORAGE_KEY = "simulador_credito_propostas_v3";
 
     const CASES = [
       {
@@ -733,6 +309,7 @@
 
     const PRODUCTS = [
       "Cartão de crédito",
+      "Cheque especial",
       "Empréstimo pessoal",
       "Empréstimo com garantia de imóvel",
       "Empréstimo com garantia de veículo",
@@ -743,19 +320,11 @@
     ];
 
     function money(v){
-      return new Intl.NumberFormat("pt-BR", {
-        style:"currency",
-        currency:"BRL"
-      }).format(Number(v || 0));
+      return new Intl.NumberFormat("pt-BR", { style:"currency", currency:"BRL" }).format(Number(v || 0));
     }
 
-    function nowIso(){
-      return new Date().toISOString();
-    }
-
-    function nowLabel(){
-      return new Date().toLocaleString("pt-BR");
-    }
+    function nowIso(){ return new Date().toISOString(); }
+    function nowLabel(){ return new Date().toLocaleString("pt-BR"); }
 
     function getProposals(){
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -817,6 +386,22 @@
       `;
     }
 
+    function isRotativo(product){
+      return product === "Cartão de crédito" || product === "Cheque especial";
+    }
+
+    function calcularParcela(valor, taxaPercentual, prazo){
+      const PV = Number(valor || 0);
+      const i = Number(taxaPercentual || 0) / 100;
+      const n = Number(prazo || 0);
+
+      if (!PV || !n) return 0;
+      if (!i) return PV / n;
+
+      const parcela = PV * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+      return parcela;
+    }
+
     function renderCases(){
       const grid = document.getElementById("caseGrid");
       grid.innerHTML = "";
@@ -874,8 +459,9 @@
           <h3>${c.title} — ${c.nome}</h3>
           <div class="proposal-meta">
             <span><strong>Gerente:</strong> ${p.managerName}</span>
-            <span><strong>Produtos:</strong> ${p.products.join(", ")}</span>
+            <span><strong>Produto:</strong> ${p.product}</span>
             <span><strong>Valor:</strong> ${money(p.amount)}</span>
+            ${p.installment ? `<span><strong>Parcela:</strong> ${money(p.installment)}</span>` : ""}
             <span><strong>Data:</strong> ${new Date(p.createdAt).toLocaleString("pt-BR")}</span>
           </div>
         </div>
@@ -929,6 +515,15 @@
         .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
+    function getLastReturnMessage(proposal){
+      const history = proposal.history || [];
+      const reversed = [...history].reverse();
+      const item = reversed.find(h =>
+        h.text.includes("devolveu a proposta ao gerente de relacionamento")
+      );
+      return item ? item.text : "";
+    }
+
     window.openClient = function(caseId){
       const c = getCaseById(caseId);
       const proposals = getProposalsForCase(caseId);
@@ -940,20 +535,25 @@
           <thead>
             <tr>
               <th>Data</th>
-              <th>Produto(s)</th>
+              <th>Produto</th>
               <th>Valor</th>
               <th>Status</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody>
             ${proposals.map(p => {
               const st = statusInfo(p.status);
+              const podeEditar = p.status === "returned_gg" || p.status === "returned_analyst";
               return `
                 <tr>
                   <td>${new Date(p.createdAt).toLocaleString("pt-BR")}</td>
-                  <td>${p.products.join(", ")}</td>
+                  <td>${p.product}</td>
                   <td>${money(p.amount)}</td>
                   <td><span class="badge ${st.className}">${st.text}</span></td>
+                  <td>
+                    ${podeEditar ? `<button class="btn-warning" onclick="editProposal('${p.id}')">Responder e reenviar</button>` : `-`}
+                  </td>
                 </tr>
               `;
             }).join("")}
@@ -965,9 +565,10 @@
         <div class="history-list">
           ${proposals.map(p => `
             <div class="history-item">
-              <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.products.join(", ")}</strong> • <strong>${money(p.amount)}</strong></div>
+              <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.product}</strong> • <strong>${money(p.amount)}</strong></div>
               <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
               <div style="margin-top:8px;"><strong>Defesa do gerente:</strong> ${p.managerOpinion}</div>
+              ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Resposta do gerente aos apontamentos:</strong> ${p.managerResponse}</div>` : ""}
               ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
               ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
               ${(p.history || []).length ? `
@@ -1036,38 +637,14 @@
             <div class="section">
               <div class="section-title">Resumo financeiro</div>
               <div class="grid-4">
-                <div class="field">
-                  <div class="label">Saldo em conta</div>
-                  <div class="value">${money(c.saldo)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Valor investido</div>
-                  <div class="value">${money(c.investido)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Crédito já tomado</div>
-                  <div class="value">${money(c.creditoTomado)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Uso atual do cartão</div>
-                  <div class="value">${money(c.usoCartao)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Limite disponível</div>
-                  <div class="value">${money(c.limiteDisponivel)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Comprometimento estimado</div>
-                  <div class="value">${c.comprometimento}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Relacionamento</div>
-                  <div class="value">${c.relacionamento}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Objetivo sugerido</div>
-                  <div class="value" style="font-size:13px;">${c.objetivoSugestao}</div>
-                </div>
+                <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
+                <div class="field"><div class="label">Valor investido</div><div class="value">${money(c.investido)}</div></div>
+                <div class="field"><div class="label">Crédito já tomado</div><div class="value">${money(c.creditoTomado)}</div></div>
+                <div class="field"><div class="label">Uso atual do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
+                <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
+                <div class="field"><div class="label">Comprometimento estimado</div><div class="value">${c.comprometimento}</div></div>
+                <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
+                <div class="field"><div class="label">Objetivo sugerido</div><div class="value" style="font-size:13px;">${c.objetivoSugestao}</div></div>
               </div>
             </div>
 
@@ -1075,18 +652,9 @@
               <div class="section">
                 <div class="section-title">Leitura do case</div>
                 <div class="grid-3">
-                  <div class="field">
-                    <div class="label">Perfil</div>
-                    <div class="value">${c.perfil}</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Relacionamento</div>
-                    <div class="value">${c.relacionamento}</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Comprovação</div>
-                    <div class="value">${c.comprovacao}</div>
-                  </div>
+                  <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
+                  <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
+                  <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
                 </div>
 
                 <div class="field" style="margin-top:12px;">
@@ -1121,21 +689,21 @@
       `);
     }
 
-    window.openProposal = function(caseId){
-      const c = getCaseById(caseId);
-      const checks = PRODUCTS.map((p, i) => `
-        <label class="check">
-          <input type="checkbox" name="products" value="${p}" ${i === 0 ? "checked" : ""}>
-          <span>${p}</span>
-        </label>
+    function buildProposalFormHtml(c, proposal = null){
+      const editing = !!proposal;
+      const currentProduct = proposal?.product || "";
+      const productOptions = PRODUCTS.map(p => `
+        <option value="${p}" ${currentProduct === p ? "selected" : ""}>${p}</option>
       `).join("");
 
-      openOverlay("proposalOverlay", `
+      const isCurrentRotativo = isRotativo(currentProduct);
+
+      return `
         <div class="modal small">
           <div class="modal-header">
             <div>
-              <h2>Subir proposta — ${c.title}</h2>
-              <p>Preencha os dados da operação e registre a defesa do gerente de relacionamento.</p>
+              <h2>${editing ? "Responder apontamentos e reenviar" : "Subir proposta"} — ${c.title}</h2>
+              <p>${editing ? "Ajuste a proposta com base nos questionamentos e reenvie para análise." : "Preencha os dados da operação e registre a defesa do gerente de relacionamento."}</p>
             </div>
             <button class="close" onclick="closeOverlay('proposalOverlay')">×</button>
           </div>
@@ -1143,93 +711,200 @@
           <div class="modal-body">
             <form id="proposalForm">
               <input type="hidden" name="caseId" value="${c.id}">
+              ${editing ? `<input type="hidden" name="proposalId" value="${proposal.id}">` : ""}
+
+              ${editing ? `
+                <div class="section" style="margin-bottom:18px;">
+                  <div class="section-title">Apontamentos para ajuste</div>
+                  <div class="field">
+                    <div class="label">Último retorno recebido</div>
+                    <div class="value" style="font-size:14px;">${getLastReturnMessage(proposal) || "Sem apontamento registrado."}</div>
+                  </div>
+                </div>
+              ` : ""}
 
               <div class="form-grid">
                 <div class="form-group">
                   <label>Gerente de relacionamento</label>
-                  <input type="text" name="managerName" placeholder="Ex.: Renato Souto" required>
+                  <input type="text" name="managerName" value="${proposal?.managerName || ""}" placeholder="Ex.: Renato Souto" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Produto de crédito</label>
+                  <select name="product" id="productField" required>
+                    <option value="">Selecione</option>
+                    ${productOptions}
+                  </select>
                 </div>
 
                 <div class="form-group">
                   <label>Valor solicitado</label>
-                  <input type="number" min="0" step="0.01" name="amount" placeholder="Ex.: 150000" required>
+                  <input type="number" min="0" step="0.01" name="amount" id="amountField" value="${proposal?.amount || ""}" placeholder="Ex.: 150000" required>
                 </div>
 
-                <div class="form-group">
-                  <label>Prazo</label>
-                  <input type="text" name="term" placeholder="Ex.: 48 meses" required>
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="termGroup">
+                  <label>Prazo (meses)</label>
+                  <input type="number" min="1" step="1" name="term" id="termField" value="${proposal?.term || ""}" placeholder="Ex.: 48">
                 </div>
 
-                <div class="form-group">
-                  <label>Garantia</label>
-                  <input type="text" name="guarantee" placeholder="Ex.: imóvel, veículo ou sem garantia">
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="rateGroup">
+                  <label>Taxa de juros ao mês (%)</label>
+                  <input type="number" min="0" step="0.01" name="interestRate" id="rateField" value="${proposal?.interestRate || ""}" placeholder="Ex.: 2.15">
                 </div>
 
-                <div class="form-group full">
-                  <label>Produtos de crédito</label>
-                  <div class="check-grid">${checks}</div>
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="installmentGroup">
+                  <label>Parcela estimada</label>
+                  <input type="text" id="installmentField" value="${proposal?.installment ? money(proposal.installment) : ""}" readonly>
                 </div>
 
                 <div class="form-group full">
                   <label>Finalidade</label>
-                  <textarea name="purpose" required>${c.objetivoSugestao}</textarea>
+                  <textarea name="purpose" required>${proposal?.purpose || c.objetivoSugestao}</textarea>
                 </div>
 
                 <div class="form-group full">
                   <label>Defesa do gerente</label>
-                  <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required></textarea>
+                  <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required>${proposal?.managerOpinion || ""}</textarea>
                 </div>
+
+                ${editing ? `
+                  <div class="form-group full">
+                    <label>Resposta do gerente aos apontamentos</label>
+                    <textarea name="managerResponse" placeholder="Explique o que foi ajustado e responda aos questionamentos" required>${proposal?.managerResponse || ""}</textarea>
+                  </div>
+                ` : ""}
               </div>
 
               <div class="modal-actions">
                 <button type="button" class="btn-light" onclick="closeOverlay('proposalOverlay')">Cancelar</button>
-                <button type="submit" class="btn-primary">Enviar proposta</button>
+                <button type="submit" class="btn-primary">${editing ? "Reenviar proposta" : "Enviar proposta"}</button>
               </div>
             </form>
           </div>
         </div>
-      `);
+      `;
+    }
+
+    function bindProposalForm(caseId, proposal = null){
+      const productField = document.getElementById("productField");
+      const termGroup = document.getElementById("termGroup");
+      const rateGroup = document.getElementById("rateGroup");
+      const installmentGroup = document.getElementById("installmentGroup");
+      const termField = document.getElementById("termField");
+      const rateField = document.getElementById("rateField");
+      const amountField = document.getElementById("amountField");
+      const installmentField = document.getElementById("installmentField");
+
+      function refreshVisibility(){
+        const rotativo = isRotativo(productField.value);
+        termGroup.classList.toggle("hidden", rotativo);
+        rateGroup.classList.toggle("hidden", rotativo);
+        installmentGroup.classList.toggle("hidden", rotativo);
+
+        if (rotativo){
+          termField.value = "";
+          rateField.value = "";
+          installmentField.value = "";
+          termField.required = false;
+          rateField.required = false;
+        } else {
+          termField.required = true;
+          rateField.required = true;
+          updateInstallment();
+        }
+      }
+
+      function updateInstallment(){
+        if (isRotativo(productField.value)){
+          installmentField.value = "";
+          return;
+        }
+        const parcela = calcularParcela(amountField.value, rateField.value, termField.value);
+        installmentField.value = parcela ? money(parcela) : "";
+      }
+
+      productField.addEventListener("change", refreshVisibility);
+      amountField.addEventListener("input", updateInstallment);
+      termField.addEventListener("input", updateInstallment);
+      rateField.addEventListener("input", updateInstallment);
+
+      refreshVisibility();
 
       document.getElementById("proposalForm").onsubmit = function(e){
         e.preventDefault();
 
         const fd = new FormData(e.target);
-        const selectedProducts = [...document.querySelectorAll('input[name="products"]:checked')].map(el => el.value);
+        const product = fd.get("product");
+        const editing = !!proposal;
+        const rotativo = isRotativo(product);
+        const amount = Number(fd.get("amount"));
 
-        if (!selectedProducts.length){
-          alert("Selecione pelo menos um produto.");
-          return;
+        const baseData = {
+          managerName: fd.get("managerName").trim(),
+          product,
+          amount,
+          term: rotativo ? null : Number(fd.get("term")),
+          interestRate: rotativo ? null : Number(fd.get("interestRate")),
+          installment: rotativo ? null : calcularParcela(amount, fd.get("interestRate"), fd.get("term")),
+          purpose: fd.get("purpose").trim(),
+          managerOpinion: fd.get("managerOpinion").trim()
+        };
+
+        if (editing){
+          baseData.managerResponse = fd.get("managerResponse").trim();
         }
 
         const list = getProposals();
-        const proposal = {
-          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-          caseId: Number(fd.get("caseId")),
-          managerName: fd.get("managerName").trim(),
-          amount: Number(fd.get("amount")),
-          term: fd.get("term").trim(),
-          guarantee: fd.get("guarantee").trim(),
-          products: selectedProducts,
-          purpose: fd.get("purpose").trim(),
-          managerOpinion: fd.get("managerOpinion").trim(),
-          generalManagerOpinion: "",
-          analystOpinion: "",
-          status: "pending_gg",
-          createdAt: nowIso(),
-          updatedAt: nowIso(),
-          history: [
-            { at: nowLabel(), text: "Proposta criada pelo gerente de relacionamento e enviada para a gerência geral." }
-          ]
-        };
 
-        list.push(proposal);
+        if (!editing){
+          const proposalObj = {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            caseId: Number(fd.get("caseId")),
+            ...baseData,
+            generalManagerOpinion: "",
+            analystOpinion: "",
+            status: "pending_gg",
+            createdAt: nowIso(),
+            updatedAt: nowIso(),
+            history: [
+              { at: nowLabel(), text: "Proposta criada pelo gerente de relacionamento e enviada para a gerência geral." }
+            ]
+          };
+          list.push(proposalObj);
+        } else {
+          const idx = list.findIndex(p => p.id === proposal.id);
+          const existing = list[idx];
+          list[idx] = {
+            ...existing,
+            ...baseData,
+            status: "pending_gg",
+            updatedAt: nowIso(),
+            history: [
+              ...(existing.history || []),
+              { at: nowLabel(), text: `Gerente de relacionamento ajustou a proposta e reenviou para nova análise. Resposta: ${baseData.managerResponse}` }
+            ]
+          };
+        }
+
         saveProposals(list);
-
         closeOverlay("proposalOverlay");
         renderCases();
         renderQueues();
         openClient(caseId);
       };
+    }
+
+    window.openProposal = function(caseId){
+      const c = getCaseById(caseId);
+      openOverlay("proposalOverlay", buildProposalFormHtml(c));
+      bindProposalForm(caseId);
+    }
+
+    window.editProposal = function(proposalId){
+      const proposal = getProposals().find(p => p.id === proposalId);
+      const c = getCaseById(proposal.caseId);
+      openOverlay("proposalOverlay", buildProposalFormHtml(c, proposal));
+      bindProposalForm(proposal.caseId, proposal);
     }
 
     window.openDecision = function(proposalId, role){
@@ -1263,34 +938,20 @@
             <div class="proposal-summary">
               <h3>Resumo da proposta</h3>
               <div class="grid-3">
-                <div class="field">
-                  <div class="label">Gerente responsável</div>
-                  <div class="value">${proposal.managerName}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Valor solicitado</div>
-                  <div class="value">${money(proposal.amount)}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Prazo</div>
-                  <div class="value">${proposal.term}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Produtos</div>
-                  <div class="value">${proposal.products.join(", ")}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Garantia</div>
-                  <div class="value">${proposal.guarantee || "Não informada"}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Atualização da renda</div>
-                  <div class="value">${c.rendaAtualizacao}</div>
-                </div>
+                <div class="field"><div class="label">Gerente responsável</div><div class="value">${proposal.managerName}</div></div>
+                <div class="field"><div class="label">Produto</div><div class="value">${proposal.product}</div></div>
+                <div class="field"><div class="label">Valor solicitado</div><div class="value">${money(proposal.amount)}</div></div>
+                <div class="field"><div class="label">Prazo</div><div class="value">${proposal.term ? proposal.term + " meses" : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Taxa ao mês</div><div class="value">${proposal.interestRate != null ? proposal.interestRate + "%" : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Parcela estimada</div><div class="value">${proposal.installment ? money(proposal.installment) : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Atualização da renda</div><div class="value">${c.rendaAtualizacao}</div></div>
+                <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
+                <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
               </div>
 
               <div style="margin-top:12px;" class="muted"><strong>Finalidade:</strong> ${proposal.purpose}</div>
               <div style="margin-top:8px;" class="muted"><strong>Defesa do gerente:</strong> ${proposal.managerOpinion}</div>
+              ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Resposta do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
               ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
             </div>
 
@@ -1328,12 +989,10 @@
           proposal.status = "pending_analyst";
           historyText = "Gerência geral encaminhou a proposta ao analista de crédito.";
         }
-
         if (action === "return"){
           proposal.status = "returned_gg";
           historyText = "Gerência geral devolveu a proposta ao gerente de relacionamento.";
         }
-
         if (action === "reject"){
           proposal.status = "rejected_gg";
           historyText = "Gerência geral reprovou a proposta.";
@@ -1347,12 +1006,10 @@
           proposal.status = "approved";
           historyText = "Analista de crédito aprovou a proposta.";
         }
-
         if (action === "return"){
           proposal.status = "returned_analyst";
           historyText = "Analista de crédito devolveu a proposta ao gerente de relacionamento.";
         }
-
         if (action === "reject"){
           proposal.status = "rejected_analyst";
           historyText = "Analista de crédito reprovou a proposta.";
@@ -1389,9 +1046,7 @@
 
     ["clientOverlay","proposalOverlay","decisionOverlay"].forEach(id => {
       document.getElementById(id).addEventListener("click", (e) => {
-        if (e.target.id === id){
-          closeOverlay(id);
-        }
+        if (e.target.id === id) closeOverlay(id);
       });
     });
 
