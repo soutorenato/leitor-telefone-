@@ -1,392 +1,2137 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Comitê de Crédito</title>
+  <style>
+    :root{
+      --bg:#edf3f8;
+      --surface:#ffffff;
+      --surface-2:#f8fbff;
+      --surface-3:#f3f7fb;
+      --line:#d9e2ec;
+      --line-2:#c7d2de;
+      --text:#0f172a;
+      --muted:#64748b;
+      --primary:#163a63;
+      --primary-2:#234d7c;
+      --primary-3:#315f95;
+      --primary-soft:#eaf2fb;
+      --success:#15803d;
+      --success-soft:#ecfdf3;
+      --warning:#b7791f;
+      --warning-soft:#fff7e8;
+      --danger:#b42318;
+      --danger-soft:#fff1f1;
+      --info:#0f5ea8;
+      --info-soft:#edf6ff;
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.05);
+      --shadow-xs:0 4px 10px rgba(15,23,42,.04);
+      --radius:22px;
+      --radius-sm:16px;
+      --sidebar:#132b47;
+    }
 
-<meta charset="UTF-8">
-<title>Simulador de Comitê de Crédito</title>
+    *{box-sizing:border-box}
 
-<style>
+    html{
+      scroll-behavior:smooth;
+    }
 
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Segoe UI,Roboto,Arial;
-}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(49,95,149,.08), transparent 24%),
+        linear-gradient(180deg,#edf3f8 0%, #f7fafc 100%);
+      color:var(--text);
+    }
 
-body{
-background:#f4f7fb;
-display:flex;
-height:100vh;
-color:#1f2937;
-}
+    .app{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      min-height:100vh;
+    }
 
-/* SIDEBAR */
+    .sidebar{
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.08), transparent 25%),
+        linear-gradient(180deg,#132b47 0%, #183657 100%);
+      color:#fff;
+      padding:24px 18px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      box-shadow:inset -1px 0 0 rgba(255,255,255,.06);
+    }
 
-.sidebar{
-width:230px;
-background:#0f172a;
-color:white;
-padding:22px;
-display:flex;
-flex-direction:column;
-gap:20px;
-}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:28px;
+      padding-bottom:18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
 
-.sidebar h1{
-font-size:18px;
-margin-bottom:10px;
-}
+    .brand-badge{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      background:rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 8px 18px rgba(0,0,0,.16);
+      backdrop-filter:blur(8px);
+    }
 
-.sidebar a{
-color:#cbd5e1;
-text-decoration:none;
-font-size:14px;
-display:block;
-padding:8px 0;
-}
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-.02em;
+    }
 
-.sidebar a:hover{
-color:white;
-}
+    .brand p{
+      margin:3px 0 0;
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+    }
 
-/* MAIN */
+    .nav-group{
+      margin-top:18px;
+    }
 
-.main{
-flex:1;
-display:flex;
-flex-direction:column;
-}
+    .nav-title{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:rgba(255,255,255,.56);
+      margin:0 0 10px;
+      padding:0 8px;
+    }
 
-.header{
-background:white;
-padding:18px 28px;
-border-bottom:1px solid #e5e7eb;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 12px;
+      border-radius:14px;
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      margin-bottom:8px;
+      border:1px solid rgba(255,255,255,.07);
+      font-size:14px;
+      font-weight:600;
+      backdrop-filter:blur(6px);
+      transition:.18s ease;
+    }
 
-.header h2{
-font-size:18px;
-}
+    .nav-item:hover{
+      background:rgba(255,255,255,.1);
+      transform:translateX(2px);
+    }
 
-.container{
-padding:28px;
-}
+    .nav-item.subtle{
+      background:transparent;
+      color:rgba(255,255,255,.84);
+      border-color:transparent;
+    }
 
-/* CARDS */
+    .nav-item.subtle:hover{
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.04);
+    }
 
-.cards{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:22px;
-}
+    .nav-item svg{
+      opacity:.9;
+      flex:0 0 auto;
+    }
 
-.card{
-background:white;
-border-radius:10px;
-padding:20px;
-border:1px solid #e5e7eb;
-cursor:pointer;
-transition:all .2s;
-}
+    .content{
+      padding:24px;
+    }
 
-.card:hover{
-transform:translateY(-4px);
-box-shadow:0 6px 14px rgba(0,0,0,0.06);
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
 
-.card h3{
-margin-bottom:8px;
-}
+    .topbar h2{
+      margin:0;
+      font-size:30px;
+      letter-spacing:-.03em;
+      line-height:1.05;
+    }
 
-.card p{
-font-size:13px;
-color:#6b7280;
-margin-bottom:6px;
-}
+    .topbar p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      max-width:760px;
+      line-height:1.55;
+    }
 
-.badge{
-display:inline-block;
-padding:4px 8px;
-font-size:12px;
-border-radius:6px;
-background:#e0f2fe;
-color:#0369a1;
-}
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-/* MODAL */
+    button{
+      border:0;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+      font-family:inherit;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
 
-.overlay{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.45);
-display:none;
-align-items:center;
-justify-content:center;
-}
+    .btn-primary{
+      background:linear-gradient(180deg,var(--primary-2) 0%, var(--primary) 100%);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(22,58,99,.18);
+    }
+    .btn-primary:hover{
+      background:linear-gradient(180deg,var(--primary-3) 0%, var(--primary-2) 100%);
+      transform:translateY(-1px);
+    }
 
-.modal{
-background:white;
-width:760px;
-border-radius:12px;
-padding:28px;
-max-height:85vh;
-overflow:auto;
-}
+    .btn-secondary{
+      background:var(--primary-soft);
+      color:var(--primary);
+      border:1px solid #d5e6f8;
+    }
+    .btn-secondary:hover{
+      background:#deebfb;
+    }
 
-.modal-header{
-display:flex;
-justify-content:space-between;
-margin-bottom:16px;
-}
+    .btn-light{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
 
-.close{
-background:none;
-border:none;
-font-size:22px;
-cursor:pointer;
-}
+    .btn-warning{
+      background:var(--warning-soft);
+      color:var(--warning);
+      border:1px solid #f3d49d;
+    }
 
-.section{
-margin-top:18px;
-}
+    .btn-danger{
+      background:var(--danger-soft);
+      color:var(--danger);
+      border:1px solid #ffd3d3;
+    }
 
-.section-title{
-font-weight:600;
-margin-bottom:10px;
-}
+    .btn-success{
+      background:var(--success-soft);
+      color:var(--success);
+      border:1px solid #c7ebd3;
+    }
 
-/* GRID */
+    .hero-panel{
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.10), transparent 28%),
+        linear-gradient(135deg,#15355a 0%, #20466f 58%, #2d5886 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+      position:relative;
+      overflow:hidden;
+    }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
-}
+    .hero-panel::after{
+      content:"";
+      position:absolute;
+      right:-50px;
+      bottom:-50px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:rgba(255,255,255,.05);
+      pointer-events:none;
+    }
 
-.box{
-background:#f9fafb;
-border:1px solid #e5e7eb;
-border-radius:8px;
-padding:12px;
-}
+    .hero-panel-top{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
 
-.label{
-font-size:12px;
-color:#6b7280;
-}
+    .hero-panel-title{
+      margin:0;
+      font-size:22px;
+      letter-spacing:-.02em;
+    }
 
-.value{
-font-weight:600;
-margin-top:4px;
-}
+    .hero-panel-sub{
+      margin:8px 0 0;
+      color:rgba(255,255,255,.84);
+      max-width:760px;
+      font-size:14px;
+      line-height:1.6;
+    }
 
-/* AVATAR */
+    .hero-badges{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.avatar{
-width:60px;
-height:60px;
-background:#334155;
-color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-font-size:18px;
-cursor:pointer;
-margin-bottom:14px;
-}
+    .hero-chip{
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.10);
+      color:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:700;
+      backdrop-filter:blur(6px);
+    }
 
-/* BUTTON */
+    .top-stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-top:20px;
+      position:relative;
+      z-index:1;
+    }
 
-.btn{
-background:#2563eb;
-color:white;
-border:none;
-padding:10px 14px;
-border-radius:6px;
-cursor:pointer;
-margin-top:14px;
-}
+    .stat-card{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:14px;
+      min-height:96px;
+      backdrop-filter:blur(8px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
 
-.btn:hover{
-background:#1e40af;
-}
+    .stat-label{
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      margin-bottom:8px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      line-height:1.4;
+    }
 
-</style>
+    .stat-value{
+      font-size:24px;
+      font-weight:800;
+      letter-spacing:-.03em;
+    }
 
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+      margin-bottom:24px;
+    }
+
+    .card{
+      background:var(--surface);
+      border:1px solid rgba(217,226,236,.95);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .case-card{
+      padding:18px;
+      min-height:296px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      transition:.18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .case-card::before{
+      content:"";
+      position:absolute;
+      top:-45px;
+      right:-45px;
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(49,95,149,.07) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    .case-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 20px 38px rgba(15,23,42,.08);
+    }
+
+    .case-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      position:relative;
+      z-index:1;
+    }
+
+    .case-top-left{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .case-avatar-mini{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:linear-gradient(180deg,#eef5ff 0%, #e1edfb 100%);
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:15px;
+      border:1px solid #d7e6f8;
+      box-shadow:var(--shadow-xs);
+      flex-shrink:0;
+    }
+
+    .case-title{
+      margin:0 0 4px;
+      font-size:21px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .mini{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .case-flags{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+      box-shadow:var(--shadow-xs);
+    }
+
+    .badge.sem{background:#edf2f7;color:#486581}
+    .badge.gg{background:#fff7db;color:#8d6200}
+    .badge.analista{background:#eaf5ff;color:#145ea8}
+    .badge.devolvida{background:#fff2e8;color:#bf5f00}
+    .badge.aprovada{background:#e9fbef;color:#117a42}
+    .badge.reprovada{background:#fff0f0;color:#b42318}
+    .badge.formalizada{background:#e6fffb;color:#0f766e}
+    .badge.doc-ok{background:var(--success-soft);color:var(--success)}
+    .badge.doc-old{background:var(--warning-soft);color:var(--warning)}
+
+    .case-metrics{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .metric{
+      background:linear-gradient(180deg,var(--surface-2) 0%, #fdfefe 100%);
+      border:1px solid #e4edf7;
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .metric .k{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      line-height:1.3;
+    }
+
+    .metric .v{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .case-alert{
+      background:linear-gradient(180deg,#f8fbff 0%, #fbfdff 100%);
+      border:1px dashed #d6e4f4;
+      border-radius:14px;
+      padding:12px;
+      font-size:13px;
+      color:#334e68;
+      line-height:1.55;
+      position:relative;
+      z-index:1;
+    }
+
+    .case-footer{
+      margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+      padding-top:4px;
+    }
+
+    .case-footer-info{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .queues{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .panel{
+      padding:18px;
+      background:
+        linear-gradient(180deg,#ffffff 0%, #fcfdff 100%);
+    }
+
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+
+    .panel h3{
+      margin:0 0 6px;
+      font-size:20px;
+      letter-spacing:-.02em;
+    }
+
+    .panel p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .count-bubble{
+      min-width:36px;
+      height:36px;
+      padding:0 10px;
+      border-radius:999px;
+      background:var(--primary-soft);
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:13px;
+      border:1px solid #d7e6f8;
+      box-shadow:var(--shadow-xs);
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:120px;
+    }
+
+    .proposal-item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      background:linear-gradient(180deg,#ffffff 0%, #fcfdff 100%);
+      box-shadow:var(--shadow-xs);
+      transition:.18s ease;
+    }
+
+    .proposal-item:hover{
+      transform:translateY(-1px);
+    }
+
+    .proposal-item h4{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.01em;
+    }
+
+    .proposal-meta{
+      display:flex;
+      gap:10px 14px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .empty{
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      background:#fafcff;
+      border:1px dashed var(--line);
+      border-radius:14px;
+      line-height:1.6;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(11,29,52,.52);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:1000;
+      backdrop-filter:blur(2px);
+    }
+
+    .overlay.show{display:flex}
+
+    .modal{
+      width:min(1220px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:26px;
+      box-shadow:0 30px 80px rgba(16,42,67,.28);
+      border:1px solid rgba(255,255,255,.35);
+      position:relative;
+    }
+
+    .modal.small{width:min(900px,100%)}
+
+    .modal-header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:rgba(255,255,255,.98);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid #edf2f7;
+      border-radius:26px 26px 0 0;
+      padding:20px 24px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+
+    .modal-header h2{
+      margin:0;
+      font-size:25px;
+      letter-spacing:-.03em;
+      line-height:1.08;
+    }
+
+    .modal-header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .close{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#f7fafc;
+      color:#486581;
+      border:1px solid var(--line);
+      font-size:20px;
+      line-height:1;
+      padding:0;
+      flex-shrink:0;
+    }
+
+    .modal-body{padding:22px 24px 24px}
+
+    .hero{
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.09), transparent 28%),
+        linear-gradient(135deg,#17395e 0%, #244d79 55%, #305f91 100%);
+      color:#fff;
+      border-radius:24px;
+      padding:22px;
+      margin-bottom:18px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-40px;
+      bottom:-40px;
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:rgba(255,255,255,.05);
+      pointer-events:none;
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      position:relative;
+      z-index:1;
+    }
+
+    .avatar{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:rgba(255,255,255,.16);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .case-avatar{
+      cursor:pointer;
+      transition:all .18s ease;
+    }
+
+    .case-avatar:hover{
+      transform:scale(1.06);
+      background:rgba(255,255,255,.28);
+    }
+
+    .hero-ident{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .hero-name{
+      font-size:24px;
+      font-weight:800;
+      margin:0 0 6px;
+      letter-spacing:-.02em;
+    }
+
+    .hero-meta{
+      display:flex;
+      gap:10px 16px;
+      flex-wrap:wrap;
+      font-size:13px;
+      color:rgba(255,255,255,.85);
+      line-height:1.5;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin-top:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-box{
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      backdrop-filter:blur(6px);
+    }
+
+    .hero-box .k{
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      margin-bottom:6px;
+      line-height:1.4;
+    }
+
+    .hero-box .v{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .section{
+      background:linear-gradient(180deg,#fbfdff 0%, #ffffff 100%);
+      border:1px solid #e6edf6;
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow-xs);
+    }
+
+    .section-title{
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:#486581;
+      font-weight:800;
+      margin:0 0 14px;
+    }
+
+    .grid-2{display:grid;grid-template-columns:1.08fr .92fr;gap:16px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+    .field{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .field .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+      line-height:1.4;
+    }
+
+    .field .value{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.45;
+    }
+
+    .case-description{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      line-height:1.82;
+      font-size:15px;
+      color:#243b53;
+    }
+
+    .case-description p{margin:0 0 14px}
+    .case-description p:last-child{margin-bottom:0}
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+      overflow:hidden;
+      border-radius:14px;
+    }
+
+    .table th,.table td{
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      padding:12px 10px;
+      vertical-align:top;
+      line-height:1.45;
+    }
+
+    .table th{
+      color:#486581;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      background:#f8fbff;
+    }
+
+    .history-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .history-item{
+      border-left:4px solid #c9dcf8;
+      background:#f9fbff;
+      border-radius:0 14px 14px 0;
+      padding:12px 14px;
+      font-size:14px;
+      line-height:1.65;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .form-group.full{grid-column:1/-1}
+
+    label{
+      font-size:13px;
+      font-weight:700;
+      color:#334e68;
+      line-height:1.4;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 13px;
+      font:inherit;
+      color:var(--text);
+      background:#fff;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+
+    input:focus, textarea:focus, select:focus{
+      outline:none;
+      border-color:#8ab4e2;
+      box-shadow:0 0 0 4px rgba(79,132,196,.12);
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+      line-height:1.55;
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+
+    .proposal-summary{
+      border:1px solid var(--line);
+      background:#fbfdff;
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow-xs);
+    }
+
+    .proposal-summary h3{
+      margin:0 0 12px;
+      font-size:18px;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .hidden{display:none !important}
+
+    .success-box{
+      background:#ecfdf3;
+      border:1px solid #b7e4c7;
+      color:#166534;
+      padding:14px 16px;
+      border-radius:14px;
+      font-weight:700;
+      margin-top:12px;
+      line-height:1.5;
+    }
+
+    svg.icon{
+      width:16px;
+      height:16px;
+      stroke:currentColor;
+      stroke-width:1.8;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      flex:0 0 auto;
+    }
+
+    @media (max-width: 1180px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        position:relative;
+        height:auto;
+        border-bottom-left-radius:24px;
+        border-bottom-right-radius:24px;
+      }
+      .top-stats{grid-template-columns:repeat(2,1fr)}
+      .grid,.queues,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
+      .proposal-item{flex-direction:column;align-items:flex-start}
+    }
+
+    @media (max-width: 640px){
+      .content{padding:16px}
+      .top-stats{grid-template-columns:1fr}
+      .topbar h2{font-size:25px}
+      .hero-panel,.hero,.section,.case-card,.panel{padding:16px}
+      .modal-body{padding:16px}
+      .modal-header{padding:16px}
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M3 7h18"></path>
+            <path d="M6 12h12"></path>
+            <path d="M9 17h6"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Crédito | Comitê</h1>
+          <p>Simulação didática</p>
+        </div>
+      </div>
 
-<div class="sidebar">
+      <div class="nav-group">
+        <div class="nav-title">Navegação</div>
+        <div class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+            <path d="M8 4v16"></path>
+          </svg>
+          Cases ativos
+        </div>
+        <div class="nav-item subtle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h10"></path>
+          </svg>
+          Gerência geral
+        </div>
+        <div class="nav-item subtle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3"></circle>
+            <path d="M5 20c1.5-3 4-5 7-5s5.5 2 7 5"></path>
+          </svg>
+          Analista de crédito
+        </div>
+        <div class="nav-item subtle">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 8v5l3 2"></path>
+            <circle cx="12" cy="12" r="9"></circle>
+          </svg>
+          Histórico
+        </div>
+      </div>
+    </aside>
 
-<h1>Simulador Crédito</h1>
+    <main class="content">
+      <div class="topbar">
+        <div>
+          <h2>Simulador de Comitê de Crédito</h2>
+          <p>Ambiente visual para aula online com leitura de case, construção de proposta, passagem pela gerência geral, análise de crédito e formalização final.</p>
+        </div>
+        <div class="actions">
+          <button class="btn-secondary" id="refreshBtn">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M21 12a9 9 0 0 1-15.3 6.3"></path>
+              <path d="M3 12A9 9 0 0 1 18.3 5.7"></path>
+              <path d="M21 3v6h-6"></path>
+              <path d="M3 21v-6h6"></path>
+            </svg>
+            Atualizar tela
+          </button>
+          <button class="btn-danger" id="resetBtn">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4h8v2"></path>
+              <path d="M19 6l-1 14H6L5 6"></path>
+            </svg>
+            Limpar propostas
+          </button>
+        </div>
+      </div>
 
-<a href="#">Cases</a>
-<a href="#">Gerência Geral</a>
-<a href="#">Analista de Crédito</a>
-<a href="#">Histórico</a>
+      <section class="hero-panel">
+        <div class="hero-panel-top">
+          <div>
+            <h3 class="hero-panel-title">Mesa simulada de análise de crédito</h3>
+            <p class="hero-panel-sub">Use os cases abaixo para exercitar leitura consultiva, defesa técnica, coerência entre perfil e operação e raciocínio de concessão em ambiente de decisão.</p>
+          </div>
+          <div class="hero-badges">
+            <span class="hero-chip">Fluxo em 3 etapas</span>
+            <span class="hero-chip">Análise documental</span>
+            <span class="hero-chip">Defesa comercial</span>
+          </div>
+        </div>
 
-</div>
+        <div class="top-stats">
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16"></path></svg>
+              Cases disponíveis
+            </div>
+            <div class="stat-value" id="statCases">3</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h10"></path></svg>
+              Fila gerência geral
+            </div>
+            <div class="stat-value" id="statGG">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"></circle><path d="M5 20c1.5-3 4-5 7-5s5.5 2 7 5"></path></svg>
+              Fila analista
+            </div>
+            <div class="stat-value" id="statAnalyst">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 8v5l3 2"></path><circle cx="12" cy="12" r="9"></circle></svg>
+              Atualização
+            </div>
+            <div class="stat-value" id="statNow">Ao vivo</div>
+          </div>
+        </div>
+      </section>
 
-<div class="main">
+      <section class="grid" id="caseGrid"></section>
 
-<div class="header">
-<h2>Comitê de Crédito – Simulação</h2>
-<div>Ambiente de treinamento</div>
-</div>
+      <section class="queues">
+        <div class="card panel">
+          <div class="panel-head">
+            <div>
+              <h3>Propostas pendentes — Gerente Geral</h3>
+              <p>Itens aguardando validação comercial e decisão de encaminhamento.</p>
+            </div>
+            <div class="count-bubble" id="ggCount">0</div>
+          </div>
+          <div class="list" id="ggList"></div>
+        </div>
 
-<div class="container">
+        <div class="card panel">
+          <div class="panel-head">
+            <div>
+              <h3>Propostas pendentes — Analista de Crédito</h3>
+              <p>Itens encaminhados para leitura técnica e definição final.</p>
+            </div>
+            <div class="count-bubble" id="analystCount">0</div>
+          </div>
+          <div class="list" id="analystList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-<div class="cards">
+  <div class="overlay" id="clientOverlay"></div>
+  <div class="overlay" id="proposalOverlay"></div>
+  <div class="overlay" id="decisionOverlay"></div>
+  <div class="overlay" id="detailsOverlay"></div>
 
-<div class="card" onclick="openClient(1)">
-<h3>Marcelo Andrade Lima</h3>
-<p>Médico cardiologista</p>
-<p>Renda mensal: R$ 28.500</p>
-<span class="badge">Alta renda</span>
-</div>
+  <script>
+    const STORAGE_KEY = "simulador_credito_propostas_v6_banklook";
 
-<div class="card" onclick="openClient(2)">
-<h3>Fernanda Costa Ribeiro</h3>
-<p>Empresária</p>
-<p>Renda mensal: R$ 19.800</p>
-<span class="badge">Relacionamento</span>
-</div>
+    const CASES = [
+      {
+        id: 1,
+        title: "Case 1",
+        nome: "Marcelo Andrade Lima",
+        cpf: "183.456.920-11",
+        nascimento: "14/03/1982",
+        idade: 44,
+        profissao: "Médico cardiologista",
+        renda: 28500,
+        rendaAtualizacao: "14/09/2021",
+        comprovacao: "Holerite",
+        saldo: 96340,
+        investido: 487000,
+        creditoTomado: 78200,
+        usoCartao: 9240,
+        limiteDisponivel: 28000,
+        comprometimento: "27%",
+        relacionamento: "8 anos",
+        perfil: "Alta renda",
+        observacao: "Renda elevada, porém com atualização cadastral antiga.",
+        objetivoSugestao: "Expansão da clínica, reforço de caixa e análise de cartão premium.",
+        historicoAtendimento: [
+          "12/02/2026 — Cliente realizou aporte de R$ 300.000 em CDB 100% do CDI após venda de participação em clínica.",
+          "28/01/2026 — Cliente informou que sua filha Larissa, de 18 anos, iniciou o curso de medicina em faculdade particular.",
+          "15/01/2026 — Cliente comentou que está pesquisando viagem em família para a Europa no segundo semestre.",
+          "08/12/2025 — Cliente sinalizou interesse em organizar financeiramente os custos da ampliação da clínica.",
+          "19/11/2025 — Cliente relatou aumento de despesas com internação do cachorro Billy, impactando o caixa do mês."
+        ],
+        descricaoCase: [
+          "Marcelo Andrade Lima é médico cardiologista, tem 44 anos e mantém relacionamento antigo com a instituição. O cliente apresenta perfil de alta renda, boa formação patrimonial e relacionamento financeiro historicamente estruturado, com saldo relevante em conta, carteira robusta de investimentos e comportamento geralmente disciplinado na condução dos seus recursos.",
+          "Apesar da boa fotografia patrimonial, a análise não pode se apoiar apenas no patrimônio acumulado. A atualização cadastral da renda encontra-se antiga, o que exige maior cuidado na sustentação técnica da proposta. Além disso, há sinais de aumento recente de despesas familiares e pessoais, o que pode alterar a leitura da folga financeira efetiva do cliente no curto prazo.",
+          "Marcelo possui patrimônio de apoio importante, com imóvel residencial quitado, veículo quitado e histórico de movimentações consistentes. Isso pode sugerir solidez e boa capacidade de estruturação financeira. No entanto, a decisão de crédito deve considerar se a operação está relacionada a uma expansão organizada, a uma necessidade pontual de caixa ou a uma readequação financeira diante de novos compromissos.",
+          "Esse é um case que combina força patrimonial com necessidade de leitura qualitativa. O gerente deve refletir sobre a coerência entre renda comprovável, despesas recentes, estrutura familiar e objetivo da proposta. A defesa precisa mostrar maturidade analítica, evitando decisões baseadas apenas em percepção de perfil elevado.",
+          "Em resumo, trata-se de um cliente com potencial para operações relevantes, mas que exige justificativa bem construída, clareza de finalidade e atenção especial à atualização dos elementos que sustentam a capacidade de pagamento."
+        ]
+      },
+      {
+        id: 2,
+        title: "Case 2",
+        nome: "Fernanda Costa Ribeiro",
+        cpf: "402.998.650-34",
+        nascimento: "09/11/1990",
+        idade: 35,
+        profissao: "Empresária do varejo",
+        renda: 19800,
+        rendaAtualizacao: "18/01/2026",
+        comprovacao: "Imposto de Renda",
+        saldo: 28420,
+        investido: 156000,
+        creditoTomado: 18000,
+        usoCartao: 7480,
+        limiteDisponivel: 22000,
+        comprometimento: "18%",
+        relacionamento: "4 anos",
+        perfil: "Relacionamento crescente",
+        observacao: "Dados recentes, boa consistência documental e boa dinâmica de movimentação.",
+        objetivoSugestao: "Capital de giro, reforço de estoque e eventual limite de cartão empresarial.",
+        historicoAtendimento: [
+          "05/03/2026 — Cliente informou aumento da demanda da loja e necessidade de reforço de estoque para datas sazonais.",
+          "18/02/2026 — Cliente comentou que pretende abrir uma segunda unidade do negócio até o fim do ano.",
+          "30/01/2026 — Cliente relatou que está pesquisando viagem para Paris com o marido.",
+          "12/12/2025 — Cliente realizou aplicação de R$ 80.000 em produto de liquidez diária.",
+          "21/11/2025 — Cliente mencionou que o filho mais velho iniciará curso técnico."
+        ],
+        descricaoCase: [
+          "Fernanda Costa Ribeiro tem 35 anos, atua como empresária do varejo e demonstra relacionamento em fase de crescimento com a instituição. A cliente possui documentação recente, boa consistência cadastral e comportamento financeiro que sugere organização, disciplina e visão prática sobre o uso dos recursos.",
+          "O contexto geral aponta para uma cliente em momento de expansão. Há sinais claros de aumento de demanda no negócio, necessidade de reforço de estoque e possibilidade de crescimento operacional. Isso pode justificar leitura favorável para soluções ligadas a capital de giro, reforço de caixa e estrutura de apoio ao negócio, desde que a operação esteja alinhada ao ritmo real da empresa.",
+          "A cliente apresenta reserva financeira, boa dinâmica de conta e histórico de aplicações, o que contribui para uma percepção positiva sobre a condução do dinheiro. Ainda assim, o gerente precisa avaliar se a operação está sendo solicitada para crescimento saudável, antecipação de receita, cobertura sazonal ou expansão estrutural. Essa diferença muda bastante a defesa do crédito.",
+          "Fernanda parece estar em um ponto em que o crédito pode funcionar como instrumento de alavancagem consciente, e não apenas como resposta a uma necessidade emergencial. Por isso, a análise deve buscar coerência entre valor solicitado, prazo, produto escolhido e expectativa de retorno ou geração de caixa do negócio.",
+          "É um case com tendência favorável, mas que exige argumentação bem construída. O gerente deve demonstrar compreensão do momento da cliente e da racionalidade econômica da operação, sustentando a proposta com base em dados e contexto."
+        ]
+      },
+      {
+        id: 3,
+        title: "Case 3",
+        nome: "João Pedro Nogueira",
+        cpf: "055.741.330-92",
+        nascimento: "21/06/1988",
+        idade: 37,
+        profissao: "Consultor autônomo",
+        renda: 12400,
+        rendaAtualizacao: "22/06/2025",
+        comprovacao: "Extrato bancário",
+        saldo: 12480,
+        investido: 32000,
+        creditoTomado: 18000,
+        usoCartao: 5680,
+        limiteDisponivel: 6400,
+        comprometimento: "39%",
+        relacionamento: "3 anos",
+        perfil: "Renda variável",
+        observacao: "Renda oscilante, comprovação por extrato e maior sensibilidade no comprometimento.",
+        objetivoSugestao: "Organização de fluxo de caixa, consolidação de dívida e revisão de limite.",
+        historicoAtendimento: [
+          "03/03/2026 — Cliente relatou atraso no recebimento de contratos de consultoria.",
+          "14/02/2026 — Cliente informou que está pesquisando pacote de viagem para Europa.",
+          "22/01/2026 — Cliente comentou que pretende trocar de carro ainda este ano.",
+          "10/12/2025 — Cliente relatou cirurgia veterinária de sua cachorra Mel.",
+          "27/11/2025 — Cliente fez aplicação de R$ 15.000 após recebimento de projeto."
+        ],
+        descricaoCase: [
+          "João Pedro Nogueira tem 37 anos, atua como consultor autônomo e possui perfil de renda variável. Seu relacionamento com a instituição ainda é relativamente recente e o conjunto de informações sugere necessidade de uma leitura mais prudente, especialmente pela menor previsibilidade do fluxo mensal de receitas.",
+          "A comprovação de renda ocorre por extrato bancário e o cliente já apresenta nível de comprometimento mais elevado. Isso faz com que a análise precise ir além da simples aprovação de um pedido, exigindo reflexão sobre capacidade real de pagamento, estabilidade de entrada de recursos e impacto da nova operação no orçamento.",
+          "João possui alguma reserva financeira, mas ainda modesta em relação à sua exposição atual. O uso relevante do cartão, o volume de crédito já tomado e a dependência de contratos para composição da renda criam um ambiente em que o gerente deve avaliar com atenção o tamanho, o prazo e a finalidade da operação pretendida.",
+          "Neste case, o crédito pode até ser útil, mas só fará sentido se estiver muito bem ajustado à realidade do cliente. A operação precisa contribuir para organização, não para aumento desordenado da pressão financeira. Por isso, o gerente deve pensar se a proposta melhora a vida financeira do cliente ou apenas empurra o problema para frente.",
+          "É um cenário que pede leitura consultiva e técnica. O desafio é encontrar equilíbrio entre acolher a necessidade do cliente e manter coerência com sua capacidade de pagamento, defendendo uma proposta realista, responsável e aderente ao perfil."
+        ]
+      }
+    ];
 
-<div class="card" onclick="openClient(3)">
-<h3>João Pedro Nogueira</h3>
-<p>Consultor autônomo</p>
-<p>Renda mensal: R$ 12.400</p>
-<span class="badge">Renda variável</span>
-</div>
+    const PRODUCTS = [
+      "Cartão de crédito",
+      "Cheque especial",
+      "Empréstimo pessoal",
+      "Empréstimo com garantia de imóvel",
+      "Empréstimo com garantia de veículo",
+      "Limite pré-aprovado",
+      "Capital de giro",
+      "Crédito consignado",
+      "Financiamento"
+    ];
 
-</div>
+    function money(v){
+      return new Intl.NumberFormat("pt-BR", { style:"currency", currency:"BRL" }).format(Number(v || 0));
+    }
 
-</div>
+    function nowIso(){ return new Date().toISOString(); }
+    function nowLabel(){ return new Date().toLocaleString("pt-BR"); }
 
-</div>
+    function getProposals(){
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
 
-<div class="overlay" id="overlay"></div>
+    function saveProposals(list){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
 
-<script>
+    function getCaseById(id){
+      return CASES.find(c => c.id === id);
+    }
 
-function openClient(id){
+    function statusInfo(status){
+      const map = {
+        pending_gg: { text:"Em análise GG", className:"gg" },
+        pending_analyst: { text:"Em análise Crédito", className:"analista" },
+        returned_gg: { text:"Devolvida pela GG", className:"devolvida" },
+        returned_analyst: { text:"Devolvida pelo Analista", className:"devolvida" },
+        rejected_gg: { text:"Reprovada pela GG", className:"reprovada" },
+        rejected_analyst: { text:"Reprovada pelo Analista", className:"reprovada" },
+        approved: { text:"Aprovada", className:"aprovada" },
+        formalized: { text:"Formalizada", className:"formalizada" },
+        none: { text:"Sem proposta", className:"sem" }
+      };
+      return map[status] || map.none;
+    }
 
-let html=""
+    function getLatestProposalForCase(caseId){
+      const proposals = getProposals()
+        .filter(p => p.caseId === caseId)
+        .sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      return proposals[0] || null;
+    }
 
-if(id==1){
+    function getCaseBadge(caseId){
+      const last = getLatestProposalForCase(caseId);
+      if (!last) return statusInfo("none");
+      return statusInfo(last.status);
+    }
 
-html=`
-<div class="modal">
+    function getDocBadge(c){
+      const old = c.rendaAtualizacao.includes("2021") || c.rendaAtualizacao.includes("2025");
+      return old
+        ? `<span class="badge doc-old">Documentação sensível</span>`
+        : `<span class="badge doc-ok">Documentação recente</span>`;
+    }
 
-<div class="modal-header">
-<h3>Ficha do Cliente</h3>
-<button class="close" onclick="closeModal()">×</button>
-</div>
+    function isRotativo(product){
+      return product === "Cartão de crédito" || product === "Cheque especial";
+    }
 
-<div class="avatar" onclick="openCase()">MA</div>
+    function calcularParcela(valor, taxaPercentual, prazo){
+      const PV = Number(valor || 0);
+      const i = Number(taxaPercentual || 0) / 100;
+      const n = Number(prazo || 0);
+      if (!PV || !n) return 0;
+      if (!i) return PV / n;
+      const parcela = PV * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+      return parcela;
+    }
 
-<div class="grid">
+    function updateStats(){
+      const proposals = getProposals();
+      const gg = proposals.filter(p => p.status === "pending_gg").length;
+      const analyst = proposals.filter(p => p.status === "pending_analyst").length;
 
-<div class="box">
-<div class="label">Saldo</div>
-<div class="value">R$ 96.340</div>
-</div>
+      document.getElementById("statCases").textContent = String(CASES.length);
+      document.getElementById("statGG").textContent = String(gg);
+      document.getElementById("statAnalyst").textContent = String(analyst);
+      document.getElementById("ggCount").textContent = String(gg);
+      document.getElementById("analystCount").textContent = String(analyst);
 
-<div class="box">
-<div class="label">Investimentos</div>
-<div class="value">R$ 487.000</div>
-</div>
+      const d = new Date();
+      document.getElementById("statNow").textContent =
+        d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    }
 
-<div class="box">
-<div class="label">Crédito atual</div>
-<div class="value">R$ 78.200</div>
-</div>
+    function renderCases(){
+      const grid = document.getElementById("caseGrid");
+      grid.innerHTML = "";
 
-</div>
+      CASES.forEach(c => {
+        const badge = getCaseBadge(c.id);
 
-<div class="section">
+        const card = document.createElement("article");
+        card.className = "card case-card";
+        card.innerHTML = `
+          <div class="case-top">
+            <div class="case-top-left">
+              <div class="case-avatar-mini">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
+              <div>
+                <div class="case-title">${c.title}</div>
+                <div class="mini">${c.nome}</div>
+              </div>
+            </div>
+            <span class="badge ${badge.className}">${badge.text}</span>
+          </div>
 
-<div class="section-title">Histórico de atendimento</div>
+          <div class="case-flags">
+            <span class="badge sem">${c.perfil}</span>
+            ${getDocBadge(c)}
+          </div>
 
-<ul>
+          <div class="case-metrics">
+            <div class="metric">
+              <div class="k">Renda mensal</div>
+              <div class="v">${money(c.renda)}</div>
+            </div>
+            <div class="metric">
+              <div class="k">Comprometimento</div>
+              <div class="v">${c.comprometimento}</div>
+            </div>
+            <div class="metric">
+              <div class="k">Investimentos</div>
+              <div class="v">${money(c.investido)}</div>
+            </div>
+            <div class="metric">
+              <div class="k">Crédito atual</div>
+              <div class="v">${money(c.creditoTomado)}</div>
+            </div>
+          </div>
 
-<li>Cliente realizou aporte de R$ 300 mil em CDB 100% CDI.</li>
-<li>Filha Larissa iniciou faculdade de medicina.</li>
-<li>Planejando viagem para Europa.</li>
-<li>Ampliação da clínica em estudo.</li>
-<li>Cachorro Billy internado recentemente.</li>
+          <div class="case-alert">
+            <strong>Leitura inicial:</strong> ${c.observacao}
+          </div>
 
-</ul>
+          <div class="case-footer">
+            <div class="case-footer-info">
+              <span>Atualização: <strong>${c.rendaAtualizacao}</strong></span>
+              <span>Comprovação: <strong>${c.comprovacao}</strong></span>
+            </div>
+            <button class="btn-primary" onclick="openClient(${c.id})">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              Abrir ficha
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
 
-<button class="btn">Subir proposta</button>
+    function buildProposalItem(p, role){
+      const c = getCaseById(p.caseId);
+      const badge = statusInfo(p.status);
+      const item = document.createElement("div");
+      item.className = "proposal-item";
+      item.innerHTML = `
+        <div>
+          <h4>${c.title} — ${c.nome}</h4>
+          <div class="proposal-meta">
+            <span><strong>Gerente:</strong> ${p.managerName}</span>
+            <span><strong>Produto:</strong> ${p.product}</span>
+            <span><strong>Valor:</strong> ${money(p.amount)}</span>
+            ${p.installment ? `<span><strong>Parcela:</strong> ${money(p.installment)}</span>` : ""}
+            <span><strong>Data:</strong> ${new Date(p.createdAt).toLocaleString("pt-BR")}</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="badge ${badge.className}">${badge.text}</span>
+          <button class="btn-primary" onclick="openDecision('${p.id}','${role}')">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18"></path><path d="M13 5l7 7-7 7"></path></svg>
+            Analisar
+          </button>
+        </div>
+      `;
+      return item;
+    }
 
-</div>
+    function renderQueues(){
+      const proposals = getProposals();
+      const ggList = document.getElementById("ggList");
+      const analystList = document.getElementById("analystList");
 
-</div>
-`
+      const pendingGG = proposals.filter(p => p.status === "pending_gg");
+      const pendingAnalyst = proposals.filter(p => p.status === "pending_analyst");
 
-}
+      ggList.innerHTML = "";
+      analystList.innerHTML = "";
 
-document.getElementById("overlay").innerHTML=html
-document.getElementById("overlay").style.display="flex"
+      if (!pendingGG.length){
+        ggList.innerHTML = `<div class="empty">Nenhuma proposta pendente para a gerência geral.</div>`;
+      } else {
+        pendingGG.forEach(p => ggList.appendChild(buildProposalItem(p, "gg")));
+      }
 
-}
+      if (!pendingAnalyst.length){
+        analystList.innerHTML = `<div class="empty">Nenhuma proposta pendente para o analista de crédito.</div>`;
+      } else {
+        pendingAnalyst.forEach(p => analystList.appendChild(buildProposalItem(p, "analyst")));
+      }
 
-function openCase(){
+      updateStats();
+    }
 
-document.getElementById("overlay").innerHTML=`
+    function openOverlay(id, html){
+      const ov = document.getElementById(id);
+      ov.innerHTML = html;
+      ov.classList.add("show");
+    }
 
-<div class="modal">
+    function closeOverlay(id){
+      const ov = document.getElementById(id);
+      ov.classList.remove("show");
+      ov.innerHTML = "";
+    }
 
-<div class="modal-header">
-<h3>Descrição do Case</h3>
-<button class="close" onclick="closeModal()">×</button>
-</div>
+    function getProposalsForCase(caseId){
+      return getProposals()
+        .filter(p => p.caseId === caseId)
+        .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
 
-<p style="line-height:1.7">
+    function getLastReturnMessage(proposal){
+      const history = proposal.history || [];
+      const reversed = [...history].reverse();
+      const item = reversed.find(h =>
+        h.text.includes("devolveu a proposta ao gerente de relacionamento")
+      );
+      return item ? item.text : "";
+    }
 
-Marcelo Andrade Lima possui 44 anos e atua como médico cardiologista.
-Cliente do banco há mais de oito anos, mantém relacionamento sólido
-e apresenta perfil de alta renda.
+    window.openCaseDetails = function(caseId){
+      const c = getCaseById(caseId);
 
-Atualmente possui renda mensal aproximada de R$ 28.500 e patrimônio
-financeiro relevante aplicado em produtos de renda fixa.
+      openOverlay("detailsOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>Descrição do Case</h2>
+              <p>${c.title} — ${c.nome}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('detailsOverlay')">×</button>
+          </div>
 
-O cliente vem avaliando oportunidades de expansão de sua clínica,
-além de reorganizar parte do fluxo financeiro da família.
+          <div class="modal-body">
+            <div class="section">
+              <div class="section-title">Identificação do cliente</div>
+              <div class="grid-3">
+                <div class="field"><div class="label">Cliente</div><div class="value">${c.nome}</div></div>
+                <div class="field"><div class="label">Idade</div><div class="value">${c.idade} anos</div></div>
+                <div class="field"><div class="label">Profissão</div><div class="value">${c.profissao}</div></div>
+                <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
+                <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
+                <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
+              </div>
+            </div>
 
-Recentemente mencionou que sua filha iniciou faculdade de medicina,
-o que aumenta despesas recorrentes.
+            <div class="section">
+              <div class="section-title">Leitura detalhada do case</div>
+              <div class="case-description">
+                ${c.descricaoCase.map(item => `<p>${item}</p>`).join("")}
+              </div>
+            </div>
 
-Também comentou sobre viagem internacional planejada para os próximos meses.
+            <div class="section">
+              <div class="section-title">Números de apoio</div>
+              <div class="grid-4">
+                <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
+                <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
+                <div class="field"><div class="label">Investimentos</div><div class="value">${money(c.investido)}</div></div>
+                <div class="field"><div class="label">Crédito tomado</div><div class="value">${money(c.creditoTomado)}</div></div>
+                <div class="field"><div class="label">Uso do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
+                <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
+                <div class="field"><div class="label">Comprometimento</div><div class="value">${c.comprometimento}</div></div>
+                <div class="field"><div class="label">Atualização da renda</div><div class="value">${c.rendaAtualizacao}</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
 
-O cliente possui histórico positivo no banco, mas apresenta
-comprometimento de renda moderado devido a operações existentes.
+    window.openClient = function(caseId){
+      const c = getCaseById(caseId);
+      const proposals = getProposalsForCase(caseId);
+      const latest = proposals[0];
+      const badge = latest ? statusInfo(latest.status) : statusInfo("none");
 
-O gerente deve avaliar cuidadosamente:
+      const historyTable = proposals.length ? `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Produto</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${proposals.map(p => {
+              const st = statusInfo(p.status);
+              const podeEditar = p.status === "returned_gg" || p.status === "returned_analyst";
+              const podeFormalizar = p.status === "approved";
+              return `
+                <tr>
+                  <td>${new Date(p.createdAt).toLocaleString("pt-BR")}</td>
+                  <td>${p.product}</td>
+                  <td>${money(p.amount)}</td>
+                  <td><span class="badge ${st.className}">${st.text}</span></td>
+                  <td>
+                    ${podeEditar
+                      ? `<button class="btn-warning" onclick="editProposal('${p.id}')">Responder e reenviar</button>`
+                      : podeFormalizar
+                        ? `<button class="btn-success" onclick="formalizeProposal('${p.id}', ${p.caseId})">Formalizar</button>`
+                        : `-`
+                    }
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="empty">Ainda não há propostas registradas para este case.</div>`;
 
-• capacidade de pagamento  
-• finalidade do crédito  
-• sustentabilidade financeira da operação  
+      const detailedHistory = proposals.length ? `
+        <div class="history-list">
+          ${proposals.map(p => `
+            <div class="history-item">
+              <div><strong>${new Date(p.createdAt).toLocaleString("pt-BR")}</strong> • <strong>${p.product}</strong> • <strong>${money(p.amount)}</strong></div>
+              <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
+              <div style="margin-top:8px;"><strong>Defesa inicial do gerente:</strong> ${p.originalManagerOpinion || p.managerOpinion}</div>
+              ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Complemento do gerente:</strong> ${p.managerResponse}</div>` : ""}
+              ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
+              ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
+              ${p.status === "formalized" ? `<div class="success-box">Proposta contratada com sucesso.</div>` : ""}
+              ${(p.history || []).length ? `
+                <div style="margin-top:8px;">
+                  <strong>Registro da proposta:</strong>
+                  <ul style="margin:8px 0 0 18px; padding:0;">
+                    ${p.history.map(h => `<li style="margin-bottom:6px;"><strong>${h.at}</strong> — ${h.text}</li>`).join("")}
+                  </ul>
+                </div>
+              ` : ""}
+            </div>
+          `).join("")}
+        </div>
+      ` : "";
 
-</p>
+      openOverlay("clientOverlay", `
+        <div class="modal">
+          <div class="modal-header">
+            <div>
+              <h2>${c.title} — Dashboard do Cliente</h2>
+              <p>Ficha visual do cliente com dados fictícios e histórico de propostas.</p>
+            </div>
+            <button class="close" onclick="closeOverlay('clientOverlay')">×</button>
+          </div>
 
-</div>
+          <div class="modal-body">
+            <div class="hero">
+              <div class="hero-top">
+                <div class="hero-ident">
+                  <div class="avatar case-avatar" onclick="openCaseDetails(${c.id})" title="Abrir descrição completa do case">
+                    ${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}
+                  </div>
+                  <div>
+                    <div class="hero-name">${c.nome}</div>
+                    <div class="hero-meta">
+                      <span>CPF: ${c.cpf}</span>
+                      <span>Nascimento: ${c.nascimento}</span>
+                      <span>Idade: ${c.idade} anos</span>
+                      <span>Profissão: ${c.profissao}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span class="badge ${badge.className}">${badge.text}</span>
+                </div>
+              </div>
 
-`
+              <div class="hero-grid">
+                <div class="hero-box">
+                  <div class="k">Renda mensal</div>
+                  <div class="v">${money(c.renda)}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Atualização da renda</div>
+                  <div class="v">${c.rendaAtualizacao}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Comprovação</div>
+                  <div class="v">${c.comprovacao}</div>
+                </div>
+                <div class="hero-box">
+                  <div class="k">Perfil</div>
+                  <div class="v">${c.perfil}</div>
+                </div>
+              </div>
+            </div>
 
-}
+            <div class="section">
+              <div class="section-title">Resumo financeiro</div>
+              <div class="grid-4">
+                <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
+                <div class="field"><div class="label">Valor investido</div><div class="value">${money(c.investido)}</div></div>
+                <div class="field"><div class="label">Crédito já tomado</div><div class="value">${money(c.creditoTomado)}</div></div>
+                <div class="field"><div class="label">Uso atual do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
+                <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
+                <div class="field"><div class="label">Comprometimento estimado</div><div class="value">${c.comprometimento}</div></div>
+                <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
+                <div class="field"><div class="label">Objetivo sugerido</div><div class="value" style="font-size:13px;">${c.objetivoSugestao}</div></div>
+              </div>
+            </div>
 
-function closeModal(){
-document.getElementById("overlay").style.display="none"
-}
+            <div class="grid-2">
+              <div class="section">
+                <div class="section-title">Histórico de atendimento</div>
 
-</script>
+                <div class="field" style="margin-bottom:12px;">
+                  <div class="label">Resumo do relacionamento</div>
+                  <div class="value" style="font-size:14px;">Perfil: ${c.perfil} • Relacionamento: ${c.relacionamento} • Comprovação: ${c.comprovacao}</div>
+                </div>
 
+                <div class="field" style="margin-bottom:12px;">
+                  <div class="label">Ponto de atenção</div>
+                  <div class="value" style="font-size:14px;">${c.observacao}</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">Registros anteriores</div>
+                  <div style="margin-top:8px;">
+                    <ul style="margin:0; padding-left:18px;">
+                      ${c.historicoAtendimento.map(item => `<li style="margin-bottom:10px; line-height:1.5;">${item}</li>`).join("")}
+                    </ul>
+                  </div>
+                </div>
+
+                <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+                  <button class="btn-primary" onclick="openProposal(${c.id})">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                    Subir proposta
+                  </button>
+                </div>
+              </div>
+
+              <div class="section">
+                <div class="section-title">Histórico de propostas</div>
+                ${historyTable}
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Registro detalhado das propostas</div>
+              ${detailedHistory || `<div class="empty">Sem registros detalhados até o momento.</div>`}
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    function buildProposalFormHtml(c, proposal = null){
+      const editing = !!proposal;
+      const currentProduct = proposal?.product || "";
+      const productOptions = PRODUCTS.map(p => `
+        <option value="${p}" ${currentProduct === p ? "selected" : ""}>${p}</option>
+      `).join("");
+
+      const isCurrentRotativo = isRotativo(currentProduct);
+
+      return `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>${editing ? "Responder apontamentos e reenviar" : "Subir proposta"} — ${c.title}</h2>
+              <p>${editing ? "Inclua apenas novas informações para responder aos apontamentos e reenvie para análise." : "Preencha os dados da operação e registre a defesa do gerente de relacionamento."}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('proposalOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <form id="proposalForm">
+              <input type="hidden" name="caseId" value="${c.id}">
+              ${editing ? `<input type="hidden" name="proposalId" value="${proposal.id}">` : ""}
+
+              ${editing ? `
+                <div class="section" style="margin-bottom:18px;">
+                  <div class="section-title">Apontamentos para ajuste</div>
+                  <div class="field" style="margin-bottom:12px;">
+                    <div class="label">Último retorno recebido</div>
+                    <div class="value" style="font-size:14px;">${getLastReturnMessage(proposal) || "Sem apontamento registrado."}</div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Defesa inicial do gerente</div>
+                    <div class="value" style="font-size:14px;">${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
+                  </div>
+                </div>
+              ` : ""}
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Gerente de relacionamento</label>
+                  <input type="text" name="managerName" value="${proposal?.managerName || ""}" placeholder="Ex.: Renato Souto" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Produto de crédito</label>
+                  <select name="product" id="productField" required ${editing ? "disabled" : ""}>
+                    <option value="">Selecione</option>
+                    ${productOptions}
+                  </select>
+                  ${editing ? `<input type="hidden" name="product" value="${proposal.product}">` : ""}
+                </div>
+
+                <div class="form-group">
+                  <label>Valor solicitado</label>
+                  <input type="number" min="0" step="0.01" name="amount" id="amountField" value="${proposal?.amount || ""}" placeholder="Ex.: 150000" required ${editing ? "readonly" : ""}>
+                </div>
+
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="termGroup">
+                  <label>Prazo (meses)</label>
+                  <input type="number" min="1" step="1" name="term" id="termField" value="${proposal?.term || ""}" placeholder="Ex.: 48" ${editing ? "readonly" : ""}>
+                </div>
+
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="rateGroup">
+                  <label>Taxa de juros ao mês (%)</label>
+                  <input type="number" min="0" step="0.01" name="interestRate" id="rateField" value="${proposal?.interestRate || ""}" placeholder="Ex.: 2.15" ${editing ? "readonly" : ""}>
+                </div>
+
+                <div class="form-group ${isCurrentRotativo ? "hidden" : ""}" id="installmentGroup">
+                  <label>Parcela estimada</label>
+                  <input type="text" id="installmentField" value="${proposal?.installment ? money(proposal.installment) : ""}" readonly>
+                </div>
+
+                ${editing ? `
+                  <div class="form-group full">
+                    <label>Complemento do gerente</label>
+                    <textarea name="managerResponse" placeholder="Inclua novas informações para responder aos apontamentos" required></textarea>
+                  </div>
+                ` : `
+                  <div class="form-group full">
+                    <label>Defesa do gerente</label>
+                    <textarea name="managerOpinion" placeholder="Descreva a defesa da proposta" required>${proposal?.managerOpinion || ""}</textarea>
+                  </div>
+                `}
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn-light" onclick="closeOverlay('proposalOverlay')">Cancelar</button>
+                <button type="submit" class="btn-primary">${editing ? "Reenviar proposta" : "Enviar proposta"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindProposalForm(caseId, proposal = null){
+      const editing = !!proposal;
+
+      if (!editing){
+        const productField = document.getElementById("productField");
+        const termGroup = document.getElementById("termGroup");
+        const rateGroup = document.getElementById("rateGroup");
+        const installmentGroup = document.getElementById("installmentGroup");
+        const termField = document.getElementById("termField");
+        const rateField = document.getElementById("rateField");
+        const amountField = document.getElementById("amountField");
+        const installmentField = document.getElementById("installmentField");
+
+        function refreshVisibility(){
+          const rotativo = isRotativo(productField.value);
+          termGroup.classList.toggle("hidden", rotativo);
+          rateGroup.classList.toggle("hidden", rotativo);
+          installmentGroup.classList.toggle("hidden", rotativo);
+
+          if (rotativo){
+            termField.value = "";
+            rateField.value = "";
+            installmentField.value = "";
+            termField.required = false;
+            rateField.required = false;
+          } else {
+            termField.required = true;
+            rateField.required = true;
+            updateInstallment();
+          }
+        }
+
+        function updateInstallment(){
+          if (isRotativo(productField.value)){
+            installmentField.value = "";
+            return;
+          }
+          const parcela = calcularParcela(amountField.value, rateField.value, termField.value);
+          installmentField.value = parcela ? money(parcela) : "";
+        }
+
+        productField.addEventListener("change", refreshVisibility);
+        amountField.addEventListener("input", updateInstallment);
+        termField.addEventListener("input", updateInstallment);
+        rateField.addEventListener("input", updateInstallment);
+
+        refreshVisibility();
+      }
+
+      document.getElementById("proposalForm").onsubmit = function(e){
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const list = getProposals();
+
+        if (!editing){
+          const product = fd.get("product");
+          const rotativo = isRotativo(product);
+          const amount = Number(fd.get("amount"));
+
+          const proposalObj = {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            caseId: Number(fd.get("caseId")),
+            managerName: fd.get("managerName").trim(),
+            product,
+            amount,
+            term: rotativo ? null : Number(fd.get("term")),
+            interestRate: rotativo ? null : Number(fd.get("interestRate")),
+            installment: rotativo ? null : calcularParcela(amount, fd.get("interestRate"), fd.get("term")),
+            managerOpinion: fd.get("managerOpinion").trim(),
+            originalManagerOpinion: fd.get("managerOpinion").trim(),
+            managerResponse: "",
+            generalManagerOpinion: "",
+            analystOpinion: "",
+            status: "pending_gg",
+            createdAt: nowIso(),
+            updatedAt: nowIso(),
+            history: [
+              { at: nowLabel(), text: "Proposta criada pelo gerente de relacionamento e enviada para a gerência geral." }
+            ]
+          };
+          list.push(proposalObj);
+        } else {
+          const idx = list.findIndex(p => p.id === proposal.id);
+          const existing = list[idx];
+          const response = fd.get("managerResponse").trim();
+
+          list[idx] = {
+            ...existing,
+            managerName: fd.get("managerName").trim(),
+            managerResponse: response,
+            status: "pending_gg",
+            updatedAt: nowIso(),
+            history: [
+              ...(existing.history || []),
+              { at: nowLabel(), text: `Gerente de relacionamento incluiu complemento e reenviou a proposta. Complemento: ${response}` }
+            ]
+          };
+        }
+
+        saveProposals(list);
+        closeOverlay("proposalOverlay");
+        renderCases();
+        renderQueues();
+        openClient(caseId);
+      };
+    }
+
+    window.openProposal = function(caseId){
+      const c = getCaseById(caseId);
+      openOverlay("proposalOverlay", buildProposalFormHtml(c));
+      bindProposalForm(caseId);
+    }
+
+    window.editProposal = function(proposalId){
+      const proposal = getProposals().find(p => p.id === proposalId);
+      const c = getCaseById(proposal.caseId);
+      openOverlay("proposalOverlay", buildProposalFormHtml(c, proposal));
+      bindProposalForm(proposal.caseId, proposal);
+    }
+
+    window.openDecision = function(proposalId, role){
+      const proposal = getProposals().find(p => p.id === proposalId);
+      const c = getCaseById(proposal.caseId);
+
+      const title = role === "gg" ? "Análise — Gerência Geral" : "Análise — Analista de Crédito";
+      const actionButtons = role === "gg"
+        ? `
+          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','gg','forward')">Encaminhar para analista</button>
+          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','gg','return')">Devolver ao gerente</button>
+          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','gg','reject')">Reprovar</button>
+        `
+        : `
+          <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','analyst','approve')">Aprovar</button>
+          <button type="button" class="btn-warning" onclick="submitDecision('${proposalId}','analyst','return')">Devolver ao gerente</button>
+          <button type="button" class="btn-danger" onclick="submitDecision('${proposalId}','analyst','reject')">Reprovar</button>
+        `;
+
+      openOverlay("decisionOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>${title}</h2>
+              <p>${c.title} — ${c.nome}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('decisionOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="proposal-summary">
+              <h3>Resumo da proposta</h3>
+              <div class="grid-3">
+                <div class="field"><div class="label">Gerente responsável</div><div class="value">${proposal.managerName}</div></div>
+                <div class="field"><div class="label">Produto</div><div class="value">${proposal.product}</div></div>
+                <div class="field"><div class="label">Valor solicitado</div><div class="value">${money(proposal.amount)}</div></div>
+                <div class="field"><div class="label">Prazo</div><div class="value">${proposal.term ? proposal.term + " meses" : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Taxa ao mês</div><div class="value">${proposal.interestRate != null ? proposal.interestRate + "%" : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Parcela estimada</div><div class="value">${proposal.installment ? money(proposal.installment) : "Não aplicável"}</div></div>
+                <div class="field"><div class="label">Atualização da renda</div><div class="value">${c.rendaAtualizacao}</div></div>
+                <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
+                <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
+              </div>
+
+              <div style="margin-top:12px;" class="muted"><strong>Defesa inicial do gerente:</strong> ${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
+              ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Complemento do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
+              ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
+            </div>
+
+            <div class="form-group full" style="margin-top:16px;">
+              <label>Registro da decisão</label>
+              <textarea id="decisionOpinion" placeholder="Escreva o parecer obrigatório desta decisão"></textarea>
+            </div>
+
+            <div class="modal-actions">
+              ${actionButtons}
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    window.submitDecision = function(proposalId, role, action){
+      const opinion = document.getElementById("decisionOpinion").value.trim();
+
+      if (!opinion){
+        alert("Preencha o registro da decisão antes de continuar.");
+        return;
+      }
+
+      const list = getProposals();
+      const idx = list.findIndex(p => p.id === proposalId);
+      const proposal = list[idx];
+
+      let historyText = "";
+
+      if (role === "gg"){
+        proposal.generalManagerOpinion = opinion;
+
+        if (action === "forward"){
+          proposal.status = "pending_analyst";
+          historyText = "Gerência geral encaminhou a proposta ao analista de crédito.";
+        }
+        if (action === "return"){
+          proposal.status = "returned_gg";
+          historyText = "Gerência geral devolveu a proposta ao gerente de relacionamento.";
+        }
+        if (action === "reject"){
+          proposal.status = "rejected_gg";
+          historyText = "Gerência geral reprovou a proposta.";
+        }
+      }
+
+      if (role === "analyst"){
+        proposal.analystOpinion = opinion;
+
+        if (action === "approve"){
+          proposal.status = "approved";
+          historyText = "Analista de crédito aprovou a proposta.";
+        }
+        if (action === "return"){
+          proposal.status = "returned_analyst";
+          historyText = "Analista de crédito devolveu a proposta ao gerente de relacionamento.";
+        }
+        if (action === "reject"){
+          proposal.status = "rejected_analyst";
+          historyText = "Analista de crédito reprovou a proposta.";
+        }
+      }
+
+      proposal.updatedAt = nowIso();
+      proposal.history = proposal.history || [];
+      proposal.history.push({
+        at: nowLabel(),
+        text: `${historyText} Parecer: ${opinion}`
+      });
+
+      list[idx] = proposal;
+      saveProposals(list);
+
+      closeOverlay("decisionOverlay");
+      renderCases();
+      renderQueues();
+    }
+
+    window.formalizeProposal = function(proposalId, caseId){
+      const list = getProposals();
+      const idx = list.findIndex(p => p.id === proposalId);
+      if (idx === -1) return;
+
+      list[idx].status = "formalized";
+      list[idx].updatedAt = nowIso();
+      list[idx].history = list[idx].history || [];
+      list[idx].history.push({
+        at: nowLabel(),
+        text: "Proposta contratada com sucesso."
+      });
+
+      saveProposals(list);
+      renderCases();
+      renderQueues();
+      openClient(caseId);
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (confirm("Deseja limpar todas as propostas salvas nesta simulação?")){
+        localStorage.removeItem(STORAGE_KEY);
+        renderCases();
+        renderQueues();
+      }
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      renderCases();
+      renderQueues();
+    });
+
+    ["clientOverlay","proposalOverlay","decisionOverlay","detailsOverlay"].forEach(id => {
+      document.getElementById(id).addEventListener("click", (e) => {
+        if (e.target.id === id) closeOverlay(id);
+      });
+    });
+
+    renderCases();
+    renderQueues();
+    updateStats();
+  </script>
 </body>
 </html>
