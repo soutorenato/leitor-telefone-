@@ -108,7 +108,7 @@
       width:min(1180px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;
       box-shadow:0 30px 80px rgba(16,42,67,.28);border:1px solid rgba(255,255,255,.35);position:relative;
     }
-    .modal.small{width:min(820px,100%)}
+    .modal.small{width:min(860px,100%)}
     .modal-header{
       position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter: blur(8px);
       border-bottom:1px solid #edf2f7;border-radius:24px 24px 0 0;padding:20px 24px 16px;
@@ -132,6 +132,14 @@
     .avatar{
       width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.16);
       display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;
+    }
+    .case-avatar{
+      cursor:pointer;
+      transition:all .18s ease;
+    }
+    .case-avatar:hover{
+      transform:scale(1.06);
+      background:rgba(255,255,255,.28);
     }
     .hero-ident{display:flex;gap:14px;align-items:flex-start}
     .hero-name{font-size:24px;font-weight:800;margin:0 0 6px}
@@ -157,6 +165,22 @@
     .field{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
     .field .label{font-size:12px;color:var(--muted);margin-bottom:4px}
     .field .value{font-size:15px;font-weight:800}
+
+    .case-description{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      line-height:1.75;
+      font-size:15px;
+      color:#243b53;
+    }
+    .case-description p{
+      margin:0 0 14px;
+    }
+    .case-description p:last-child{
+      margin-bottom:0;
+    }
 
     .table{
       width:100%;border-collapse:collapse;font-size:14px;overflow:hidden;border-radius:14px;
@@ -266,13 +290,13 @@
           "08/12/2025 — Cliente sinalizou interesse em organizar financeiramente os custos da ampliação da clínica.",
           "19/11/2025 — Cliente relatou aumento de despesas com internação do cachorro Billy, impactando o caixa do mês."
         ],
-        contextoFamiliar: "Casado, possui uma filha de 18 anos cursando medicina. Estrutura familiar com despesas elevadas e tendência de aumento de custo educacional.",
-        residencia: "Apartamento próprio em bairro nobre da capital.",
-        veiculos: "SUV 2022 quitado.",
-        patrimonioApoio: "Imóvel residencial já quitado e carteira relevante de investimentos conservadores.",
-        comportamentoFinanceiro: "Boa formação de reserva, histórico de aportes relevantes e uso disciplinado de produtos financeiros.",
-        pontoAtencaoCredito: "Atualização cadastral de renda antiga e aumento recente de despesas familiares.",
-        potencialReflexao: "Cliente com boa capacidade patrimonial e sinais de necessidade de organização para expansão e novas despesas."
+        descricaoCase: [
+          "Marcelo Andrade Lima é médico cardiologista, tem 44 anos e mantém relacionamento antigo com a instituição. O cliente apresenta perfil de alta renda, boa formação patrimonial e relacionamento financeiro historicamente estruturado, com saldo relevante em conta, carteira robusta de investimentos e comportamento geralmente disciplinado na condução dos seus recursos.",
+          "Apesar da boa fotografia patrimonial, o gerente precisa perceber que a análise não pode se basear apenas no patrimônio acumulado. A atualização cadastral da renda encontra-se antiga, o que exige maior cuidado na sustentação técnica da proposta. Além disso, há sinais de aumento recente de despesas familiares e pessoais, o que pode alterar a leitura da folga financeira efetiva do cliente no curto prazo.",
+          "Marcelo possui patrimônio de apoio importante, com imóvel residencial quitado, veículo quitado e histórico de movimentações consistentes. Isso pode sugerir solidez e boa capacidade de estruturação financeira. No entanto, a decisão de crédito deve considerar se a operação está relacionada a uma expansão organizada, a uma necessidade pontual de caixa ou a uma readequação financeira diante de novos compromissos.",
+          "Esse é um case que combina força patrimonial com necessidade de leitura qualitativa. O gerente deve refletir sobre a coerência entre renda comprovável, despesas recentes, estrutura familiar e objetivo da proposta. A defesa precisa mostrar maturidade analítica, evitando decisões baseadas apenas em percepção de perfil elevado.",
+          "Em resumo, trata-se de um cliente com potencial para operações relevantes, mas que exige justificativa bem construída, clareza de finalidade e atenção especial à atualização dos elementos que sustentam a capacidade de pagamento."
+        ]
       },
       {
         id: 2,
@@ -302,13 +326,13 @@
           "12/12/2025 — Cliente realizou aplicação de R$ 80.000 em produto de liquidez diária.",
           "21/11/2025 — Cliente mencionou que o filho mais velho iniciará curso técnico."
         ],
-        contextoFamiliar: "Casada, com filho em fase escolar/técnica. Família com planejamento de crescimento e novas despesas.",
-        residencia: "Casa financiada em região urbana.",
-        veiculos: "Sedan 2021 financiado.",
-        patrimonioApoio: "Reserva financeira moderada e boa liquidez para operação de curto prazo.",
-        comportamentoFinanceiro: "Boa movimentação de conta, disciplina de aplicação e relação crescente com o banco.",
-        pontoAtencaoCredito: "Expansão do negócio pode exigir maior previsibilidade de fluxo de caixa.",
-        potencialReflexao: "Cliente com perfil empreendedor e boa consistência documental, com espaço para soluções de capital de giro e limite."
+        descricaoCase: [
+          "Fernanda Costa Ribeiro tem 35 anos, atua como empresária do varejo e demonstra relacionamento em fase de crescimento com a instituição. A cliente possui documentação recente, boa consistência cadastral e comportamento financeiro que sugere organização, disciplina e visão prática sobre o uso dos recursos.",
+          "O contexto geral aponta para uma cliente em momento de expansão. Há sinais claros de aumento de demanda no negócio, necessidade de reforço de estoque e possibilidade de crescimento operacional. Isso pode justificar leitura favorável para soluções ligadas a capital de giro, reforço de caixa e estrutura de apoio ao negócio, desde que a operação esteja alinhada ao ritmo real da empresa.",
+          "A cliente apresenta reserva financeira, boa dinâmica de conta e histórico de aplicações, o que contribui para uma percepção positiva sobre a condução do dinheiro. Ainda assim, o gerente precisa avaliar se a operação está sendo solicitada para crescimento saudável, antecipação de receita, cobertura sazonal ou expansão estrutural. Essa diferença muda bastante a defesa do crédito.",
+          "Fernanda parece estar em um ponto em que o crédito pode funcionar como instrumento de alavancagem consciente, e não apenas como resposta a uma necessidade emergencial. Por isso, a análise deve buscar coerência entre valor solicitado, prazo, produto escolhido e expectativa de retorno ou geração de caixa do negócio.",
+          "É um case com tendência favorável, mas que exige argumentação bem construída. O gerente deve demonstrar compreensão do momento da cliente e da racionalidade econômica da operação, sustentando a proposta com base em dados e contexto."
+        ]
       },
       {
         id: 3,
@@ -338,13 +362,13 @@
           "10/12/2025 — Cliente relatou cirurgia veterinária de sua cachorra Mel.",
           "27/11/2025 — Cliente fez aplicação de R$ 15.000 após recebimento de projeto."
         ],
-        contextoFamiliar: "Casado, sem filhos, mas com despesas pessoais instáveis e orçamento mais sensível a eventos inesperados.",
-        residencia: "Apartamento alugado.",
-        veiculos: "Veículo hatch 2018 em bom estado.",
-        patrimonioApoio: "Baixa reserva proporcional e renda dependente de contratos.",
-        comportamentoFinanceiro: "Oscilação de entrada de recursos, uso relevante do cartão e maior pressão sobre o fluxo mensal.",
-        pontoAtencaoCredito: "Comprometimento mais elevado e renda variável exigem prudência adicional na estruturação da proposta.",
-        potencialReflexao: "Cliente pode demandar solução mais ajustada à capacidade de pagamento e à previsibilidade de receitas."
+        descricaoCase: [
+          "João Pedro Nogueira tem 37 anos, atua como consultor autônomo e possui perfil de renda variável. Seu relacionamento com a instituição ainda é relativamente recente e o conjunto de informações sugere necessidade de uma leitura mais prudente, especialmente pela menor previsibilidade do fluxo mensal de receitas.",
+          "A comprovação de renda ocorre por extrato bancário e o cliente já apresenta nível de comprometimento mais elevado. Isso faz com que a análise precise ir além da simples aprovação de um pedido, exigindo reflexão sobre capacidade real de pagamento, estabilidade de entrada de recursos e impacto da nova operação no orçamento.",
+          "João possui alguma reserva financeira, mas ainda modesta em relação à sua exposição atual. O uso relevante do cartão, o volume de crédito já tomado e a dependência de contratos para composição da renda criam um ambiente em que o gerente deve avaliar com atenção o tamanho, o prazo e a finalidade da operação pretendida.",
+          "Neste case, o crédito pode até ser útil, mas só fará sentido se estiver muito bem ajustado à realidade do cliente. A operação precisa contribuir para organização, não para aumento desordenado da pressão financeira. Por isso, o gerente deve pensar se a proposta melhora a vida financeira do cliente ou apenas empurra o problema para frente.",
+          "É um cenário que pede leitura consultiva e técnica. O desafio é encontrar equilíbrio entre acolher a necessidade do cliente e manter coerência com sua capacidade de pagamento, defendendo uma proposta realista, responsável e aderente ao perfil."
+        ]
       }
     ];
 
@@ -550,7 +574,7 @@
         <div class="modal small">
           <div class="modal-header">
             <div>
-              <h2>Detalhes do case</h2>
+              <h2>Descrição do Case</h2>
               <p>${c.title} — ${c.nome}</p>
             </div>
             <button class="close" onclick="closeOverlay('detailsOverlay')">×</button>
@@ -558,9 +582,9 @@
 
           <div class="modal-body">
             <div class="section">
-              <div class="section-title">Informações do cliente</div>
+              <div class="section-title">Informações principais</div>
               <div class="grid-3">
-                <div class="field"><div class="label">Nome</div><div class="value">${c.nome}</div></div>
+                <div class="field"><div class="label">Cliente</div><div class="value">${c.nome}</div></div>
                 <div class="field"><div class="label">Idade</div><div class="value">${c.idade} anos</div></div>
                 <div class="field"><div class="label">Profissão</div><div class="value">${c.profissao}</div></div>
                 <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
@@ -570,25 +594,14 @@
             </div>
 
             <div class="section">
-              <div class="section-title">Contexto pessoal e familiar</div>
-              <div class="field" style="margin-bottom:12px;">
-                <div class="label">Contexto familiar</div>
-                <div class="value" style="font-size:14px;">${c.contextoFamiliar}</div>
-              </div>
-              <div class="grid-2">
-                <div class="field">
-                  <div class="label">Residência</div>
-                  <div class="value" style="font-size:14px;">${c.residencia}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Veículos</div>
-                  <div class="value" style="font-size:14px;">${c.veiculos}</div>
-                </div>
+              <div class="section-title">Descrição detalhada</div>
+              <div class="case-description">
+                ${c.descricaoCase.map(item => `<p>${item}</p>`).join("")}
               </div>
             </div>
 
             <div class="section">
-              <div class="section-title">Capacidade financeira</div>
+              <div class="section-title">Números de apoio</div>
               <div class="grid-4">
                 <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
                 <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
@@ -597,27 +610,7 @@
                 <div class="field"><div class="label">Uso do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
                 <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
                 <div class="field"><div class="label">Comprometimento</div><div class="value">${c.comprometimento}</div></div>
-                <div class="field"><div class="label">Atualização renda</div><div class="value">${c.rendaAtualizacao}</div></div>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="section-title">Elementos para reflexão do gerente</div>
-              <div class="field" style="margin-bottom:12px;">
-                <div class="label">Patrimônio de apoio</div>
-                <div class="value" style="font-size:14px;">${c.patrimonioApoio}</div>
-              </div>
-              <div class="field" style="margin-bottom:12px;">
-                <div class="label">Comportamento financeiro</div>
-                <div class="value" style="font-size:14px;">${c.comportamentoFinanceiro}</div>
-              </div>
-              <div class="field" style="margin-bottom:12px;">
-                <div class="label">Ponto de atenção para crédito</div>
-                <div class="value" style="font-size:14px;">${c.pontoAtencaoCredito}</div>
-              </div>
-              <div class="field">
-                <div class="label">Potencial de reflexão</div>
-                <div class="value" style="font-size:14px;">${c.potencialReflexao}</div>
+                <div class="field"><div class="label">Atualização da renda</div><div class="value">${c.rendaAtualizacao}</div></div>
               </div>
             </div>
           </div>
@@ -706,9 +699,10 @@
             <div class="hero">
               <div class="hero-top">
                 <div class="hero-ident">
-                  <div class="avatar-wrap" style="display:flex; align-items:center; gap:10px;">
-                    <div class="avatar">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
-                    <button class="btn-light" style="padding:10px 12px; min-width:auto;" onclick="openCaseDetails(${c.id})" title="Ver detalhes do case">👁</button>
+                  <div class="avatar-wrap">
+                    <div class="avatar case-avatar" onclick="openCaseDetails(${c.id})" title="Abrir descrição completa do case">
+                      ${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}
+                    </div>
                   </div>
                   <div>
                     <div class="hero-name">${c.nome}</div>
