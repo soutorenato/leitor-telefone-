@@ -257,7 +257,14 @@
         relacionamento: "8 anos",
         perfil: "Alta renda",
         observacao: "Renda elevada, porém com atualização cadastral antiga.",
-        objetivoSugestao: "Expansão da clínica, reforço de caixa e análise de cartão premium."
+        objetivoSugestao: "Expansão da clínica, reforço de caixa e análise de cartão premium.",
+        historicoAtendimento: [
+          "12/02/2026 — Cliente realizou aporte de R$ 300.000 em CDB 100% do CDI após venda de participação em clínica.",
+          "28/01/2026 — Cliente informou que sua filha Larissa, de 18 anos, iniciou o curso de medicina em faculdade particular.",
+          "15/01/2026 — Cliente comentou que está pesquisando viagem em família para a Europa no segundo semestre.",
+          "08/12/2025 — Cliente sinalizou interesse em organizar financeiramente os custos da ampliação da clínica.",
+          "19/11/2025 — Cliente relatou aumento de despesas com internação do cachorro Billy, impactando o caixa do mês."
+        ]
       },
       {
         id: 2,
@@ -279,7 +286,14 @@
         relacionamento: "4 anos",
         perfil: "Relacionamento crescente",
         observacao: "Dados recentes, boa consistência documental e boa dinâmica de movimentação.",
-        objetivoSugestao: "Capital de giro, reforço de estoque e eventual limite de cartão empresarial."
+        objetivoSugestao: "Capital de giro, reforço de estoque e eventual limite de cartão empresarial.",
+        historicoAtendimento: [
+          "05/03/2026 — Cliente informou aumento da demanda da loja e necessidade de reforço de estoque para datas sazonais.",
+          "18/02/2026 — Cliente comentou que pretende abrir uma segunda unidade do negócio até o fim do ano.",
+          "30/01/2026 — Cliente relatou que está pesquisando viagem para Paris com o marido.",
+          "12/12/2025 — Cliente realizou aplicação de R$ 80.000 em produto de liquidez diária.",
+          "21/11/2025 — Cliente mencionou que o filho mais velho iniciará curso técnico."
+        ]
       },
       {
         id: 3,
@@ -301,7 +315,14 @@
         relacionamento: "3 anos",
         perfil: "Renda variável",
         observacao: "Renda oscilante, comprovação por extrato e maior sensibilidade no comprometimento.",
-        objetivoSugestao: "Organização de fluxo de caixa, consolidação de dívida e revisão de limite."
+        objetivoSugestao: "Organização de fluxo de caixa, consolidação de dívida e revisão de limite.",
+        historicoAtendimento: [
+          "03/03/2026 — Cliente relatou atraso no recebimento de contratos de consultoria.",
+          "14/02/2026 — Cliente informou que está pesquisando pacote de viagem para Europa.",
+          "22/01/2026 — Cliente comentou que pretende trocar de carro ainda este ano.",
+          "10/12/2025 — Cliente relatou cirurgia veterinária de sua cachorra Mel.",
+          "27/11/2025 — Cliente fez aplicação de R$ 15.000 após recebimento de projeto."
+        ]
       }
     ];
 
@@ -633,21 +654,25 @@
 
             <div class="grid-2">
               <div class="section">
-                <div class="section-title">Leitura do case</div>
-                <div class="grid-3">
-                  <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
-                  <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
-                  <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
+                <div class="section-title">Histórico de atendimento</div>
+
+                <div class="field" style="margin-bottom:12px;">
+                  <div class="label">Resumo do relacionamento</div>
+                  <div class="value" style="font-size:14px;">Perfil: ${c.perfil} • Relacionamento: ${c.relacionamento} • Comprovação: ${c.comprovacao}</div>
                 </div>
 
-                <div class="field" style="margin-top:12px;">
+                <div class="field" style="margin-bottom:12px;">
                   <div class="label">Ponto de atenção</div>
                   <div class="value" style="font-size:14px;">${c.observacao}</div>
                 </div>
 
-                <div class="field" style="margin-top:12px;">
-                  <div class="label">Objetivo sugerido para discussão</div>
-                  <div class="value" style="font-size:14px;">${c.objetivoSugestao}</div>
+                <div class="field">
+                  <div class="label">Registros anteriores</div>
+                  <div style="margin-top:8px;">
+                    <ul style="margin:0; padding-left:18px;">
+                      ${c.historicoAtendimento.map(item => `<li style="margin-bottom:10px; line-height:1.5;">${item}</li>`).join("")}
+                    </ul>
+                  </div>
                 </div>
 
                 <div style="margin-top:16px; display:flex; justify-content:flex-end;">
@@ -1052,5 +1077,3 @@
   </script>
 </body>
 </html>
-
-Atualiza com este código, tirando a bola que fica no canto dos cards.
