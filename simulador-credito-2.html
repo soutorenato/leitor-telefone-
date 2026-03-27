@@ -985,6 +985,66 @@
       line-height:1.5;
     }
 
+    .final-status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:14px 16px;
+      border-radius:16px;
+      background:linear-gradient(180deg,#ecfdf3 0%, #f7fffa 100%);
+      border:1px solid #b7e4c7;
+      color:#166534;
+      font-weight:800;
+      margin-bottom:16px;
+    }
+
+    .final-status .dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      background:#16a34a;
+      box-shadow:0 0 0 6px rgba(22,163,74,.12);
+      flex-shrink:0;
+    }
+
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .timeline div,
+    .timeline-item{
+      position:relative;
+      padding:12px 14px 12px 18px;
+      border:1px solid #e6edf6;
+      background:linear-gradient(180deg,#fbfdff 0%, #ffffff 100%);
+      border-radius:14px;
+      line-height:1.55;
+    }
+
+    .timeline-item::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:4px;
+      border-radius:14px 0 0 14px;
+      background:#9ec5ef;
+    }
+
+    .timeline-item strong{
+      color:#163a63;
+    }
+
+    .formalization-summary{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
     svg.icon{
       width:16px;
       height:16px;
@@ -1005,7 +1065,7 @@
         border-bottom-right-radius:24px;
       }
       .top-stats{grid-template-columns:repeat(2,1fr)}
-      .grid,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
+      .grid,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid,.formalization-summary{grid-template-columns:1fr}
       .proposal-item{flex-direction:column;align-items:flex-start}
     }
 
@@ -1174,6 +1234,7 @@
   <div class="overlay" id="proposalOverlay"></div>
   <div class="overlay" id="decisionOverlay"></div>
   <div class="overlay" id="detailsOverlay"></div>
+  <div class="overlay" id="formalizationOverlay"></div>
 
   <script>
     const STORAGE_KEY = "simulador_credito_propostas_v6_banklook";
@@ -2154,7 +2215,116 @@
       saveProposals(list);
       renderCases();
       renderQueues();
-      openClient(caseId);
+
+      const proposal = list[idx];
+      const c = getCaseById(caseId);
+
+      openOverlay("formalizationOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>Formalização da proposta</h2>
+              <p>${c.title} — ${c.nome}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('formalizationOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="final-status">
+              <span class="dot"></span>
+              Proposta aprovada com sucesso e formalizada
+            </div>
+
+            <div class="section">
+              <div class="section-title">Resumo da proposta</div>
+              <div class="formalization-summary">
+                <div class="field">
+                  <div class="label">Cliente</div>
+                  <div class="value">${c.nome}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Gerente responsável</div>
+                  <div class="value">${proposal.managerName}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Produto</div>
+                  <div class="value">${proposal.product}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Valor solicitado</div>
+                  <div class="value">${money(proposal.amount)}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Prazo</div>
+                  <div class="value">${proposal.term ? proposal.term + " meses" : "Não aplicável"}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Taxa ao mês</div>
+                  <div class="value">${proposal.interestRate != null ? proposal.interestRate + "%" : "Não aplicável"}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Parcela estimada</div>
+                  <div class="value">${proposal.installment ? money(proposal.installment) : "Não aplicável"}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Status final</div>
+                  <div class="value">Formalizada</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Histórico completo da tramitação</div>
+              <div class="timeline">
+                ${(proposal.history || []).map(h => `
+                  <div class="timeline-item">
+                    <strong>${h.at}</strong><br>
+                    ${h.text}
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Pareceres registrados</div>
+              <div class="history-list">
+                <div class="history-item">
+                  <strong>Defesa inicial do gerente:</strong><br>
+                  ${proposal.originalManagerOpinion || proposal.managerOpinion || "Não informado"}
+                </div>
+
+                ${proposal.managerResponse ? `
+                  <div class="history-item">
+                    <strong>Complemento do gerente:</strong><br>
+                    ${proposal.managerResponse}
+                  </div>
+                ` : ""}
+
+                ${proposal.generalManagerOpinion ? `
+                  <div class="history-item">
+                    <strong>Parecer do gerente geral:</strong><br>
+                    ${proposal.generalManagerOpinion}
+                  </div>
+                ` : ""}
+
+                ${proposal.analystOpinion ? `
+                  <div class="history-item">
+                    <strong>Parecer do analista de crédito:</strong><br>
+                    ${proposal.analystOpinion}
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-light" onclick="closeOverlay('formalizationOverlay')">Fechar</button>
+              <button type="button" class="btn-primary" onclick="closeOverlay('formalizationOverlay'); openClient(${caseId});">
+                Voltar para o cliente
+              </button>
+            </div>
+          </div>
+        </div>
+      `);
     }
 
     document.getElementById("resetBtn").addEventListener("click", () => {
@@ -2170,7 +2340,7 @@
       renderQueues();
     });
 
-    ["clientOverlay","proposalOverlay","decisionOverlay","detailsOverlay"].forEach(id => {
+    ["clientOverlay","proposalOverlay","decisionOverlay","detailsOverlay","formalizationOverlay"].forEach(id => {
       document.getElementById(id).addEventListener("click", (e) => {
         if (e.target.id === id) closeOverlay(id);
       });
