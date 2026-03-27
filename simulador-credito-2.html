@@ -128,11 +128,18 @@
       font-weight:600;
       backdrop-filter:blur(6px);
       transition:.18s ease;
+      cursor:pointer;
     }
 
     .nav-item:hover{
       background:rgba(255,255,255,.1);
       transform:translateX(2px);
+    }
+
+    .nav-item.active{
+      background:rgba(255,255,255,.14);
+      border-color:rgba(255,255,255,.16);
+      box-shadow:0 8px 18px rgba(0,0,0,.14);
     }
 
     .nav-item.subtle{
@@ -529,8 +536,7 @@
 
     .panel{
       padding:18px;
-      background:
-        linear-gradient(180deg,#ffffff 0%, #fcfdff 100%);
+      background:linear-gradient(180deg,#ffffff 0%, #fcfdff 100%);
     }
 
     .panel-head{
@@ -966,6 +972,7 @@
     }
 
     .hidden{display:none !important}
+    .view-hidden{display:none !important}
 
     .success-box{
       background:#ecfdf3;
@@ -998,7 +1005,7 @@
         border-bottom-right-radius:24px;
       }
       .top-stats{grid-template-columns:repeat(2,1fr)}
-      .grid,.queues,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
+      .grid,.hero-grid,.grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
       .proposal-item{flex-direction:column;align-items:flex-start}
     }
 
@@ -1031,34 +1038,30 @@
 
       <div class="nav-group">
         <div class="nav-title">Navegação</div>
-        <div class="nav-item">
+
+        <div class="nav-item active" id="navCases" onclick="setActiveView('cases')">
           <svg class="icon" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="16" rx="2"></rect>
             <path d="M8 4v16"></path>
           </svg>
-          Cases ativos
+          Cases de estudo
         </div>
-        <div class="nav-item subtle">
+
+        <div class="nav-item subtle" id="navGG" onclick="setActiveView('gg')">
           <svg class="icon" viewBox="0 0 24 24">
             <path d="M4 7h16"></path>
             <path d="M4 12h16"></path>
             <path d="M4 17h10"></path>
           </svg>
-          Gerência geral
+          Gerente geral
         </div>
-        <div class="nav-item subtle">
+
+        <div class="nav-item subtle" id="navCredit" onclick="setActiveView('credit')">
           <svg class="icon" viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="3"></circle>
             <path d="M5 20c1.5-3 4-5 7-5s5.5 2 7 5"></path>
           </svg>
-          Analista de crédito
-        </div>
-        <div class="nav-item subtle">
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M12 8v5l3 2"></path>
-            <circle cx="12" cy="12" r="9"></circle>
-          </svg>
-          Histórico
+          Crédito
         </div>
       </div>
     </aside>
@@ -1090,7 +1093,7 @@
         </div>
       </div>
 
-      <section class="hero-panel">
+      <section class="hero-panel view-hidden" id="heroSection">
         <div class="hero-panel-top">
           <div>
             <h3 class="hero-panel-title">Mesa simulada de análise de crédito</h3>
@@ -1135,24 +1138,28 @@
         </div>
       </section>
 
-      <section class="grid" id="caseGrid"></section>
+      <section id="casesView">
+        <section class="grid" id="caseGrid"></section>
+      </section>
 
-      <section class="queues">
+      <section id="ggView" class="view-hidden">
         <div class="card panel">
           <div class="panel-head">
             <div>
-              <h3>Propostas pendentes — Gerente Geral</h3>
+              <h3>Propostas pendentes — Gerente geral</h3>
               <p>Itens aguardando validação comercial e decisão de encaminhamento.</p>
             </div>
             <div class="count-bubble" id="ggCount">0</div>
           </div>
           <div class="list" id="ggList"></div>
         </div>
+      </section>
 
+      <section id="creditView" class="view-hidden">
         <div class="card panel">
           <div class="panel-head">
             <div>
-              <h3>Propostas pendentes — Analista de Crédito</h3>
+              <h3>Propostas pendentes — Crédito</h3>
               <p>Itens encaminhados para leitura técnica e definição final.</p>
             </div>
             <div class="count-bubble" id="analystCount">0</div>
@@ -1481,13 +1488,13 @@
       analystList.innerHTML = "";
 
       if (!pendingGG.length){
-        ggList.innerHTML = `<div class="empty">Nenhuma proposta pendente para a gerência geral.</div>`;
+        ggList.innerHTML = `<div class="empty">Nenhuma proposta pendente para o gerente geral.</div>`;
       } else {
         pendingGG.forEach(p => ggList.appendChild(buildProposalItem(p, "gg")));
       }
 
       if (!pendingAnalyst.length){
-        analystList.innerHTML = `<div class="empty">Nenhuma proposta pendente para o analista de crédito.</div>`;
+        analystList.innerHTML = `<div class="empty">Nenhuma proposta pendente para crédito.</div>`;
       } else {
         pendingAnalyst.forEach(p => analystList.appendChild(buildProposalItem(p, "analyst")));
       }
@@ -1520,6 +1527,46 @@
         h.text.includes("devolveu a proposta ao gerente de relacionamento")
       );
       return item ? item.text : "";
+    }
+
+    function setActiveView(view){
+      const casesView = document.getElementById("casesView");
+      const ggView = document.getElementById("ggView");
+      const creditView = document.getElementById("creditView");
+
+      const navCases = document.getElementById("navCases");
+      const navGG = document.getElementById("navGG");
+      const navCredit = document.getElementById("navCredit");
+
+      casesView.classList.add("view-hidden");
+      ggView.classList.add("view-hidden");
+      creditView.classList.add("view-hidden");
+
+      navCases.classList.remove("active");
+      navGG.classList.remove("active");
+      navCredit.classList.remove("active");
+
+      navCases.classList.add("subtle");
+      navGG.classList.add("subtle");
+      navCredit.classList.add("subtle");
+
+      if (view === "cases"){
+        casesView.classList.remove("view-hidden");
+        navCases.classList.add("active");
+        navCases.classList.remove("subtle");
+      }
+
+      if (view === "gg"){
+        ggView.classList.remove("view-hidden");
+        navGG.classList.add("active");
+        navGG.classList.remove("subtle");
+      }
+
+      if (view === "credit"){
+        creditView.classList.remove("view-hidden");
+        navCredit.classList.add("active");
+        navCredit.classList.remove("subtle");
+      }
     }
 
     window.openCaseDetails = function(caseId){
@@ -1624,7 +1671,7 @@
               <div style="margin-top:6px;"><span class="badge ${statusInfo(p.status).className}">${statusInfo(p.status).text}</span></div>
               <div style="margin-top:8px;"><strong>Defesa inicial do gerente:</strong> ${p.originalManagerOpinion || p.managerOpinion}</div>
               ${p.managerResponse ? `<div style="margin-top:6px;"><strong>Complemento do gerente:</strong> ${p.managerResponse}</div>` : ""}
-              ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer da gerência geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
+              ${p.generalManagerOpinion ? `<div style="margin-top:6px;"><strong>Parecer do gerente geral:</strong> ${p.generalManagerOpinion}</div>` : ""}
               ${p.analystOpinion ? `<div style="margin-top:6px;"><strong>Parecer do analista:</strong> ${p.analystOpinion}</div>` : ""}
               ${p.status === "formalized" ? `<div class="success-box">Proposta contratada com sucesso.</div>` : ""}
               ${(p.history || []).length ? `
@@ -1972,7 +2019,7 @@
       const proposal = getProposals().find(p => p.id === proposalId);
       const c = getCaseById(proposal.caseId);
 
-      const title = role === "gg" ? "Análise — Gerência Geral" : "Análise — Analista de Crédito";
+      const title = role === "gg" ? "Análise — Gerente geral" : "Análise — Crédito";
       const actionButtons = role === "gg"
         ? `
           <button type="button" class="btn-primary" onclick="submitDecision('${proposalId}','gg','forward')">Encaminhar para analista</button>
@@ -2012,7 +2059,7 @@
 
               <div style="margin-top:12px;" class="muted"><strong>Defesa inicial do gerente:</strong> ${proposal.originalManagerOpinion || proposal.managerOpinion}</div>
               ${proposal.managerResponse ? `<div style="margin-top:8px;" class="muted"><strong>Complemento do gerente:</strong> ${proposal.managerResponse}</div>` : ""}
-              ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer da gerência geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
+              ${proposal.generalManagerOpinion ? `<div style="margin-top:8px;" class="muted"><strong>Parecer do gerente geral:</strong> ${proposal.generalManagerOpinion}</div>` : ""}
             </div>
 
             <div class="form-group full" style="margin-top:16px;">
@@ -2047,15 +2094,15 @@
 
         if (action === "forward"){
           proposal.status = "pending_analyst";
-          historyText = "Gerência geral encaminhou a proposta ao analista de crédito.";
+          historyText = "Gerente geral encaminhou a proposta ao analista de crédito.";
         }
         if (action === "return"){
           proposal.status = "returned_gg";
-          historyText = "Gerência geral devolveu a proposta ao gerente de relacionamento.";
+          historyText = "Gerente geral devolveu a proposta ao gerente de relacionamento.";
         }
         if (action === "reject"){
           proposal.status = "rejected_gg";
-          historyText = "Gerência geral reprovou a proposta.";
+          historyText = "Gerente geral reprovou a proposta.";
         }
       }
 
@@ -2132,6 +2179,7 @@
     renderCases();
     renderQueues();
     updateStats();
+    setActiveView('cases');
   </script>
 </body>
 </html>
