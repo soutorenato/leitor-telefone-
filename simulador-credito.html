@@ -232,6 +232,7 @@
   <div class="overlay" id="clientOverlay"></div>
   <div class="overlay" id="proposalOverlay"></div>
   <div class="overlay" id="decisionOverlay"></div>
+  <div class="overlay" id="detailsOverlay"></div>
 
   <script>
     const STORAGE_KEY = "simulador_credito_propostas_v5";
@@ -264,7 +265,14 @@
           "15/01/2026 — Cliente comentou que está pesquisando viagem em família para a Europa no segundo semestre.",
           "08/12/2025 — Cliente sinalizou interesse em organizar financeiramente os custos da ampliação da clínica.",
           "19/11/2025 — Cliente relatou aumento de despesas com internação do cachorro Billy, impactando o caixa do mês."
-        ]
+        ],
+        contextoFamiliar: "Casado, possui uma filha de 18 anos cursando medicina. Estrutura familiar com despesas elevadas e tendência de aumento de custo educacional.",
+        residencia: "Apartamento próprio em bairro nobre da capital.",
+        veiculos: "SUV 2022 quitado.",
+        patrimonioApoio: "Imóvel residencial já quitado e carteira relevante de investimentos conservadores.",
+        comportamentoFinanceiro: "Boa formação de reserva, histórico de aportes relevantes e uso disciplinado de produtos financeiros.",
+        pontoAtencaoCredito: "Atualização cadastral de renda antiga e aumento recente de despesas familiares.",
+        potencialReflexao: "Cliente com boa capacidade patrimonial e sinais de necessidade de organização para expansão e novas despesas."
       },
       {
         id: 2,
@@ -293,7 +301,14 @@
           "30/01/2026 — Cliente relatou que está pesquisando viagem para Paris com o marido.",
           "12/12/2025 — Cliente realizou aplicação de R$ 80.000 em produto de liquidez diária.",
           "21/11/2025 — Cliente mencionou que o filho mais velho iniciará curso técnico."
-        ]
+        ],
+        contextoFamiliar: "Casada, com filho em fase escolar/técnica. Família com planejamento de crescimento e novas despesas.",
+        residencia: "Casa financiada em região urbana.",
+        veiculos: "Sedan 2021 financiado.",
+        patrimonioApoio: "Reserva financeira moderada e boa liquidez para operação de curto prazo.",
+        comportamentoFinanceiro: "Boa movimentação de conta, disciplina de aplicação e relação crescente com o banco.",
+        pontoAtencaoCredito: "Expansão do negócio pode exigir maior previsibilidade de fluxo de caixa.",
+        potencialReflexao: "Cliente com perfil empreendedor e boa consistência documental, com espaço para soluções de capital de giro e limite."
       },
       {
         id: 3,
@@ -322,7 +337,14 @@
           "22/01/2026 — Cliente comentou que pretende trocar de carro ainda este ano.",
           "10/12/2025 — Cliente relatou cirurgia veterinária de sua cachorra Mel.",
           "27/11/2025 — Cliente fez aplicação de R$ 15.000 após recebimento de projeto."
-        ]
+        ],
+        contextoFamiliar: "Casado, sem filhos, mas com despesas pessoais instáveis e orçamento mais sensível a eventos inesperados.",
+        residencia: "Apartamento alugado.",
+        veiculos: "Veículo hatch 2018 em bom estado.",
+        patrimonioApoio: "Baixa reserva proporcional e renda dependente de contratos.",
+        comportamentoFinanceiro: "Oscilação de entrada de recursos, uso relevante do cartão e maior pressão sobre o fluxo mensal.",
+        pontoAtencaoCredito: "Comprometimento mais elevado e renda variável exigem prudência adicional na estruturação da proposta.",
+        potencialReflexao: "Cliente pode demandar solução mais ajustada à capacidade de pagamento e à previsibilidade de receitas."
       }
     ];
 
@@ -521,6 +543,88 @@
       return item ? item.text : "";
     }
 
+    window.openCaseDetails = function(caseId){
+      const c = getCaseById(caseId);
+
+      openOverlay("detailsOverlay", `
+        <div class="modal small">
+          <div class="modal-header">
+            <div>
+              <h2>Detalhes do case</h2>
+              <p>${c.title} — ${c.nome}</p>
+            </div>
+            <button class="close" onclick="closeOverlay('detailsOverlay')">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="section">
+              <div class="section-title">Informações do cliente</div>
+              <div class="grid-3">
+                <div class="field"><div class="label">Nome</div><div class="value">${c.nome}</div></div>
+                <div class="field"><div class="label">Idade</div><div class="value">${c.idade} anos</div></div>
+                <div class="field"><div class="label">Profissão</div><div class="value">${c.profissao}</div></div>
+                <div class="field"><div class="label">Perfil</div><div class="value">${c.perfil}</div></div>
+                <div class="field"><div class="label">Relacionamento</div><div class="value">${c.relacionamento}</div></div>
+                <div class="field"><div class="label">Comprovação</div><div class="value">${c.comprovacao}</div></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Contexto pessoal e familiar</div>
+              <div class="field" style="margin-bottom:12px;">
+                <div class="label">Contexto familiar</div>
+                <div class="value" style="font-size:14px;">${c.contextoFamiliar}</div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <div class="label">Residência</div>
+                  <div class="value" style="font-size:14px;">${c.residencia}</div>
+                </div>
+                <div class="field">
+                  <div class="label">Veículos</div>
+                  <div class="value" style="font-size:14px;">${c.veiculos}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Capacidade financeira</div>
+              <div class="grid-4">
+                <div class="field"><div class="label">Renda mensal</div><div class="value">${money(c.renda)}</div></div>
+                <div class="field"><div class="label">Saldo em conta</div><div class="value">${money(c.saldo)}</div></div>
+                <div class="field"><div class="label">Investimentos</div><div class="value">${money(c.investido)}</div></div>
+                <div class="field"><div class="label">Crédito tomado</div><div class="value">${money(c.creditoTomado)}</div></div>
+                <div class="field"><div class="label">Uso do cartão</div><div class="value">${money(c.usoCartao)}</div></div>
+                <div class="field"><div class="label">Limite disponível</div><div class="value">${money(c.limiteDisponivel)}</div></div>
+                <div class="field"><div class="label">Comprometimento</div><div class="value">${c.comprometimento}</div></div>
+                <div class="field"><div class="label">Atualização renda</div><div class="value">${c.rendaAtualizacao}</div></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Elementos para reflexão do gerente</div>
+              <div class="field" style="margin-bottom:12px;">
+                <div class="label">Patrimônio de apoio</div>
+                <div class="value" style="font-size:14px;">${c.patrimonioApoio}</div>
+              </div>
+              <div class="field" style="margin-bottom:12px;">
+                <div class="label">Comportamento financeiro</div>
+                <div class="value" style="font-size:14px;">${c.comportamentoFinanceiro}</div>
+              </div>
+              <div class="field" style="margin-bottom:12px;">
+                <div class="label">Ponto de atenção para crédito</div>
+                <div class="value" style="font-size:14px;">${c.pontoAtencaoCredito}</div>
+              </div>
+              <div class="field">
+                <div class="label">Potencial de reflexão</div>
+                <div class="value" style="font-size:14px;">${c.potencialReflexao}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
     window.openClient = function(caseId){
       const c = getCaseById(caseId);
       const proposals = getProposalsForCase(caseId);
@@ -602,7 +706,10 @@
             <div class="hero">
               <div class="hero-top">
                 <div class="hero-ident">
-                  <div class="avatar">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
+                  <div class="avatar-wrap" style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar">${c.nome.split(" ").map(x => x[0]).slice(0,2).join("")}</div>
+                    <button class="btn-light" style="padding:10px 12px; min-width:auto;" onclick="openCaseDetails(${c.id})" title="Ver detalhes do case">👁</button>
+                  </div>
                   <div>
                     <div class="hero-name">${c.nome}</div>
                     <div class="hero-meta">
@@ -1066,7 +1173,7 @@
       renderQueues();
     });
 
-    ["clientOverlay","proposalOverlay","decisionOverlay"].forEach(id => {
+    ["clientOverlay","proposalOverlay","decisionOverlay","detailsOverlay"].forEach(id => {
       document.getElementById(id).addEventListener("click", (e) => {
         if (e.target.id === id) closeOverlay(id);
       });
