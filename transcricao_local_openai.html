@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transcrição de Áudio e Vídeo</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a31;
+      --panel-2: #17213f;
+      --text: #eef3ff;
+      --muted: #a9b6d3;
+      --accent: #5ea1ff;
+      --accent-2: #7ee0c3;
+      --border: rgba(255,255,255,0.08);
+      --danger: #ff8f8f;
+      --ok: #9cf0b4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #09101d 0%, #0c1324 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .card {
+      background: rgba(18, 26, 49, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 3vw, 36px);
+    }
+    p { color: var(--muted); line-height: 1.5; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+      color: var(--text);
+    }
+    input[type="file"], input[type="password"], select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      outline: none;
+    }
+    textarea {
+      min-height: 240px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 620px) {
+      .row { grid-template-columns: 1fr; }
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform .12s ease, opacity .12s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .primary { background: linear-gradient(90deg, var(--accent), #8b8fff); color: white; }
+    .secondary { background: #233155; color: var(--text); }
+    .ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #10192f;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+    .hint, .small { font-size: 13px; color: var(--muted); }
+    .ok { color: var(--ok); }
+    .danger { color: var(--danger); }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      margin-right: 8px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    audio, video {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 12px;
+      background: #000;
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Transcrição de áudio e vídeo</h1>
+      <p>Faça upload de um arquivo <strong>MP3, WAV, M4A, MP4, MOV ou WebM</strong> e gere a transcrição. Esta página oferece dois modos:</p>
+      <div>
+        <span class="pill">Modo 1: API da OpenAI (mais confiável)</span>
+        <span class="pill">Modo 2: Navegador local com Whisper tiny (mais leve, porém mais limitado)</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label for="fileInput">Arquivo</label>
+        <input id="fileInput" type="file" accept="audio/*,video/*" />
+        <div class="hint">Vídeos são aceitos. O arquivo é enviado para a API apenas se você escolher o modo OpenAI.</div>
+
+        <div id="previewWrap"></div>
+
+        <div class="divider"></div>
+
+        <label for="mode">Modo de transcrição</label>
+        <select id="mode">
+          <option value="openai">OpenAI API</option>
+          <option value="browser">No navegador (experimental)</option>
+        </select>
+
+        <div id="openaiFields">
+          <label for="apiKey">Chave da API da OpenAI</label>
+          <input id="apiKey" type="password" placeholder="Cole sua chave aqui" autocomplete="off" />
+          <div class="hint">A chave fica só no seu navegador. Ela não é salva automaticamente.</div>
+
+          <div class="row">
+            <div>
+              <label for="model">Modelo</label>
+              <select id="model">
+                <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
+                <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
+                <option value="whisper-1">whisper-1</option>
+              </select>
+            </div>
+            <div>
+              <label for="language">Idioma</label>
+              <select id="language">
+                <option value="">Detectar automaticamente</option>
+                <option value="pt">Português</option>
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="prompt">Contexto opcional</label>
+          <input id="prompt" type="password" placeholder="Ex.: conversa em português do Brasil, tom infantil, nome Elmo" />
+          <div class="hint">Use para ajudar em nomes próprios ou contexto específico.</div>
+        </div>
+
+        <div id="browserFields" style="display:none;">
+          <p class="hint">Neste modo, o processamento ocorre no navegador usando Transformers.js. A primeira carga pode demorar e baixar centenas de MB do modelo. Em celulares ou navegadores mais fracos pode falhar.</p>
+          <div class="row">
+            <div>
+              <label for="browserModel">Modelo local</label>
+              <select id="browserModel">
+                <option value="Xenova/whisper-tiny">Xenova/whisper-tiny</option>
+                <option value="Xenova/whisper-tiny.en">Xenova/whisper-tiny.en</option>
+              </select>
+            </div>
+            <div>
+              <label for="browserChunk">Segmento</label>
+              <select id="browserChunk">
+                <option value="20">20 s</option>
+                <option value="30" selected>30 s</option>
+                <option value="45">45 s</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnTranscribe" class="primary">Transcrever</button>
+          <button id="btnCopy" class="secondary">Copiar texto</button>
+          <button id="btnDownload" class="ghost">Baixar .txt</button>
+          <button id="btnClear" class="ghost">Limpar</button>
+        </div>
+
+        <div id="status" class="status">Aguardando arquivo.</div>
+      </div>
+
+      <div class="card">
+        <label for="output">Transcrição</label>
+        <textarea id="output" placeholder="A transcrição aparecerá aqui..."></textarea>
+        <div class="hint">Você pode editar o texto manualmente depois.</div>
+
+        <div class="divider"></div>
+        <p class="small"><strong>Observações</strong><br>
+          • A API de transcrição da OpenAI aceita arquivos de áudio como entrada e retorna o texto transcrito. <span class="mono">gpt-4o-transcribe</span>, <span class="mono">gpt-4o-mini-transcribe</span> e <span class="mono">whisper-1</span> estão documentados pela OpenAI. citeturn675109search1turn675109search6<br>
+          • O Transformers.js roda modelos diretamente no navegador e tem suporte a reconhecimento automático de fala, inclusive com exemplos usando Whisper. citeturn675109search0turn675109search2turn675109search14
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const fileInput = document.getElementById('fileInput');
+    const previewWrap = document.getElementById('previewWrap');
+    const modeEl = document.getElementById('mode');
+    const openaiFields = document.getElementById('openaiFields');
+    const browserFields = document.getElementById('browserFields');
+    const apiKeyEl = document.getElementById('apiKey');
+    const modelEl = document.getElementById('model');
+    const languageEl = document.getElementById('language');
+    const promptEl = document.getElementById('prompt');
+    const browserModelEl = document.getElementById('browserModel');
+    const browserChunkEl = document.getElementById('browserChunk');
+    const btnTranscribe = document.getElementById('btnTranscribe');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnClear = document.getElementById('btnClear');
+    const statusEl = document.getElementById('status');
+    const outputEl = document.getElementById('output');
+
+    let browserTranscriber = null;
+
+    function setStatus(message, type = 'normal') {
+      statusEl.textContent = message;
+      statusEl.classList.remove('ok', 'danger');
+      if (type === 'ok') statusEl.classList.add('ok');
+      if (type === 'danger') statusEl.classList.add('danger');
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes && bytes !== 0) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let i = 0;
+      let n = bytes;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+    }
+
+    function updatePreview() {
+      const file = fileInput.files?.[0];
+      previewWrap.innerHTML = '';
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      const info = document.createElement('p');
+      info.className = 'hint';
+      info.textContent = `Arquivo selecionado: ${file.name} • ${formatBytes(file.size)} • ${file.type || 'tipo desconhecido'}`;
+      previewWrap.appendChild(info);
+
+      if (file.type.startsWith('audio/')) {
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = url;
+        previewWrap.appendChild(audio);
+      } else if (file.type.startsWith('video/')) {
+        const video = document.createElement('video');
+        video.controls = true;
+        video.src = url;
+        previewWrap.appendChild(video);
+      }
+    }
+
+    modeEl.addEventListener('change', () => {
+      const openai = modeEl.value === 'openai';
+      openaiFields.style.display = openai ? 'block' : 'none';
+      browserFields.style.display = openai ? 'none' : 'block';
+    });
+
+    fileInput.addEventListener('change', updatePreview);
+
+    async function transcribeWithOpenAI(file) {
+      const apiKey = apiKeyEl.value.trim();
+      if (!apiKey) {
+        throw new Error('Informe a chave da API da OpenAI.');
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('model', modelEl.value);
+      if (languageEl.value) formData.append('language', languageEl.value);
+      if (promptEl.value.trim()) formData.append('prompt', promptEl.value.trim());
+
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const msg = data?.error?.message || 'Falha ao transcrever com a OpenAI.';
+        throw new Error(msg);
+      }
+      return data.text || '';
+    }
+
+    async function loadAudioArrayFromFile(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+      const channelData = decoded.getChannelData(0);
+      return new Float32Array(channelData);
+    }
+
+    async function transcribeInBrowser(file) {
+      setStatus('Carregando modelo local... isso pode demorar na primeira vez.');
+
+      if (!browserTranscriber) {
+        const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2');
+        env.allowLocalModels = false;
+        browserTranscriber = await pipeline(
+          'automatic-speech-recognition',
+          browserModelEl.value,
+          {
+            progress_callback: item => {
+              if (item?.status) {
+                const pct = item?.progress != null ? ` (${Math.round(item.progress)}%)` : '';
+                setStatus(`Baixando/carregando modelo: ${item.status}${pct}`);
+              }
+            }
+          }
+        );
+      }
+
+      setStatus('Decodificando áudio do arquivo no navegador...');
+      const audio = await loadAudioArrayFromFile(file);
+      setStatus('Transcrevendo localmente...');
+
+      const output = await browserTranscriber(audio, {
+        chunk_length_s: Number(browserChunkEl.value),
+        stride_length_s: 5,
+        return_timestamps: false,
+      });
+
+      return output?.text || '';
+    }
+
+    btnTranscribe.addEventListener('click', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) {
+        setStatus('Selecione um arquivo primeiro.', 'danger');
+        return;
+      }
+
+      btnTranscribe.disabled = true;
+      try {
+        setStatus('Preparando transcrição...');
+        const text = modeEl.value === 'openai'
+          ? await transcribeWithOpenAI(file)
+          : await transcribeInBrowser(file);
+
+        outputEl.value = text;
+        setStatus('Transcrição concluída.', 'ok');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Erro: ${error.message || error}`, 'danger');
+      } finally {
+        btnTranscribe.disabled = false;
+      }
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(outputEl.value || '');
+        setStatus('Texto copiado para a área de transferência.', 'ok');
+      } catch {
+        setStatus('Não foi possível copiar automaticamente. Copie manualmente.', 'danger');
+      }
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const blob = new Blob([outputEl.value || ''], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'transcricao.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus('Arquivo .txt gerado.', 'ok');
+    });
+
+    btnClear.addEventListener('click', () => {
+      fileInput.value = '';
+      outputEl.value = '';
+      previewWrap.innerHTML = '';
+      setStatus('Limpo.');
+    });
+  </script>
+</body>
+</html>
