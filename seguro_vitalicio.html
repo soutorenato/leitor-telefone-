@@ -482,6 +482,82 @@
 
     .hidden{display:none!important}
 
+    .status-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.02em;
+      border:1px solid transparent;
+      min-width:110px;
+    }
+    .status-aguardando{
+      background:#fff7ed;
+      color:#c2410c;
+      border-color:#fdba74;
+    }
+    .status-efetivado{
+      background:#ecfdf5;
+      color:#166534;
+      border-color:#86efac;
+    }
+    .status-nao-efetivado{
+      background:#fef2f2;
+      color:#b91c1c;
+      border-color:#fca5a5;
+    }
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      margin-top:16px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+    th,td{
+      padding:14px 12px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:14px;
+      vertical-align:middle;
+    }
+    th{
+      background:#fafafa;
+      color:#111;
+      font-weight:800;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    tr:last-child td{ border-bottom:0; }
+    .table-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .small-select{
+      min-width:150px;
+      padding:10px 12px;
+      border-radius:12px;
+    }
+    .empty-state{
+      padding:20px;
+      border:1px dashed var(--border-strong);
+      border-radius:18px;
+      background:#fafafa;
+      color:var(--muted);
+      line-height:1.6;
+      margin-top:16px;
+    }
+
     @media (max-width:1080px){
       .dashboard{grid-template-columns:1fr}
     }
@@ -504,7 +580,7 @@
           <p>Página consultiva para analisar proteção familiar, liquidez, sucessão e necessidade de cobertura adicional com apresentação clara para o cliente.</p>
         </div>
         <div>
-          <button class="ghost-btn" type="button" onclick="abrirModal()"><i class="fi fi-tr-envelope"></i> Editar e-mails</button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;"><button class="ghost-btn" type="button" onclick="abrirModal()"><i class="fi fi-tr-envelope"></i> Editar e-mails</button><button class="ghost-btn" type="button" onclick="abrirModalIndicacoes()"><i class="fi fi-tr-address-book"></i> Indicações</button></div>
         </div>
       </div>
     </section>
@@ -877,6 +953,26 @@
     </div>
   </div>
 
+
+  <div id="modalIndicacoes" class="modal">
+    <div class="modal-content" style="width:min(1080px,100%);">
+      <div class="modal-header">
+        <h3>Indicações e acompanhamento</h3>
+        <button class="close-btn" type="button" onclick="fecharModalIndicacoes()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="tip-box">
+          Aqui ficam salvas as indicações registradas nesta página. Você pode acompanhar o status, editar quando necessário e baixar a tabela em Excel.
+        </div>
+        <div class="actions-row" style="margin-top:16px;">
+          <button class="primary-btn" type="button" onclick="salvarIndicacaoAtual()"><i class="fi fi-tr-plus"></i> Salvar cliente atual</button>
+          <button class="secondary-btn" type="button" onclick="exportarIndicacoesExcel()"><i class="fi fi-tr-file-excel"></i> Baixar Excel</button>
+        </div>
+        <div id="indicacoesContainer"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const areaFilhos = document.getElementById('areaFilhos');
     const areaBens = document.getElementById('areaBens');
@@ -1245,8 +1341,198 @@ ${bensTexto}`;
       }
     }
 
+
+    const INDICACOES_KEY = 'indicacoesSeguroVidaVitalicio';
+
+    function obterIndicacoes(){
+      try{
+        return JSON.parse(localStorage.getItem(INDICACOES_KEY) || '[]');
+      }catch(e){
+        return [];
+      }
+    }
+
+    function salvarIndicacoes(lista){
+      localStorage.setItem(INDICACOES_KEY, JSON.stringify(lista));
+    }
+
+    function abrirModalIndicacoes(){
+      document.getElementById('modalIndicacoes').classList.add('show');
+      renderIndicacoes();
+    }
+
+    function fecharModalIndicacoes(){
+      document.getElementById('modalIndicacoes').classList.remove('show');
+    }
+
+    function normalizarStatus(status){
+      return ['aguardando','efetivado','nao efetivado'].includes((status || '').toLowerCase())
+        ? status.toLowerCase()
+        : 'aguardando';
+    }
+
+    function classeStatus(status){
+      const s = normalizarStatus(status);
+      if(s === 'efetivado') return 'status-efetivado';
+      if(s === 'nao efetivado') return 'status-nao-efetivado';
+      return 'status-aguardando';
+    }
+
+    function labelStatus(status){
+      const s = normalizarStatus(status);
+      if(s === 'efetivado') return 'Efetivado';
+      if(s === 'nao efetivado') return 'Não efetivado';
+      return 'Aguardando';
+    }
+
+    function salvarIndicacaoAtual(){
+      const nome = document.getElementById('nomeCliente').value.trim();
+      const data1 = document.getElementById('dataReuniao1').value;
+      const data2 = document.getElementById('dataReuniao2').value;
+
+      if(!nome){
+        alert('Preencha o nome do cliente antes de salvar a indicação.');
+        return;
+      }
+
+      const lista = obterIndicacoes();
+      const chave = `${nome}|${data1}|${data2}`;
+      const idx = lista.findIndex(item => `${item.nome}|${item.data1}|${item.data2}` === chave);
+
+      const registro = {
+        id: idx >= 0 ? lista[idx].id : `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+        nome,
+        data1,
+        data2,
+        status: idx >= 0 ? normalizarStatus(lista[idx].status) : 'aguardando'
+      };
+
+      if(idx >= 0){
+        lista[idx] = registro;
+      }else{
+        lista.unshift(registro);
+      }
+
+      salvarIndicacoes(lista);
+      renderIndicacoes();
+      alert('Indicação salva com sucesso.');
+    }
+
+    function alterarStatusIndicacao(id, status){
+      const lista = obterIndicacoes().map(item =>
+        item.id === id ? {...item, status: normalizarStatus(status)} : item
+      );
+      salvarIndicacoes(lista);
+      renderIndicacoes();
+    }
+
+    function excluirIndicacao(id){
+      const lista = obterIndicacoes().filter(item => item.id !== id);
+      salvarIndicacoes(lista);
+      renderIndicacoes();
+    }
+
+    function renderIndicacoes(){
+      const container = document.getElementById('indicacoesContainer');
+      const lista = obterIndicacoes();
+
+      if(!lista.length){
+        container.innerHTML = '<div class="empty-state">Nenhuma indicação salva ainda. Preencha o cliente e as datas da agenda, depois clique em <strong>Salvar cliente atual</strong>.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>1ª reunião</th>
+                <th>2ª reunião</th>
+                <th>Status</th>
+                <th style="width:260px;">Alterar status</th>
+                <th style="width:110px;">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lista.map(item => `
+                <tr>
+                  <td><strong>${escapeHtml(item.nome || '-')}</strong></td>
+                  <td>${item.data1 ? formatDateBR(item.data1) : '-'}</td>
+                  <td>${item.data2 ? formatDateBR(item.data2) : '-'}</td>
+                  <td><span class="status-badge ${classeStatus(item.status)}">${labelStatus(item.status)}</span></td>
+                  <td>
+                    <select class="small-select" onchange="alterarStatusIndicacao('${item.id}', this.value)">
+                      <option value="aguardando" ${normalizarStatus(item.status)==='aguardando' ? 'selected' : ''}>Aguardando</option>
+                      <option value="efetivado" ${normalizarStatus(item.status)==='efetivado' ? 'selected' : ''}>Efetivado</option>
+                      <option value="nao efetivado" ${normalizarStatus(item.status)==='nao efetivado' ? 'selected' : ''}>Não efetivado</option>
+                    </select>
+                  </td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="mini-btn danger-btn" type="button" onclick="excluirIndicacao('${item.id}')">Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function exportarIndicacoesExcel(){
+      const lista = obterIndicacoes();
+      if(!lista.length){
+        alert('Não há indicações para exportar.');
+        return;
+      }
+
+      const rows = lista.map(item => `
+        <tr>
+          <td>${escapeHtml(item.nome || '-')}</td>
+          <td>${item.data1 ? formatDateBR(item.data1) : '-'}</td>
+          <td>${item.data2 ? formatDateBR(item.data2) : '-'}</td>
+          <td>${labelStatus(item.status)}</td>
+        </tr>
+      `).join('');
+
+      const excelHtml = `
+        <html>
+          <head>
+            <meta charset="UTF-8">
+          </head>
+          <body>
+            <table border="1">
+              <tr>
+                <th>Cliente</th>
+                <th>1ª reunião</th>
+                <th>2ª reunião</th>
+                <th>Status</th>
+              </tr>
+              ${rows}
+            </table>
+          </body>
+        </html>
+      `;
+
+      const blob = new Blob([excelHtml], {type:'application/vnd.ms-excel'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'indicacoes_seguro_vida.xls';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+
     document.getElementById('modalEmail').addEventListener('click', function(e){
       if(e.target.id === 'modalEmail') fecharModal();
+    });
+    document.getElementById('modalIndicacoes').addEventListener('click', function(e){
+      if(e.target.id === 'modalIndicacoes') fecharModalIndicacoes();
     });
 
     addFilho();
