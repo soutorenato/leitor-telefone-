@@ -767,7 +767,7 @@
               <div class="title-icon"><i class="fi fi-tr-scale"></i></div>
               <div class="title-block">
                 <h2>ITCMD e custos com advogado</h2>
-                <p>Percentuais aplicados sobre o valor líquido de investimentos menos previdência.</p>
+                <p>Percentuais aplicados sobre investimentos menos previdência, somados aos bens cadastrados.</p>
               </div>
             </div>
           </div>
@@ -806,7 +806,7 @@
           <div class="card-body">
             <div class="actions-row">
               <button class="primary-btn" type="button" onclick="calcular()"><i class="fi fi-tr-calculator"></i> Calcular cobertura ideal</button>
-              <button class="secondary-btn" type="button" onclick="enviarEmail()"><i class="fi fi-tr-envelope"></i> Enviar por Outlook</button>
+              <button class="secondary-btn" type="button" onclick="cadastrarIndicacao(true)"><i class="fi fi-tr-address-book"></i> Cadastrar indicação</button>
               <button class="secondary-btn" type="button" onclick="copiarResumo()"><i class="fi fi-tr-copy-alt"></i> Copiar resumo</button>
             </div>
             <div id="resultado" class="result-panel"></div>
@@ -845,11 +845,11 @@
               </div>
               <div class="logic-item">
                 <h4>5. ITCMD e advogado</h4>
-                <p>Nesta versão, os percentuais são aplicados sobre o valor líquido de <strong>investimentos menos previdência</strong>. Isso ajuda a tangibilizar o custo invisível que pode surgir na sucessão.</p>
+                <p>Nesta versão, os percentuais são aplicados sobre a soma de <strong>investimentos menos previdência</strong> com <strong>os bens cadastrados</strong>. Isso ajuda a tangibilizar o custo invisível que pode surgir na sucessão.</p>
               </div>
               <div class="logic-item">
                 <h4>6. Patrimônio e bens</h4>
-                <p>Os bens entram como leitura patrimonial e contextual. A situação quitado ou financiado ajuda a enriquecer a análise, mas o custo percentual sucessório desta página está sendo concentrado na base líquida de investimentos menos previdência, conforme sua lógica comercial.</p>
+                <p>Os bens entram como leitura patrimonial e também compõem a base sucessória do cálculo. A situação quitado ou financiado ajuda a enriquecer a análise e o entendimento da estrutura patrimonial do cliente.</p>
               </div>
             </div>
           </div>
@@ -965,7 +965,7 @@
           Aqui ficam salvas as indicações registradas nesta página. Você pode acompanhar o status, editar quando necessário e baixar a tabela em Excel.
         </div>
         <div class="actions-row" style="margin-top:16px;">
-          <button class="primary-btn" type="button" onclick="salvarIndicacaoAtual()"><i class="fi fi-tr-plus"></i> Salvar cliente atual</button>
+          <button class="primary-btn" type="button" onclick="cadastrarIndicacao(false)"><i class="fi fi-tr-plus"></i> Cadastrar cliente atual</button>
           <button class="secondary-btn" type="button" onclick="exportarIndicacoesExcel()"><i class="fi fi-tr-file-excel"></i> Baixar Excel</button>
         </div>
         <div id="indicacoesContainer"></div>
@@ -1186,7 +1186,8 @@
 
       const patrimonioBens = bens.reduce((sum,b)=> sum + b.valor, 0);
       const baseLiquidaInvestimentos = Math.max(investimentos - previdencia, 0);
-      const custoSucessorioPercentual = baseLiquidaInvestimentos * (itcmd + advogado);
+      const baseSucessoriaTotal = baseLiquidaInvestimentos + patrimonioBens;
+      const custoSucessorioPercentual = baseSucessoriaTotal * (itcmd + advogado);
       const custoSucessorioTotal = custoSucessorioPercentual + outrosCustosSucessorios;
       const reservaFamiliar = despesas * 12 * prazoProtecao;
       const totalDependentes = filhos.reduce((sum,f)=> sum + f.total, 0);
@@ -1233,7 +1234,9 @@ ${agendaTexto}
 
 Reserva familiar (${prazoProtecao} anos): ${moneyBR(reservaFamiliar)}
 Dependentes: ${moneyBR(totalDependentes)}
-Base líquida de investimentos (investimentos - previdência): ${moneyBR(baseLiquidaInvestimentos)}
+Base líquida financeira (investimentos - previdência): ${moneyBR(baseLiquidaInvestimentos)}
+Base de bens patrimoniais: ${moneyBR(patrimonioBens)}
+Base sucessória total: ${moneyBR(baseSucessoriaTotal)}
 Custos sucessórios estimados: ${moneyBR(custoSucessorioTotal)}
 Dívidas / passivos: ${moneyBR(dividas)}
 
@@ -1292,14 +1295,14 @@ ${bensTexto}`;
             <div class="d">Projeção dos custos informados até 21 anos.</div>
           </div>
           <div class="result-item">
-            <div class="k">Base líquida para ITCMD</div>
-            <div class="v">${moneyBR(baseLiquidaInvestimentos)}</div>
-            <div class="d">Total de investimentos menos previdência privada.</div>
+            <div class="k">Base sucessória total</div>
+            <div class="v">${moneyBR(baseSucessoriaTotal)}</div>
+            <div class="d">Investimentos menos previdência somados aos bens cadastrados.</div>
           </div>
           <div class="result-item">
             <div class="k">Custos sucessórios</div>
             <div class="v">${moneyBR(custoSucessorioTotal)}</div>
-            <div class="d">ITCMD, honorários e custos adicionais aplicados sobre a base líquida.</div>
+            <div class="d">ITCMD, honorários e custos adicionais aplicados sobre a base sucessória total.</div>
           </div>
           <div class="result-item">
             <div class="k">Dívidas / passivos</div>
@@ -1385,25 +1388,31 @@ ${bensTexto}`;
       return 'Aguardando';
     }
 
-    function salvarIndicacaoAtual(){
+    function cadastrarIndicacao(abrirOutlook){
       const nome = document.getElementById('nomeCliente').value.trim();
+      const cpf = document.getElementById('cpfCliente').value.trim();
       const data1 = document.getElementById('dataReuniao1').value;
+      const hora1 = document.getElementById('horaReuniao1').value;
       const data2 = document.getElementById('dataReuniao2').value;
+      const hora2 = document.getElementById('horaReuniao2').value;
 
       if(!nome){
-        alert('Preencha o nome do cliente antes de salvar a indicação.');
+        alert('Preencha o nome do cliente antes de cadastrar a indicação.');
         return;
       }
 
       const lista = obterIndicacoes();
-      const chave = `${nome}|${data1}|${data2}`;
-      const idx = lista.findIndex(item => `${item.nome}|${item.data1}|${item.data2}` === chave);
+      const chave = `${nome}|${cpf}|${data1}|${hora1}|${data2}|${hora2}`;
+      const idx = lista.findIndex(item => `${item.nome}|${item.cpf}|${item.data1}|${item.hora1}|${item.data2}|${item.hora2}` === chave);
 
       const registro = {
         id: idx >= 0 ? lista[idx].id : `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
         nome,
+        cpf,
         data1,
+        hora1,
         data2,
+        hora2,
         status: idx >= 0 ? normalizarStatus(lista[idx].status) : 'aguardando'
       };
 
@@ -1415,7 +1424,12 @@ ${bensTexto}`;
 
       salvarIndicacoes(lista);
       renderIndicacoes();
-      alert('Indicação salva com sucesso.');
+
+      if(abrirOutlook){
+        enviarEmail();
+      } else {
+        alert('Indicação cadastrada com sucesso.');
+      }
     }
 
     function alterarStatusIndicacao(id, status){
@@ -1432,12 +1446,37 @@ ${bensTexto}`;
       renderIndicacoes();
     }
 
+    function enviarEmailIndicacao(id){
+      const item = obterIndicacoes().find(reg => reg.id === id);
+      if(!item){
+        alert('Indicação não encontrada.');
+        return;
+      }
+
+      const destinatarios = [
+        localStorage.getItem('emailLider') || '',
+        localStorage.getItem('emailTL') || '',
+        localStorage.getItem('emailEspecialista') || ''
+      ].filter(Boolean).join(';');
+
+      const assunto = encodeURIComponent(`Acompanhamento de indicação - ${item.nome || 'Cliente'}`);
+      const corpo = encodeURIComponent(
+`Cliente: ${item.nome || '-'}
+CPF: ${item.cpf || '-'}
+1ª reunião: ${item.data1 ? formatDateBR(item.data1) : '-'}${item.hora1 ? ' às ' + item.hora1 : ''}
+2ª reunião: ${item.data2 ? formatDateBR(item.data2) : '-'}${item.hora2 ? ' às ' + item.hora2 : ''}
+Status: ${labelStatus(item.status)}`
+      );
+
+      window.location.href = `mailto:${destinatarios}?subject=${assunto}&body=${corpo}`;
+    }
+
     function renderIndicacoes(){
       const container = document.getElementById('indicacoesContainer');
       const lista = obterIndicacoes();
 
       if(!lista.length){
-        container.innerHTML = '<div class="empty-state">Nenhuma indicação salva ainda. Preencha o cliente e as datas da agenda, depois clique em <strong>Salvar cliente atual</strong>.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma indicação salva ainda. Preencha o cliente e a agenda, depois clique em <strong>Cadastrar cliente atual</strong>.</div>';
         return;
       }
 
@@ -1447,19 +1486,21 @@ ${bensTexto}`;
             <thead>
               <tr>
                 <th>Cliente</th>
+                <th>CPF</th>
                 <th>1ª reunião</th>
                 <th>2ª reunião</th>
                 <th>Status</th>
-                <th style="width:260px;">Alterar status</th>
-                <th style="width:110px;">Ação</th>
+                <th style="width:210px;">Alterar status</th>
+                <th style="width:120px;">Ações</th>
               </tr>
             </thead>
             <tbody>
               ${lista.map(item => `
                 <tr>
                   <td><strong>${escapeHtml(item.nome || '-')}</strong></td>
-                  <td>${item.data1 ? formatDateBR(item.data1) : '-'}</td>
-                  <td>${item.data2 ? formatDateBR(item.data2) : '-'}</td>
+                  <td>${escapeHtml(item.cpf || '-')}</td>
+                  <td>${item.data1 ? formatDateBR(item.data1) : '-'}${item.hora1 ? ' às ' + item.hora1 : ''}</td>
+                  <td>${item.data2 ? formatDateBR(item.data2) : '-'}${item.hora2 ? ' às ' + item.hora2 : ''}</td>
                   <td><span class="status-badge ${classeStatus(item.status)}">${labelStatus(item.status)}</span></td>
                   <td>
                     <select class="small-select" onchange="alterarStatusIndicacao('${item.id}', this.value)">
@@ -1470,7 +1511,8 @@ ${bensTexto}`;
                   </td>
                   <td>
                     <div class="table-actions">
-                      <button class="mini-btn danger-btn" type="button" onclick="excluirIndicacao('${item.id}')">Excluir</button>
+                      <button class="mini-btn secondary-btn" type="button" title="Enviar e-mail" onclick="enviarEmailIndicacao('${item.id}')"><i class="fi fi-tr-envelope"></i></button>
+                      <button class="mini-btn danger-btn" type="button" title="Excluir" onclick="excluirIndicacao('${item.id}')"><i class="fi fi-tr-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -1491,8 +1533,9 @@ ${bensTexto}`;
       const rows = lista.map(item => `
         <tr>
           <td>${escapeHtml(item.nome || '-')}</td>
-          <td>${item.data1 ? formatDateBR(item.data1) : '-'}</td>
-          <td>${item.data2 ? formatDateBR(item.data2) : '-'}</td>
+          <td>${escapeHtml(item.cpf || '-')}</td>
+          <td>${item.data1 ? formatDateBR(item.data1) : '-'}${item.hora1 ? ' às ' + item.hora1 : ''}</td>
+          <td>${item.data2 ? formatDateBR(item.data2) : '-'}${item.hora2 ? ' às ' + item.hora2 : ''}</td>
           <td>${labelStatus(item.status)}</td>
         </tr>
       `).join('');
@@ -1506,6 +1549,7 @@ ${bensTexto}`;
             <table border="1">
               <tr>
                 <th>Cliente</th>
+                <th>CPF</th>
                 <th>1ª reunião</th>
                 <th>2ª reunião</th>
                 <th>Status</th>
