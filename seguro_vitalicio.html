@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consultoria Seguro Vida Vitalício</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-thin-rounded/css/uicons-thin-rounded.css">
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-2: #f8fafc;
+      --text: #172033;
+      --muted: #667085;
+      --border: #dbe3ee;
+      --brand: #7f1d1d;
+      --brand-2: #b91c1c;
+      --brand-soft: #fff1f2;
+      --accent: #0f766e;
+      --accent-soft: #ecfeff;
+      --blue: #1d4ed8;
+      --blue-soft: #eff6ff;
+      --shadow: 0 12px 32px rgba(15, 23, 42, 0.10);
+      --radius: 22px;
+      --radius-sm: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, #fff1f2 0, transparent 28%),
+        radial-gradient(circle at top right, #eff6ff 0, transparent 24%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: 'Inter', Arial, sans-serif;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #671313 0%, #9f1d1d 55%, #c52a2a 100%);
+      color: #fff;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 240px;
+      height: 240px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 780px;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-btn, .primary-btn, .secondary-btn, .icon-btn {
+      border: 0;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-family: inherit;
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 600;
+      backdrop-filter: blur(6px);
+    }
+
+    .ghost-btn:hover { background: rgba(255,255,255,0.18); }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 22px;
+    }
+
+    .stack { display: grid; gap: 22px; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(219, 227, 238, 0.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #fff 0%, #fcfdff 100%);
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--brand-soft);
+      color: var(--brand-2);
+      font-size: 18px;
+      flex: 0 0 auto;
+    }
+
+    .title-block h2,
+    .title-block h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .card-body {
+      padding: 22px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .field { display: grid; gap: 7px; }
+
+    .field label {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .helper {
+      margin-top: -2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    textarea { min-height: 110px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #bfdbfe;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    }
+
+    .money { text-align: right; }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--muted);
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 8px 12px;
+      font-weight: 600;
+    }
+
+    .dynamic-area {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .dynamic-block {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+      border-radius: 18px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .dynamic-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .dynamic-title {
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .mini-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #991b1b 0%, #c02626 100%);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(185, 28, 28, 0.18);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .icon-btn:hover { transform: translateY(-1px); }
+
+    .secondary-btn {
+      background: var(--blue-soft);
+      color: var(--blue);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .danger-btn {
+      background: #fff1f2;
+      color: #be123c;
+      border: 1px solid #fecdd3;
+    }
+
+    .danger-btn:hover { background: #ffe4e6; }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .result-panel {
+      background: linear-gradient(180deg, #ffffff 0%, #fff8f8 100%);
+      border: 1px solid #f3d3d3;
+      border-radius: 22px;
+      padding: 22px;
+      display: none;
+    }
+
+    .result-banner {
+      background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+      color: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .result-banner small {
+      display: block;
+      opacity: 0.82;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .result-banner strong {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1;
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: -0.05em;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .result-item {
+      background: #fff;
+      border: 1px solid #f0d9d9;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .result-item .k {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    .result-item .v {
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 4px;
+    }
+
+    .result-item .d {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .insight {
+      margin-top: 18px;
+      background: #fff;
+      border: 1px dashed #e5bcbc;
+      border-radius: 18px;
+      padding: 18px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .logic-list,
+    .news-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .logic-item,
+    .news-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
+    }
+
+    .logic-item h4,
+    .news-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .logic-item p,
+    .news-card p,
+    .news-card ul {
+      margin: 0;
+      color: #475467;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .news-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .tip-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--accent-soft);
+      border: 1px solid #bae6fd;
+      color: #0f172a;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      z-index: 9999;
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-content {
+      width: min(560px, 100%);
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.28);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.28);
+    }
+
+    .modal-header {
+      padding: 20px 22px;
+      background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .close-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .modal-body { padding: 20px 22px 24px; }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1080px) {
+      .dashboard { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 780px) {
+      .grid-2, .grid-3, .grid-4,
+      .result-grid,
+      .stats { grid-template-columns: 1fr; }
+
+      .page { padding: 16px 12px 40px; }
+      .hero { padding: 22px; border-radius: 22px; }
+      .card-header, .card-body { padding: 18px; }
+      .result-banner { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Ferramenta Consultiva<br>Seguro Vida Vitalício</h1>
+          <p>Uma página visual, elegante e funcional para apoiar a análise patrimonial, sucessória e de proteção familiar do cliente, com leitura consultiva, casos práticos e resumo pronto para compartilhamento.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="ghost-btn" type="button" onclick="abrirModal()"><i class="fi fi-tr-envelope"></i> Editar e-mails</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="dashboard">
+      <div class="stack">
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-user"></i></div>
+              <div class="title-block">
+                <h2>Identificação do cliente</h2>
+                <p>Base da reunião e registro do diagnóstico.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div class="field">
+                <label for="nomeCliente">Nome do cliente</label>
+                <input type="text" id="nomeCliente" placeholder="Nome completo">
+              </div>
+              <div class="field">
+                <label for="cpfCliente">CPF do cliente</label>
+                <input type="text" id="cpfCliente" maxlength="14" oninput="mascaraCPF(this)" placeholder="000.000.000-00">
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:16px;">
+              <div class="field">
+                <label for="resumoFamilia">Resumo familiar</label>
+                <textarea id="resumoFamilia" placeholder="Ex.: casado, 2 filhos, principal provedor da renda, possui imóvel financiado e reserva financeira parcial."></textarea>
+              </div>
+              <div class="field">
+                <label for="observacoesGerais">Observações gerais</label>
+                <textarea id="observacoesGerais" placeholder="Pontos importantes da conversa, objeções percebidas, prioridades do cliente, contexto patrimonial."></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-calendar-clock"></i></div>
+              <div class="title-block">
+                <h2>Agenda de reunião</h2>
+                <p>Duas datas para registro da conversa atual e do próximo acompanhamento.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-4">
+              <div class="field">
+                <label for="dataReuniao1">Data da reunião 1</label>
+                <input type="date" id="dataReuniao1">
+              </div>
+              <div class="field">
+                <label for="horaReuniao1">Horário</label>
+                <input type="time" id="horaReuniao1">
+              </div>
+              <div class="field">
+                <label for="dataReuniao2">Data da reunião 2</label>
+                <input type="date" id="dataReuniao2">
+              </div>
+              <div class="field">
+                <label for="horaReuniao2">Horário</label>
+                <input type="time" id="horaReuniao2">
+              </div>
+            </div>
+            <div class="pill-row">
+              <span class="pill">Registro da conversa</span>
+              <span class="pill">Próximo passo definido</span>
+              <span class="pill">Acompanhamento consultivo</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-wallet"></i></div>
+              <div class="title-block">
+                <h2>Proteção atual e fluxo familiar</h2>
+                <p>O ponto de partida da análise da necessidade de liquidez.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-3">
+              <div class="field">
+                <label for="despesas">Despesas mensais da família</label>
+                <input type="text" id="despesas" class="money" placeholder="R$ 0,00">
+                <div class="helper">Base para estimar reserva de continuidade por 5 anos.</div>
+              </div>
+              <div class="field">
+                <label for="temSeguro">Possui seguro de vida?</label>
+                <select id="temSeguro">
+                  <option value="nao">Não</option>
+                  <option value="sim">Sim</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="coberturaAtual">Cobertura atual</label>
+                <input type="text" id="coberturaAtual" class="money" placeholder="R$ 0,00">
+                <div class="helper">Somar seguros externos e coberturas já vigentes.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-child-head"></i></div>
+              <div class="title-block">
+                <h2>Filhos e dependentes</h2>
+                <p>O cálculo considera o custo mensal projetado até 21 anos.</p>
+              </div>
+            </div>
+            <button class="secondary-btn mini-btn" type="button" onclick="addFilho()"><i class="fi fi-tr-plus"></i> Adicionar</button>
+          </div>
+          <div class="card-body">
+            <div id="areaFilhos" class="dynamic-area"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-house-chimney"></i></div>
+              <div class="title-block">
+                <h2>Patrimônio e bens</h2>
+                <p>Importante para leitura sucessória, liquidez e custo potencial de inventário.</p>
+              </div>
+            </div>
+            <button class="secondary-btn mini-btn" type="button" onclick="addBem()"><i class="fi fi-tr-plus"></i> Adicionar</button>
+          </div>
+          <div class="card-body">
+            <div id="areaBens" class="dynamic-area"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-chart-pie-alt"></i></div>
+              <div class="title-block">
+                <h2>Investimentos e previdência</h2>
+                <p>Leitura patrimonial para entender liquidez, sucessão e proteção, sem confundir patrimônio com dinheiro imediato para a família.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-4">
+              <div class="field">
+                <label for="investimentos">Total de investimentos</label>
+                <input type="text" id="investimentos" class="money" placeholder="R$ 0,00">
+              </div>
+              <div class="field">
+                <label for="previdencia">Previdência privada</label>
+                <input type="text" id="previdencia" class="money" placeholder="R$ 0,00">
+                <div class="helper">Informar separadamente para retirar da base sujeita a ITCMD.</div>
+              </div>
+              <div class="field">
+                <label for="reservaLiquida">Reserva líquida de acesso rápido</label>
+                <input type="text" id="reservaLiquida" class="money" placeholder="R$ 0,00">
+                <div class="helper">Campo informativo para leitura de liquidez. Não entra no cálculo da cobertura.</div>
+              </div>
+              <div class="field">
+                <label for="dividas">Dívidas / compromissos relevantes</label>
+                <input type="text" id="dividas" class="money" placeholder="R$ 0,00">
+              </div>
+            </div>
+            <div class="tip-box" style="margin-top:16px;">
+              <strong>Leitura consultiva:</strong> patrimônio existe para compor herança, mas seguro existe para gerar <strong>liquidez rápida</strong>. Essa é a conversa central: a família conseguiria se reorganizar sem precisar vender patrimônio na pressa?
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-scale"></i></div>
+              <div class="title-block">
+                <h2>ITCMD e custos com advogado</h2>
+                <p>Estimativa sucessória para apoiar a argumentação do custo invisível do inventário.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-4">
+              <div class="field">
+                <label for="itcmd">ITCMD (%)</label>
+                <input type="number" id="itcmd" min="0" step="0.1" value="4">
+              </div>
+              <div class="field">
+                <label for="advogado">Advogado / inventário (%)</label>
+                <input type="number" id="advogado" min="0" step="0.1" value="10">
+              </div>
+              <div class="field">
+                <label for="outrosCustosSucessorios">Outros custos sucessórios</label>
+                <input type="text" id="outrosCustosSucessorios" class="money" placeholder="R$ 0,00">
+              </div>
+              <div class="field">
+                <label for="prazoProtecao">Horizonte de proteção (anos)</label>
+                <input type="number" id="prazoProtecao" min="1" step="1" value="5">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-calculator-simple"></i></div>
+              <div class="title-block">
+                <h2>Resultado consultivo</h2>
+                <p>Cobertura sugerida, gaps e narrativa pronta para o fechamento da conversa.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="actions-row">
+              <button class="primary-btn" type="button" onclick="calcular()"><i class="fi fi-tr-calculator"></i> Calcular cobertura ideal</button>
+              <button class="secondary-btn" type="button" onclick="enviarEmail()"><i class="fi fi-tr-envelope"></i> Enviar por Outlook</button>
+              <button class="secondary-btn" type="button" onclick="copiarResumo()"><i class="fi fi-tr-copy-alt"></i> Copiar resumo</button>
+            </div>
+            <div id="resultado" class="result-panel"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-lightbulb-on"></i></div>
+              <div class="title-block">
+                <h3>Lógica por trás de cada item analisado</h3>
+                <p>Explicação clara do que olhar e por que isso impacta a cobertura ideal.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="logic-list">
+              <div class="logic-item">
+                <h4>1. Despesas mensais da família</h4>
+                <p>É o núcleo da proteção. A pergunta consultiva é: <strong>se a renda principal faltar, por quanto tempo a família consegue manter padrão, escola, saúde, moradia e rotina?</strong> Nesta ferramenta, a base é o número de anos definido no horizonte de proteção.</p>
+              </div>
+              <div class="logic-item">
+                <h4>2. Filhos e dependentes</h4>
+                <p>O custo de criação entra como reforço da necessidade de proteção. Não basta pensar só em manter a casa; é preciso olhar educação, alimentação, transporte, saúde e estrutura até que cada dependente ganhe autonomia.</p>
+              </div>
+              <div class="logic-item">
+                <h4>3. ITCMD e advogado</h4>
+                <p>O patrimônio pode existir, mas a sucessão tem custo. O inventário pode pressionar a família justamente no pior momento. Por isso, seguro também entra como ferramenta de liquidez para cobrir tributos, honorários e despesas operacionais da transição.</p>
+              </div>
+              <div class="logic-item">
+                <h4>4. Investimentos e previdência</h4>
+                <p>Esses recursos reduzem parte do gap, mas precisam ser analisados com cuidado. Nem todo patrimônio tem liquidez imediata, e nem sempre é estratégico desmontar posição ou vender ativos em momento de fragilidade emocional.</p>
+              </div>
+              <div class="logic-item">
+                <h4>5. Cobertura ideal</h4>
+                <p>A cobertura ideal nasce da soma entre <strong>continuidade de vida da família + dependentes + custo sucessório + passivos</strong>, descontando o que já existe de proteção e de reserva líquida utilizável. O objetivo não é “vender um valor”, mas proteger uma realidade.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-newspaper"></i></div>
+              <div class="title-block">
+                <h3>Casos e histórias</h3>
+                <p>Formato de notícia para gerar entendimento e conexão emocional na reunião.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="news-list">
+              <article class="news-card">
+                <div class="news-meta"><i class="fi fi-tr-badge-sheriff"></i> Caso 1 · Falta de liquidez</div>
+                <h4>Família com patrimônio, mas sem caixa imediato</h4>
+                <p>Após a perda do principal provedor, havia imóveis e investimentos de longo prazo, mas quase nenhum recurso pronto para despesas urgentes. A família precisou correr com decisões patrimoniais em um momento emocionalmente frágil. A leitura consultiva aqui é simples: <strong>patrimônio não substitui liquidez imediata</strong>.</p>
+              </article>
+
+              <article class="news-card">
+                <div class="news-meta"><i class="fi fi-tr-badge-check"></i> Caso 2 · Estrutura preservada</div>
+                <h4>Seguro estruturado como ponte de reorganização</h4>
+                <p>Em outro cenário, a indenização trouxe tempo. Tempo para a família reorganizar finanças, respeitar o inventário e evitar venda precipitada de bens. O seguro não substituiu o patrimônio, mas protegeu a travessia entre o evento e a reestruturação.</p>
+              </article>
+
+              <article class="news-card">
+                <div class="news-meta"><i class="fi fi-tr-family"></i> Caso 3 · Proteção dos filhos</div>
+                <h4>O impacto real do custo dos dependentes</h4>
+                <p>Muitas famílias subestimam quanto custa sustentar filhos por vários anos. Quando a conversa traz números de escola, saúde, alimentação e rotina, o cliente enxerga que a proteção não é abstrata: ela tem nome, prazo e responsabilidade.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <div class="title-icon"><i class="fi fi-tr-chart-network"></i></div>
+              <div class="title-block">
+                <h3>Painel rápido</h3>
+                <p>Indicadores visuais para facilitar a condução da conversa.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="stats">
+              <div class="stat">
+                <small>Dependentes cadastrados</small>
+                <strong id="statFilhos">0</strong>
+              </div>
+              <div class="stat">
+                <small>Bens cadastrados</small>
+                <strong id="statBens">0</strong>
+              </div>
+              <div class="stat">
+                <small>Seguro atual</small>
+                <strong id="statSeguro">R$ 0,00</strong>
+              </div>
+              <div class="stat">
+                <small>Reserva líquida</small>
+                <strong id="statReserva">R$ 0,00</strong>
+              </div>
+            </div>
+            <div class="footer-note">Os números deste painel são atualizados conforme você preenche a análise. Eles ajudam a deixar a conversa mais visual e consultiva.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalEmail" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar dados de envio</h3>
+        <button class="close-btn icon-btn" type="button" onclick="fecharModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-1">
+          <div class="field">
+            <label for="emailLider">E-mail Líder Select</label>
+            <input type="email" id="emailLider" placeholder="lider@exemplo.com">
+          </div>
+          <div class="field">
+            <label for="emailTL">E-mail Team Leader Perto Seguros</label>
+            <input type="email" id="emailTL" placeholder="teamleader@exemplo.com">
+          </div>
+          <div class="field">
+            <label for="emailEspecialista">E-mail Especialista Perto Seguros</label>
+            <input type="email" id="emailEspecialista" placeholder="especialista@exemplo.com">
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="primary-btn" type="button" onclick="salvarEmails()">Salvar dados</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const areaFilhos = document.getElementById('areaFilhos');
+    const areaBens = document.getElementById('areaBens');
+    const resultado = document.getElementById('resultado');
+
+    document.addEventListener('input', function (e) {
+      if (e.target.classList.contains('money')) {
+        formatMoneyInput(e.target);
+      }
+      if (e.target.matches('.money, .fnome, .fidade, .btipo')) {
+        atualizarPainel();
+      }
+    });
+
+    function formatMoneyInput(el) {
+      const digits = (el.value || '').replace(/\D/g, '');
+      const number = Number(digits) / 100;
+      el.value = number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function mascaraCPF(input) {
+      let v = input.value.replace(/\D/g, '');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      input.value = v;
+    }
+
+    function parseMoneyById(id) {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      return parseMoneyEl(el);
+    }
+
+    function formatDateBR(value) {
+      if (!value) return '';
+      const [year, month, day] = value.split('-');
+      return [day, month, year].filter(Boolean).join('/');
+    }
+
+    function parseMoneyEl(el) {
+      return Number((el.value || '').replace(/\D/g, '')) / 100 || 0;
+    }
+
+    function moneyBR(value) {
+      return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function abrirModal() {
+      document.getElementById('modalEmail').classList.add('show');
+      document.getElementById('emailLider').value = localStorage.getItem('emailLider') || '';
+      document.getElementById('emailTL').value = localStorage.getItem('emailTL') || '';
+      document.getElementById('emailEspecialista').value = localStorage.getItem('emailEspecialista') || '';
+    }
+
+    function fecharModal() {
+      document.getElementById('modalEmail').classList.remove('show');
+    }
+
+    function salvarEmails() {
+      localStorage.setItem('emailLider', document.getElementById('emailLider').value);
+      localStorage.setItem('emailTL', document.getElementById('emailTL').value);
+      localStorage.setItem('emailEspecialista', document.getElementById('emailEspecialista').value);
+      fecharModal();
+      alert('Dados de e-mail salvos com sucesso.');
+    }
+
+    function addFilho(data = {}) {
+      const index = areaFilhos.children.length + 1;
+      const block = document.createElement('div');
+      block.className = 'dynamic-block';
+      block.innerHTML = `
+        <div class="dynamic-top">
+          <div class="dynamic-title">Dependente ${index}</div>
+          <button class="mini-btn danger-btn" type="button" onclick="this.closest('.dynamic-block').remove(); renumerar('filho'); atualizarPainel();">Remover</button>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Nome</label>
+            <input type="text" class="fnome" value="${escapeHtml(data.nome || '')}" placeholder="Nome do dependente">
+          </div>
+          <div class="field">
+            <label>Idade atual</label>
+            <input type="number" class="fidade" min="0" step="1" value="${data.idade ?? ''}" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Custo mensal</label>
+            <input type="text" class="fcusto money" value="${data.custo ? moneyBR(data.custo) : ''}" placeholder="R$ 0,00">
+          </div>
+        </div>
+      `;
+      areaFilhos.appendChild(block);
+      atualizarPainel();
+    }
+
+    function addBem(data = {}) {
+      const index = areaBens.children.length + 1;
+      const block = document.createElement('div');
+      block.className = 'dynamic-block';
+      block.innerHTML = `
+        <div class="dynamic-top">
+          <div class="dynamic-title">Bem ${index}</div>
+          <button class="mini-btn danger-btn" type="button" onclick="this.closest('.dynamic-block').remove(); renumerar('bem'); atualizarPainel();">Remover</button>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Tipo do bem</label>
+            <input type="text" class="btipo" value="${escapeHtml(data.tipo || '')}" placeholder="Ex.: imóvel, veículo, participação societária">
+          </div>
+          <div class="field">
+            <label>Valor estimado</label>
+            <input type="text" class="bvalor money" value="${data.valor ? moneyBR(data.valor) : ''}" placeholder="R$ 0,00">
+          </div>
+          <div class="field">
+            <label>Observação</label>
+            <input type="text" class="bobs" value="${escapeHtml(data.obs || '')}" placeholder="Liquidez, uso familiar, financiamento, etc.">
+          </div>
+        </div>
+      `;
+      areaBens.appendChild(block);
+      atualizarPainel();
+    }
+
+    function renumerar(tipo) {
+      if (tipo === 'filho') {
+        [...areaFilhos.querySelectorAll('.dynamic-block .dynamic-title')].forEach((el, i) => {
+          el.textContent = `Dependente ${i + 1}`;
+        });
+      }
+      if (tipo === 'bem') {
+        [...areaBens.querySelectorAll('.dynamic-block .dynamic-title')].forEach((el, i) => {
+          el.textContent = `Bem ${i + 1}`;
+        });
+      }
+    }
+
+    function obterFilhos() {
+      return [...document.querySelectorAll('#areaFilhos .dynamic-block')].map((f, i) => {
+        const nome = f.querySelector('.fnome').value.trim();
+        const idade = Number(f.querySelector('.fidade').value || 0);
+        const custo = parseMoneyEl(f.querySelector('.fcusto'));
+        const anosRestantes = Math.max(21 - idade, 0);
+        const total = anosRestantes * custo * 12;
+        return { indice: i + 1, nome, idade, custo, anosRestantes, total };
+      });
+    }
+
+    function obterBens() {
+      return [...document.querySelectorAll('#areaBens .dynamic-block')].map((b, i) => {
+        const tipo = b.querySelector('.btipo').value.trim();
+        const valor = parseMoneyEl(b.querySelector('.bvalor'));
+        const obs = b.querySelector('.bobs').value.trim();
+        return { indice: i + 1, tipo, valor, obs };
+      });
+    }
+
+    function atualizarPainel() {
+      const filhos = obterFilhos();
+      const bens = obterBens();
+      document.getElementById('statFilhos').textContent = String(filhos.filter(f => f.nome || f.idade || f.custo).length);
+      document.getElementById('statBens').textContent = String(bens.filter(b => b.tipo || b.valor).length);
+      document.getElementById('statSeguro').textContent = moneyBR(parseMoneyById('coberturaAtual'));
+      document.getElementById('statReserva').textContent = moneyBR(parseMoneyById('reservaLiquida'));
+    }
+
+    function calcular() {
+      const nome = document.getElementById('nomeCliente').value.trim();
+      const cpf = document.getElementById('cpfCliente').value.trim();
+      const resumoFamilia = document.getElementById('resumoFamilia').value.trim();
+      const observacoesGerais = document.getElementById('observacoesGerais').value.trim();
+      const dataReuniao1 = document.getElementById('dataReuniao1').value;
+      const horaReuniao1 = document.getElementById('horaReuniao1').value;
+      const dataReuniao2 = document.getElementById('dataReuniao2').value;
+      const horaReuniao2 = document.getElementById('horaReuniao2').value;
+      const despesas = parseMoneyById('despesas');
+      const coberturaAtual = parseMoneyById('coberturaAtual');
+      const investimentos = parseMoneyById('investimentos');
+      const previdencia = parseMoneyById('previdencia');
+      const reservaLiquida = parseMoneyById('reservaLiquida');
+      const dividas = parseMoneyById('dividas');
+      const outrosCustosSucessorios = parseMoneyById('outrosCustosSucessorios');
+      const prazoProtecao = Math.max(Number(document.getElementById('prazoProtecao').value || 5), 1);
+      const itcmd = Number(document.getElementById('itcmd').value || 0) / 100;
+      const advogado = Number(document.getElementById('advogado').value || 0) / 100;
+      const temSeguro = document.getElementById('temSeguro').value;
+      const filhos = obterFilhos();
+      const bens = obterBens();
+
+      const patrimonioBens = bens.reduce((sum, b) => sum + b.valor, 0);
+      const baseFinanceiraITCMD = Math.max(investimentos - previdencia, 0);
+      const patrimonioBaseSucessoria = patrimonioBens + baseFinanceiraITCMD;
+
+      const reservaFamiliar = despesas * 12 * prazoProtecao;
+      const totalDependentes = filhos.reduce((sum, f) => sum + f.total, 0);
+      const custoSucessorioPercentual = patrimonioBaseSucessoria * (itcmd + advogado);
+      const custoSucessorioTotal = custoSucessorioPercentual + outrosCustosSucessorios;
+
+      const protecaoExistente = coberturaAtual;
+      let coberturaIdeal = reservaFamiliar + totalDependentes + custoSucessorioTotal + dividas - protecaoExistente;
+      if (coberturaIdeal < 0) coberturaIdeal = 0;
+
+      let recomendacao = '';
+      if (temSeguro === 'nao' && coberturaIdeal > 0) {
+        recomendacao = 'O cliente não possui seguro de vida e apresenta gap de proteção. A recomendação consultiva é estruturar cobertura para gerar liquidez imediata à família e evitar pressão sobre o patrimônio.';
+      } else if (temSeguro === 'sim' && coberturaIdeal > 0) {
+        recomendacao = `Há proteção atual, mas ainda existe um gap estimado de ${moneyBR(coberturaIdeal)}. A recomendação é revisar a cobertura vigente para aproximá-la da necessidade familiar e sucessória identificada.`;
+      } else {
+        recomendacao = 'Pelos dados informados, a estrutura atual se aproxima da necessidade estimada. Ainda assim, vale validar a liquidez real dos ativos e a estratégia sucessória do cliente.';
+      }
+
+      const filhosTexto = filhos.length
+        ? filhos.map(f => `• ${f.nome || 'Dependente ' + f.indice}: idade ${f.idade || 0}, custo mensal ${moneyBR(f.custo)}, projeção até 21 anos ${moneyBR(f.total)}.`).join('\n')
+        : '• Nenhum dependente cadastrado.';
+
+      const bensTexto = bens.length
+        ? bens.map(b => `• ${b.tipo || 'Bem ' + b.indice}: valor estimado ${moneyBR(b.valor)}${b.obs ? ' — ' + b.obs : ''}.`).join('\n')
+        : '• Nenhum bem cadastrado.';
+
+      const agendaTexto = [
+        dataReuniao1 ? `Reunião 1: ${formatDateBR(dataReuniao1)}${horaReuniao1 ? ' às ' + horaReuniao1 : ''}` : '',
+        dataReuniao2 ? `Reunião 2: ${formatDateBR(dataReuniao2)}${horaReuniao2 ? ' às ' + horaReuniao2 : ''}` : ''
+      ].filter(Boolean).join('\n') || '-';
+
+      const resumo = `Diagnóstico Consultivo — Seguro Vida Vitalício
+Cliente: ${nome || '-'}
+CPF: ${cpf || '-'}
+
+Resumo familiar:
+${resumoFamilia || '-'}
+
+Observações gerais:
+${observacoesGerais || '-'}
+
+Agenda:
+${agendaTexto}
+
+Reserva familiar (${prazoProtecao} anos): ${moneyBR(reservaFamiliar)}
+Dependentes: ${moneyBR(totalDependentes)}
+Base patrimonial sujeita a ITCMD: ${moneyBR(patrimonioBaseSucessoria)}
+Custos sucessórios estimados: ${moneyBR(custoSucessorioTotal)}
+Dívidas / passivos: ${moneyBR(dividas)}
+Cobertura atual considerada: ${moneyBR(protecaoExistente)}
+
+Informações de apoio:
+Total de investimentos: ${moneyBR(investimentos)}
+Previdência privada: ${moneyBR(previdencia)}
+Reserva líquida informada: ${moneyBR(reservaLiquida)}
+
+Cobertura ideal sugerida: ${moneyBR(coberturaIdeal)}
+
+Recomendação:
+${recomendacao}
+
+Dependentes:
+${filhosTexto}
+
+Patrimônio / bens:
+${bensTexto}`;
+
+      resultado.style.display = 'block';
+      resultado.dataset.resumo = resumo;
+      resultado.innerHTML = `
+        <div class="result-banner">
+          <small>Cobertura ideal sugerida</small>
+          <strong>${moneyBR(coberturaIdeal)}</strong>
+          <div>${recomendacao}</div>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="k">Reserva familiar</div>
+            <div class="v">${moneyBR(reservaFamiliar)}</div>
+            <div class="d">${prazoProtecao} anos de despesas familiares para continuidade da rotina.</div>
+          </div>
+          <div class="result-item">
+            <div class="k">Dependentes</div>
+            <div class="v">${moneyBR(totalDependentes)}</div>
+            <div class="d">Projeção dos custos informados até 21 anos.</div>
+          </div>
+          <div class="result-item">
+            <div class="k">Base sujeita a ITCMD</div>
+            <div class="v">${moneyBR(patrimonioBaseSucessoria)}</div>
+            <div class="d">Bens + total de investimentos menos previdência privada.</div>
+          </div>
+          <div class="result-item">
+            <div class="k">Custos sucessórios</div>
+            <div class="v">${moneyBR(custoSucessorioTotal)}</div>
+            <div class="d">ITCMD, honorários e custos adicionais da sucessão.</div>
+          </div>
+          <div class="result-item">
+            <div class="k">Dívidas / passivos</div>
+            <div class="v">${moneyBR(dividas)}</div>
+            <div class="d">Compromissos que podem pressionar a família em uma transição.</div>
+          </div>
+          <div class="result-item">
+            <div class="k">Cobertura atual</div>
+            <div class="v">${moneyBR(protecaoExistente)}</div>
+            <div class="d">Valor atualmente protegido por seguro já existente.</div>
+          </div>
+        </div>
+
+        <div class="insight"><strong>Resumo executivo</strong>\n\n${resumo}</div>
+      `;
+    }
+
+    function enviarEmail() {
+      if (!resultado.dataset.resumo) {
+        alert('Calcule a cobertura ideal antes de enviar o e-mail.');
+        return;
+      }
+      const destino1 = localStorage.getItem('emailLider') || '';
+      const destino2 = localStorage.getItem('emailTL') || '';
+      const destino3 = localStorage.getItem('emailEspecialista') || '';
+      const destinatarios = [destino1, destino2, destino3].filter(Boolean).join(';');
+      const assunto = encodeURIComponent('Diagnóstico - Consultoria Seguro Vida Vitalício');
+      const corpo = encodeURIComponent(resultado.dataset.resumo);
+      window.location.href = `mailto:${destinatarios}?subject=${assunto}&body=${corpo}`;
+    }
+
+    async function copiarResumo() {
+      if (!resultado.dataset.resumo) {
+        alert('Calcule a cobertura ideal antes de copiar o resumo.');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(resultado.dataset.resumo);
+        alert('Resumo copiado com sucesso.');
+      } catch (e) {
+        alert('Não foi possível copiar automaticamente.');
+      }
+    }
+
+
+    function setMoney(id, value) {
+      const el = document.getElementById(id);
+      el.value = moneyBR(value || 0);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    document.getElementById('modalEmail').addEventListener('click', function(e) {
+      if (e.target.id === 'modalEmail') fecharModal();
+    });
+
+    addFilho();
+    addBem();
+    atualizarPainel();
+  </script>
+</body>
+</html>
