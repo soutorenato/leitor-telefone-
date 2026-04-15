@@ -2,11 +2,14 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jogo de Cartas Crédito</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
+*{box-sizing:border-box}
+
 body {
     font-family: 'Comfortaa', sans-serif;
     margin: 0;
@@ -17,47 +20,50 @@ body {
 .topbar {
     display: flex;
     justify-content: space-between;
-    padding: 15px 20px;
+    padding: 15px;
     background: #1E2F55;
     color: white;
 }
 
-.config {
-    cursor: pointer;
-}
+.config {cursor:pointer}
 
-/* SELEÇÃO DE CLIENTE */
+/* CLIENTES */
 .clientes {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
-    margin: 30px;
+    gap: 15px;
+    padding: 20px;
 }
 
 .cliente-card {
-    padding: 30px;
+    padding: 20px;
     background: white;
     border-radius: 10px;
     cursor: pointer;
+    width: 120px;
+    text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* LAYOUT */
 .container {
     display: flex;
+    flex-wrap: wrap;
 }
 
+/* CARTAS */
 .cartas {
-    width: 70%;
+    flex: 2;
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
-    padding: 20px;
+    gap: 10px;
+    padding: 10px;
 }
 
 .carta {
-    width: 120px;
-    height: 160px;
+    width: 100px;
+    height: 140px;
     background: url('card.png') center/cover;
     border-radius: 10px;
     display: flex;
@@ -65,23 +71,28 @@ body {
     justify-content: center;
     color: white;
     cursor: pointer;
-    position: relative;
+    transition: 0.3s;
+}
+
+.carta:hover {
+    transform: scale(1.05);
 }
 
 .carta.virada {
     background: white;
     color: black;
-    padding: 10px;
     flex-direction: column;
+    padding: 5px;
+    overflow: auto;
 }
 
 /* LATERAL */
 .lateral {
-    width: 30%;
-    background: #fff;
+    flex: 1;
+    background: white;
     padding: 10px;
+    max-height: 80vh;
     overflow-y: auto;
-    height: 80vh;
 }
 
 .mini-card {
@@ -89,30 +100,36 @@ body {
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 8px;
+    font-size: 12px;
 }
 
-/* INPUTS */
+/* INPUT */
 input, textarea {
     width: 100%;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin: 5px 0;
     padding: 5px;
+    font-size: 12px;
 }
 
 /* BOTÃO */
 button {
-    padding: 8px 10px;
+    padding: 6px;
     border: none;
     background: #FF6A1A;
     color: white;
-    cursor: pointer;
     border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
 }
 
 /* DEFESA */
 .defesa {
-    padding: 20px;
+    padding: 15px;
     display: none;
+}
+
+.defesa textarea {
+    height: 60px;
 }
 
 /* MODAL */
@@ -122,7 +139,7 @@ button {
     left:0;
     width:100%;
     height:100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     display:none;
     justify-content:center;
     align-items:center;
@@ -131,9 +148,37 @@ button {
 .modal-content {
     background:white;
     padding:20px;
-    width:70%;
+    width:90%;
     max-height:80vh;
     overflow:auto;
+    border-radius:10px;
+}
+
+/* RESPONSIVO */
+@media(max-width:768px){
+
+    .container {
+        flex-direction: column;
+    }
+
+    .cartas {
+        justify-content: center;
+    }
+
+    .lateral {
+        max-height: 300px;
+    }
+
+    .carta {
+        width: 80px;
+        height: 120px;
+        font-size: 10px;
+    }
+
+    textarea {
+        font-size: 10px;
+    }
+
 }
 </style>
 </head>
@@ -151,14 +196,13 @@ button {
     <div class="cliente-card" onclick="iniciar('joaquim')">Joaquim</div>
 </div>
 
-<div class="container" style="display:none;" id="jogo">
+<div class="container" id="jogo" style="display:none;">
     <div class="cartas" id="cartas"></div>
     <div class="lateral" id="lateral"></div>
 </div>
 
 <div class="defesa" id="defesa">
     <h3>Defesa de Crédito</h3>
-
     <textarea id="objetivo" placeholder="Objetivo do crédito"></textarea>
     <textarea id="capacidade" placeholder="Capacidade de pagamento"></textarea>
     <textarea id="relacao" placeholder="Relação PF/PJ"></textarea>
@@ -169,7 +213,7 @@ button {
     <button onclick="avaliar()">Avaliar Defesa</button>
 </div>
 
-<div class="modal" id="modal">
+<div class="modal" id="modal" onclick="this.style.display='none'">
     <div class="modal-content" id="resultado"></div>
 </div>
 
@@ -181,136 +225,91 @@ function config(){
     chaveOpenAI = prompt("Digite sua chave OpenAI:");
 }
 
-/* CASES */
 const dados = {
-    marcos: [
-        "Cliente desde 2000",
-        "Empresário",
-        "Renda 37 mil",
-        "Investimentos 525 mil",
-        "Quer 400 mil crédito"
-    ],
-    angelica: [
-        "Médica",
-        "Renda 27 mil",
-        "Endividada no cartão",
-        "Pouca reserva",
-        "Precisa organizar"
-    ],
-    joaquim: [
-        "Administrador",
-        "Renda alta",
-        "Patrimônio elevado",
-        "Quer construir casa",
-        "Investimentos fora"
-    ]
+    marcos:["Cliente antigo","Empresário","Renda 37k","Investimentos altos","Quer crédito"],
+    angelica:["Médica","Endividada","Renda 27k","Pouca reserva","Precisa organizar"],
+    joaquim:["Administrador","Patrimônio alto","Renda elevada","Investimentos fora","Quer construir"]
 };
 
-let totalCartas = 0;
-let respondidas = 0;
+let total=0, feitas=0;
 
-/* INICIAR */
 function iniciar(cliente){
-    document.getElementById("clientes").style.display = "none";
-    document.getElementById("jogo").style.display = "flex";
+    document.getElementById("clientes").style.display="none";
+    document.getElementById("jogo").style.display="flex";
 
-    const area = document.getElementById("cartas");
-    area.innerHTML = "";
+    let area=document.getElementById("cartas");
+    area.innerHTML="";
 
-    totalCartas = dados[cliente].length;
-    respondidas = 0;
+    total=dados[cliente].length;
+    feitas=0;
 
-    dados[cliente].forEach((info, i)=>{
-        const carta = document.createElement("div");
-        carta.className = "carta";
-        carta.innerHTML = "Card " + (i+1);
+    dados[cliente].forEach((info,i)=>{
+        let c=document.createElement("div");
+        c.className="carta";
+        c.innerText="Card "+(i+1);
 
-        carta.onclick = ()=>{
-            virarCarta(carta, info, i);
-        };
+        c.onclick=()=>virar(c,info);
 
-        area.appendChild(carta);
+        area.appendChild(c);
     });
 }
 
-/* VIRAR CARTA */
-function virarCarta(carta, info, index){
+function virar(carta,info){
     carta.classList.add("virada");
 
-    carta.innerHTML = `
-        <div>${info}</div>
-        <input placeholder="Nome do aluno">
-        <textarea placeholder="Pergunta"></textarea>
-        <button onclick="salvar(event, '${info}')">Salvar</button>
+    carta.innerHTML=`
+    <div>${info}</div>
+    <input placeholder="Aluno">
+    <textarea placeholder="Pergunta"></textarea>
+    <button onclick="salvar(event,'${info}')">Salvar</button>
     `;
 }
 
-/* SALVAR */
-function salvar(event, info){
-    event.stopPropagation();
+function salvar(e,info){
+    e.stopPropagation();
 
-    const box = event.target.parentElement;
-    const nome = box.querySelector("input").value;
-    const pergunta = box.querySelector("textarea").value;
+    let box=e.target.parentElement;
+    let nome=box.querySelector("input").value;
+    let pergunta=box.querySelector("textarea").value;
 
-    if(!nome || !pergunta){
-        alert("Preencha tudo");
-        return;
-    }
+    if(!nome||!pergunta){alert("Preencha");return;}
 
-    const lateral = document.getElementById("lateral");
+    let mini=document.createElement("div");
+    mini.className="mini-card";
+    mini.innerHTML=`<b>${info}</b><br>${nome}<br>${pergunta}`;
 
-    const mini = document.createElement("div");
-    mini.className = "mini-card";
-    mini.innerHTML = `
-        <b>${info}</b><br>
-        ${nome}<br>
-        ${pergunta}
-    `;
-
-    lateral.appendChild(mini);
+    document.getElementById("lateral").appendChild(mini);
 
     box.remove();
+    feitas++;
 
-    respondidas++;
-
-    if(respondidas === totalCartas){
-        document.getElementById("defesa").style.display = "block";
+    if(feitas===total){
+        document.getElementById("defesa").style.display="block";
     }
 }
 
-/* AVALIAR */
 async function avaliar(){
 
-    const texto = `
-    Objetivo: ${document.getElementById("objetivo").value}
-    Capacidade: ${document.getElementById("capacidade").value}
-    Relação: ${document.getElementById("relacao").value}
-    Garantias: ${document.getElementById("garantias").value}
-    Riscos: ${document.getElementById("riscos").value}
-    Recomendação: ${document.getElementById("recomendacao").value}
-    `;
+    let texto=document.getElementById("defesa").innerText;
 
-    const resposta = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + chaveOpenAI
+    let r=await fetch("https://api.openai.com/v1/responses",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer "+chaveOpenAI
         },
-        body: JSON.stringify({
-            model: "gpt-4.1-mini",
-            input: `Analise essa defesa de crédito e responda:
-            pontos fortes, pontos fracos, riscos, perguntas não feitas, nota de 0 a 10:
-            ${texto}`
+        body:JSON.stringify({
+            model:"gpt-4.1-mini",
+            input:"Analise defesa de crédito e dê feedback:\n"+texto
         })
     });
 
-    const data = await resposta.json();
+    let d=await r.json();
 
-    document.getElementById("resultado").innerText =
-        data.output[0].content[0].text;
+    document.getElementById("resultado").innerText=
+    d.output[0].content[0].text;
 
-    document.getElementById("modal").style.display = "flex";
+    document.getElementById("modal").style.display="flex";
 }
 
 </script>
