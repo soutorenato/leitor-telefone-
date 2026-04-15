@@ -1,261 +1,1227 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jogo de Cartas Crédito</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo de Cartas Crédito</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#1d2a43;
+      --muted:#6f7b93;
+      --brand:#1E2F55;
+      --accent:#FF6A1A;
+      --accent-2:#ffd8c2;
+      --line:#e7ebf3;
+      --ok:#0f9d58;
+      --shadow:0 10px 30px rgba(18, 35, 74, 0.08);
+      --radius:18px;
+    }
+    body{
+      margin:0;
+      font-family:'Comfortaa',sans-serif;
+      background:linear-gradient(180deg,#f7f9fd 0%,#eef3fa 100%);
+      color:var(--text);
+    }
+    .app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:40;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:16px 20px;
+      background:rgba(30,47,85,.96);
+      color:#fff;
+      backdrop-filter: blur(10px);
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
+    }
+    .topbar-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .topbar-title strong{ font-size:18px; }
+    .topbar-title span{
+      font-size:12px;
+      opacity:.8;
+    }
+    .toolbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .icon-btn{
+      border:none;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .icon-btn:hover{ background:rgba(255,255,255,.2); transform:translateY(-1px); }
+    .page{
+      width:min(1400px, calc(100% - 24px));
+      margin:18px auto 28px;
+    }
+    .screen{ display:none; }
+    .screen.active{ display:block; }
 
-<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600&display=swap" rel="stylesheet">
+    .hero{
+      background:var(--card);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:24px;
+      padding:22px;
+      margin-bottom:18px;
+    }
+    .hero h1{
+      margin:0 0 8px;
+      font-size:24px;
+      color:var(--brand);
+    }
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+      font-size:14px;
+    }
 
-<style>
-*{box-sizing:border-box}
-body{font-family:Comfortaa;margin:0;background:#f5f7fb}
+    .case-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:18px;
+      margin-top:18px;
+    }
+    .case-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:22px;
+      min-height:190px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      cursor:pointer;
+      transition:.25s ease;
+    }
+    .case-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 16px 35px rgba(18, 35, 74, 0.12);
+      border-color:#d9e2f2;
+    }
+    .case-card small{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .case-card h3{
+      margin:8px 0 8px;
+      color:var(--brand);
+      font-size:24px;
+    }
+    .case-card p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .case-card .open{
+      margin-top:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:var(--accent);
+      font-weight:700;
+      font-size:13px;
+    }
 
-/* TOPO */
-.topbar{display:flex;justify-content:space-between;padding:15px;background:#1E2F55;color:#fff}
-.config{cursor:pointer}
+    .game-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:18px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:20px;
+      margin-bottom:18px;
+    }
+    .game-header h2{
+      margin:0 0 8px;
+      color:var(--brand);
+    }
+    .game-header p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+      font-size:14px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#edf3ff;
+      color:var(--brand);
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .ghost-btn,.primary-btn,.secondary-btn{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-family:inherit;
+      font-weight:700;
+      transition:.2s ease;
+    }
+    .ghost-btn{
+      background:#eef3fb;
+      color:var(--brand);
+    }
+    .primary-btn{
+      background:var(--accent);
+      color:#fff;
+      box-shadow:0 8px 18px rgba(255,106,26,.28);
+    }
+    .secondary-btn{
+      background:var(--brand);
+      color:#fff;
+    }
+    .ghost-btn:hover,.primary-btn:hover,.secondary-btn:hover{
+      transform:translateY(-1px);
+    }
 
-/* CLIENTES */
-.clientes{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;padding:20px}
-.cliente-card{padding:20px;background:#fff;border-radius:10px;cursor:pointer;width:130px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+    .game-layout{
+      display:grid;
+      grid-template-columns:minmax(0, 1.6fr) minmax(320px, .9fr);
+      gap:18px;
+      align-items:start;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .panel h3{
+      margin:0 0 8px;
+      color:var(--brand);
+      font-size:18px;
+    }
+    .panel p{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
 
-/* LAYOUT */
-.container{display:flex;flex-wrap:wrap}
+    .cards-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+      gap:14px;
+    }
+    .play-card{
+      position:relative;
+      min-height:220px;
+      perspective:1000px;
+      transition:transform .45s ease, opacity .45s ease;
+    }
+    .play-card.fly-out{
+      opacity:0;
+      transform:translateX(110px) scale(.92);
+      pointer-events:none;
+    }
+    .play-card-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      transition:transform .6s;
+      transform-style:preserve-3d;
+    }
+    .play-card.is-flipped .play-card-inner{
+      transform:rotateY(180deg);
+    }
+    .play-card-face{
+      position:absolute;
+      inset:0;
+      border-radius:20px;
+      overflow:hidden;
+      backface-visibility:hidden;
+      border:1px solid var(--line);
+      box-shadow:0 8px 18px rgba(18,35,74,.06);
+    }
+    .play-card-front{
+      background:
+        linear-gradient(180deg, rgba(30,47,85,.28), rgba(30,47,85,.78)),
+        url('card.png') center/cover no-repeat;
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding:16px;
+    }
+    .front-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .front-top span{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      font-weight:700;
+      background:rgba(255,255,255,.16);
+      padding:7px 10px;
+      border-radius:999px;
+      backdrop-filter: blur(4px);
+    }
+    .front-center{
+      text-align:center;
+      padding:18px 8px;
+    }
+    .front-center strong{
+      display:block;
+      font-size:18px;
+      margin-bottom:10px;
+    }
+    .front-center small{
+      font-size:12px;
+      line-height:1.5;
+      opacity:.92;
+    }
+    .play-card-front button{
+      align-self:stretch;
+      border:none;
+      background:#fff;
+      color:var(--brand);
+      font-weight:700;
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-family:inherit;
+    }
 
-/* CARTAS */
-.cartas{flex:2;display:flex;flex-wrap:wrap;gap:10px;padding:10px}
-.carta{
-width:100px;height:140px;background:url('card.png') center/cover;border-radius:10px;
-display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;transition:.3s;
-}
-.carta:hover{transform:scale(1.05)}
-.carta.virada{background:#fff;color:#000;flex-direction:column;padding:5px;overflow:auto}
+    .play-card-back{
+      background:#fff;
+      transform:rotateY(180deg);
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .play-card-back h4{
+      margin:0;
+      color:var(--brand);
+      font-size:14px;
+      line-height:1.4;
+    }
+    .play-card-back .info-box{
+      background:#f7f9fe;
+      border:1px solid #e8eef8;
+      border-radius:14px;
+      padding:10px;
+      color:#3f4b63;
+      font-size:12px;
+      line-height:1.5;
+      min-height:68px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .field label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .field input,.field textarea{
+      width:100%;
+      border:1px solid #dce4f2;
+      border-radius:12px;
+      padding:10px 12px;
+      font:inherit;
+      font-size:12px;
+      color:var(--text);
+      background:#fff;
+      resize:vertical;
+      outline:none;
+    }
+    .field input:focus,.field textarea:focus{
+      border-color:#a8bce3;
+      box-shadow:0 0 0 3px rgba(30,47,85,.07);
+    }
+    .field textarea{ min-height:72px; }
+    .card-actions{
+      display:flex;
+      gap:8px;
+      margin-top:auto;
+    }
+    .card-actions button{
+      flex:1;
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-family:inherit;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .save-btn{ background:var(--accent); color:#fff; }
+    .close-btn{ background:#eef3fb; color:var(--brand); }
 
-/* LATERAL */
-.lateral{flex:1;background:#fff;padding:10px;max-height:80vh;overflow-y:auto}
-.mini-card{background:#f1f3f9;margin-bottom:10px;padding:10px;border-radius:8px;font-size:12px}
+    .history-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      max-height:72vh;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .history-empty{
+      background:#f8fbff;
+      border:1px dashed #d6deed;
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+    .history-card{
+      background:#f8fbff;
+      border:1px solid #e0e8f6;
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 6px 14px rgba(18,35,74,.04);
+      animation:slideIn .35s ease;
+    }
+    @keyframes slideIn{
+      from{ opacity:0; transform:translateY(10px);}
+      to{ opacity:1; transform:translateY(0);}
+    }
+    .history-card .tag{
+      display:inline-flex;
+      background:var(--accent-2);
+      color:#9a470b;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .history-card h4{
+      margin:0 0 10px;
+      color:var(--brand);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .history-meta{
+      display:grid;
+      gap:8px;
+      font-size:12px;
+      color:#46516a;
+    }
+    .history-meta strong{ color:var(--brand); }
 
-/* INPUT */
-input,textarea{width:100%;margin:5px 0;padding:5px;font-size:12px}
+    .defense-panel{ display:none; margin-top:18px; }
+    .defense-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    .defense-item{
+      background:#fafcff;
+      border:1px solid #e5ebf6;
+      border-radius:18px;
+      padding:12px;
+    }
+    .defense-item h4{
+      margin:0 0 8px;
+      font-size:14px;
+      color:var(--brand);
+    }
+    .defense-item textarea{
+      width:100%;
+      min-height:120px;
+      border:1px solid #dce4f2;
+      border-radius:12px;
+      padding:12px;
+      font:inherit;
+      font-size:13px;
+      resize:vertical;
+      outline:none;
+    }
+    .defense-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:16px;
+    }
 
-/* BOTÃO */
-button{padding:6px;border:none;background:#FF6A1A;color:#fff;border-radius:5px;cursor:pointer;font-size:12px}
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(10,19,36,.58);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:60;
+    }
+    .modal.open{ display:flex; }
+    .modal-box{
+      width:min(980px, 100%);
+      max-height:min(88vh, 900px);
+      overflow:auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 28px 70px rgba(0,0,0,.22);
+      border:1px solid #e8edf7;
+    }
+    .modal-head{
+      position:sticky;
+      top:0;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      padding:18px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      z-index:2;
+    }
+    .modal-head h3{
+      margin:0;
+      color:var(--brand);
+    }
+    .modal-body{ padding:18px 20px 22px; }
+    .modal-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+    .feedback-card{
+      border:1px solid #e3eaf6;
+      background:#f9fbff;
+      border-radius:18px;
+      padding:14px;
+    }
+    .feedback-card h4{
+      margin:0 0 10px;
+      color:var(--brand);
+      font-size:14px;
+    }
+    .feedback-card p,.feedback-card ul{
+      margin:0;
+      color:#445069;
+      font-size:13px;
+      line-height:1.7;
+      white-space:pre-wrap;
+    }
+    .feedback-card ul{ padding-left:18px; }
+    .config-grid{
+      display:grid;
+      gap:14px;
+    }
+    .status{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .footer-note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
 
-/* DEFESA */
-.defesa{padding:15px;display:none}
-.defesa textarea{height:60px}
-
-/* MODAL */
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;justify-content:center;align-items:center}
-.modal-content{background:#fff;padding:20px;width:90%;max-height:80vh;overflow:auto;border-radius:10px}
-
-/* RESPONSIVO */
-@media(max-width:768px){
-.container{flex-direction:column}
-.lateral{max-height:300px}
-.carta{width:80px;height:120px;font-size:10px}
-}
-</style>
+    @media (max-width: 980px){
+      .game-layout{ grid-template-columns:1fr; }
+      .history-wrap{ max-height:none; }
+      .defense-grid,.modal-grid,.case-grid{ grid-template-columns:1fr; }
+      .game-header{ flex-direction:column; }
+    }
+    @media (max-width: 620px){
+      .topbar{ padding:14px; }
+      .page{ width:min(100% - 16px, 1400px); margin:12px auto 24px; }
+      .hero,.panel,.game-header{ padding:16px; border-radius:18px; }
+      .cards-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .play-card{ min-height:214px; }
+      .case-card{ min-height:170px; }
+      .front-center strong{ font-size:16px; }
+      .topbar-title strong{ font-size:16px; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-title">
+        <strong>Jogo de Cartas Crédito</strong>
+        <span>Dinâmica prática para investigação consultiva e defesa de crédito</span>
+      </div>
+      <div class="toolbar">
+        <button class="icon-btn" type="button" id="btnOpenConfig" title="Configuração da IA">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+      </div>
+    </header>
 
-<div class="topbar">
-<div>Jogo de Cartas Crédito</div>
-<div class="config" onclick="config()">⚙️</div>
-</div>
+    <main class="page">
+      <section id="screen-home" class="screen active">
+        <div class="hero">
+          <h1>Escolha o cliente para iniciar</h1>
+          <p>Ao selecionar um case, as cartas serão abertas para a dinâmica. Cada carta revela uma informação. Depois disso, o aluno registra a pergunta que faria ao cliente. As respostas ficam organizadas à direita e, ao final, a defesa de crédito é construída em blocos.</p>
+        </div>
 
-<div class="clientes" id="clientes">
-<div class="cliente-card" onclick="iniciar('marcos')">Marcos</div>
-<div class="cliente-card" onclick="iniciar('angelica')">Angélica</div>
-<div class="cliente-card" onclick="iniciar('joaquim')">Joaquim</div>
-</div>
+        <div class="case-grid" id="caseGrid"></div>
+      </section>
 
-<div class="container" id="jogo" style="display:none;">
-<div class="cartas" id="cartas"></div>
-<div class="lateral" id="lateral"></div>
-</div>
+      <section id="screen-game" class="screen">
+        <div class="game-header">
+          <div>
+            <h2 id="caseTitle">Case</h2>
+            <p id="caseSubtitle"></p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="pill">
+              <span class="material-symbols-outlined" style="font-size:16px;">style</span>
+              <span id="progressText">0 de 0 cartas concluídas</span>
+            </div>
+            <button class="ghost-btn" type="button" id="btnBackHome">Trocar case</button>
+          </div>
+        </div>
 
-<div class="defesa" id="defesa">
-<h3>Defesa de Crédito</h3>
+        <div class="game-layout">
+          <div>
+            <div class="panel">
+              <h3>Cartas da dinâmica</h3>
+              <p>Abra uma carta por vez. Depois de registrar o nome do aluno e a pergunta, a carta sai da área principal e vai para o histórico lateral.</p>
+              <div class="cards-grid" id="cardsGrid"></div>
+            </div>
 
-<textarea id="objetivo" placeholder="Objetivo do crédito"></textarea>
-<textarea id="capacidade" placeholder="Capacidade de pagamento"></textarea>
-<textarea id="relacao" placeholder="Relação PF/PJ"></textarea>
-<textarea id="garantias" placeholder="Garantias"></textarea>
-<textarea id="riscos" placeholder="Pontos de atenção"></textarea>
-<textarea id="recomendacao" placeholder="Recomendação"></textarea>
+            <div class="panel defense-panel" id="defensePanel">
+              <h3>Defesa de crédito</h3>
+              <p>Após concluir todas as cartas, preencha a defesa em blocos e faça a avaliação.</p>
 
-<button onclick="avaliar()">Avaliar Defesa</button>
-</div>
+              <div class="defense-grid" id="defenseGrid"></div>
 
-<div class="modal" id="modal" onclick="this.style.display='none'">
-<div class="modal-content" id="resultado"></div>
-</div>
+              <div class="defense-actions">
+                <button class="ghost-btn" type="button" id="btnClearDefense">Limpar defesa</button>
+                <button class="primary-btn" type="button" id="btnEvaluate">Avaliar defesa</button>
+              </div>
+              <div class="footer-note">Se a chave da OpenAI não for informada, o sistema mostra um feedback local simples para você continuar a aula.</div>
+            </div>
+          </div>
 
-<script>
+          <aside class="panel">
+            <h3>Histórico da investigação</h3>
+            <p>As cartas respondidas aparecem aqui com a informação revelada, nome do aluno e pergunta registrada.</p>
+            <div class="history-wrap" id="historyWrap">
+              <div class="history-empty" id="historyEmpty">
+                Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
 
-let chaveOpenAI="";
+  <div class="modal" id="configModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Configuração da IA</h3>
+        <button class="icon-btn" type="button" data-close="configModal" style="background:#eef3fb;color:#1E2F55;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="config-grid">
+          <div class="field">
+            <label for="apiKeyInput">Chave da OpenAI</label>
+            <input id="apiKeyInput" type="password" placeholder="Cole sua chave aqui" />
+          </div>
+          <div class="field">
+            <label for="modelInput">Modelo</label>
+            <input id="modelInput" type="text" value="gpt-4.1-mini" />
+          </div>
+          <div>
+            <button class="secondary-btn" type="button" id="btnSaveConfig">Salvar configuração</button>
+            <div class="status" id="configStatus">A chave fica apenas nesta página, no navegador.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-function config(){
-chaveOpenAI=prompt("Cole sua chave OpenAI");
+  <div class="modal" id="feedbackModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Avaliação da defesa</h3>
+        <button class="icon-btn" type="button" data-close="feedbackModal" style="background:#eef3fb;color:#1E2F55;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid" id="feedbackGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CASES = {
+      marcos: {
+        nome: "Marcos",
+        resumo: "Empresário, cliente antigo, busca R$ 400 mil para abrir uma nova frente da empresa voltada a projetos estruturais.",
+        cards: [
+          "Marcos tem 45 anos e é empresário/engenheiro.",
+          "Cliente desde 09/2000.",
+          "Possui empresa de ferramentaria.",
+          "É casado e tem 2 filhos.",
+          "Renda mensal de R$ 37 mil.",
+          "Despesas mensais de R$ 21 mil.",
+          "Declaração de IR completa.",
+          "Contribui com INSS.",
+          "Perfil de investidor conservador.",
+          "Conta PJ concentrada na concorrência.",
+          "Sem restrições no CPF.",
+          "Cartão com limite de R$ 70 mil, sendo R$ 45 mil em utilização.",
+          "Cheque especial de R$ 25 mil, com uso dentro dos 10 dias sem juros.",
+          "Investimentos de R$ 525 mil em renda fixa no B7 Bank.",
+          "Possui R$ 270 mil em previdência na concorrência.",
+          "Tem 1 HR-V financiado (R$ 90 mil) no B7 Bank.",
+          "Tem 1 casa quitada na Zona Sul de São Paulo avaliada em R$ 1,3 milhão.",
+          "Gosta de viajar com a família.",
+          "Pratica esportes radicais.",
+          "Deseja R$ 400 mil de crédito para abrir uma nova frente da empresa de engenharia voltada para projetos estruturais."
+        ]
+      },
+      angelica: {
+        nome: "Angélica",
+        resumo: "Médica, cliente nova, precisa organizar a vida financeira, construir patrimônio e melhorar o uso do crédito.",
+        cards: [
+          "Angélica tem 35 anos e é médica.",
+          "Cliente desde 10/2024.",
+          "É solteira.",
+          "Tem 1 golden retriever.",
+          "Não tem filhos, mas ajuda os pais com despesas da casa.",
+          "Renda mensal de R$ 27 mil.",
+          "Despesas mensais de R$ 12 mil.",
+          "Declaração de IR simplificada.",
+          "Perfil de investidor ainda não preenchido.",
+          "Sem restrições no CPF.",
+          "Cartão com limite de R$ 70 mil, com R$ 65 mil em utilização.",
+          "No sistema, há recorrência no parcelamento da fatura.",
+          "Cheque especial de R$ 10 mil com uso integral acima de 10 dias.",
+          "Tem R$ 20 mil na poupança no B7 Bank.",
+          "Comprou o primeiro imóvel financiado no concorrente.",
+          "O imóvel está em fase de reforma.",
+          "Gosta de shows.",
+          "Gosta de gastronomia.",
+          "Necessidades: construção de patrimônio, organização do crédito e investimentos pessoais."
+        ]
+      },
+      joaquim: {
+        nome: "Joaquim",
+        resumo: "Administrador com patrimônio relevante, projetos familiares e de construção, além de forte oportunidade de planejamento patrimonial.",
+        cards: [
+          "Joaquim tem 62 anos e é administrador.",
+          "Tem uma empresa de fabricação de resinas plásticas.",
+          "Cliente desde 05/2022.",
+          "É casado.",
+          "Tem 3 filhos.",
+          "Renda mensal real de R$ 55 mil.",
+          "Despesas mensais de R$ 26 mil.",
+          "Declaração de IR completa.",
+          "Perfil de investidor conservador.",
+          "Sem restrições no CPF.",
+          "Cartão com limite de R$ 52 mil, sendo R$ 24 mil em utilização.",
+          "Cheque especial de R$ 40 mil sem uso.",
+          "Tem R$ 150 mil em fundo DI com liquidez.",
+          "Possui R$ 1,6 milhão em previdência na concorrência.",
+          "Possui R$ 480 mil em renda fixa na concorrência.",
+          "Tem um apartamento quitado na Mooca avaliado em R$ 700 mil que gera renda de aluguel.",
+          "Tem um sobrado quitado em Santo André avaliado em R$ 1,2 milhão, onde mora com a família.",
+          "Comprou um terreno em condomínio fechado em Indaiatuba.",
+          "Pretende construir em até 2 anos, com custo estimado entre R$ 1,5 milhão e R$ 2 milhões.",
+          "Tem 1 SUV e 1 moto.",
+          "Gosta de pescar em alto mar com amigos.",
+          "Gosta de passar tempo com os netos.",
+          "Projetos: viagem de 40 anos de casados, levar a neta Maria Vitória para a Disney aos 5 anos e construir a casa em Indaiatuba."
+        ]
+      }
+    };
+
+    const defenseFields = [
+      { key: "objetivo", label: "Objetivo do crédito" },
+      { key: "capacidade", label: "Capacidade de pagamento" },
+      { key: "relacao", label: "Relação PF / PJ / CLT" },
+      { key: "garantias", label: "Garantias e patrimônio" },
+      { key: "pontos", label: "Pontos de atenção" },
+      { key: "recomendacao", label: "Recomendação final" },
+      { key: "linha", label: "Sugestão de linha de crédito" },
+      { key: "hipotese", label: "Hipótese do gerente / visão final" }
+    ];
+
+    let currentCaseKey = null;
+    let answeredCards = [];
+    let openAiKey = "";
+    let openAiModel = "gpt-4.1-mini";
+
+    const caseGrid = document.getElementById("caseGrid");
+    const screenHome = document.getElementById("screen-home");
+    const screenGame = document.getElementById("screen-game");
+    const caseTitle = document.getElementById("caseTitle");
+    const caseSubtitle = document.getElementById("caseSubtitle");
+    const cardsGrid = document.getElementById("cardsGrid");
+    const historyWrap = document.getElementById("historyWrap");
+    const historyEmpty = document.getElementById("historyEmpty");
+    const progressText = document.getElementById("progressText");
+    const defensePanel = document.getElementById("defensePanel");
+    const defenseGrid = document.getElementById("defenseGrid");
+    const feedbackGrid = document.getElementById("feedbackGrid");
+    const configModal = document.getElementById("configModal");
+    const feedbackModal = document.getElementById("feedbackModal");
+    const apiKeyInput = document.getElementById("apiKeyInput");
+    const modelInput = document.getElementById("modelInput");
+    const configStatus = document.getElementById("configStatus");
+
+    function renderCaseSelection(){
+      caseGrid.innerHTML = "";
+      Object.entries(CASES).forEach(([key, item], index) => {
+        const card = document.createElement("article");
+        card.className = "case-card";
+        card.innerHTML = `
+          <div>
+            <small>Case ${index + 1}</small>
+            <h3>${item.nome}</h3>
+            <p>${item.resumo}</p>
+          </div>
+          <div class="open">
+            <span>Iniciar dinâmica</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+        `;
+        card.addEventListener("click", () => startCase(key));
+        caseGrid.appendChild(card);
+      });
+    }
+
+    function showScreen(name){
+      screenHome.classList.toggle("active", name === "home");
+      screenGame.classList.toggle("active", name === "game");
+    }
+
+    function startCase(caseKey){
+      currentCaseKey = caseKey;
+      answeredCards = [];
+      const item = CASES[caseKey];
+      caseTitle.textContent = `Case — ${item.nome}`;
+      caseSubtitle.textContent = item.resumo;
+      renderCards(item.cards);
+      renderHistory();
+      renderDefense();
+      updateProgress();
+      defensePanel.style.display = "none";
+      showScreen("game");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderCards(cards){
+      cardsGrid.innerHTML = "";
+      cards.forEach((info, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "play-card";
+        wrapper.dataset.index = index;
+
+        const safeInfo = info
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        wrapper.innerHTML = `
+          <div class="play-card-inner">
+            <div class="play-card-face play-card-front">
+              <div class="front-top">
+                <span><span class="material-symbols-outlined" style="font-size:14px;">style</span>Card ${index + 1}</span>
+                <span>B7</span>
+              </div>
+              <div class="front-center">
+                <strong>Vire a carta</strong>
+                <small>Revele uma informação do cliente e registre a pergunta do aluno.</small>
+              </div>
+              <button type="button" class="btn-flip">Abrir card</button>
+            </div>
+            <div class="play-card-face play-card-back">
+              <h4>Informação revelada</h4>
+              <div class="info-box">${safeInfo}</div>
+
+              <div class="field">
+                <label>Nome do aluno</label>
+                <input type="text" class="student-input" placeholder="Digite o nome" />
+              </div>
+
+              <div class="field">
+                <label>Pergunta que faria ao cliente</label>
+                <textarea class="question-input" placeholder="Escreva a pergunta"></textarea>
+              </div>
+
+              <div class="card-actions">
+                <button type="button" class="close-btn">Voltar</button>
+                <button type="button" class="save-btn">Salvar</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const flipBtn = wrapper.querySelector(".btn-flip");
+        const closeBtn = wrapper.querySelector(".close-btn");
+        const saveBtn = wrapper.querySelector(".save-btn");
+
+        flipBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          wrapper.classList.add("is-flipped");
+        });
+
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          wrapper.classList.remove("is-flipped");
+        });
+
+        saveBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const student = wrapper.querySelector(".student-input").value.trim();
+          const question = wrapper.querySelector(".question-input").value.trim();
+
+          if(!student || !question){
+            alert("Preencha o nome do aluno e a pergunta antes de salvar.");
+            return;
+          }
+
+          answeredCards.push({
+            card: index + 1,
+            info,
+            student,
+            question
+          });
+
+          renderHistory();
+          updateProgress();
+
+          wrapper.classList.add("fly-out");
+          setTimeout(() => wrapper.remove(), 420);
+
+          if(answeredCards.length === CASES[currentCaseKey].cards.length){
+            defensePanel.style.display = "block";
+            defensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+
+        cardsGrid.appendChild(wrapper);
+      });
+    }
+
+    function renderHistory(){
+      historyWrap.innerHTML = "";
+      if(answeredCards.length === 0){
+        historyWrap.appendChild(historyEmpty);
+        return;
+      }
+
+      answeredCards.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "history-card";
+        card.innerHTML = `
+          <div class="tag">Card ${item.card}</div>
+          <h4>${escapeHtml(item.info)}</h4>
+          <div class="history-meta">
+            <div><strong>Aluno:</strong> ${escapeHtml(item.student)}</div>
+            <div><strong>Pergunta:</strong> ${escapeHtml(item.question)}</div>
+          </div>
+        `;
+        historyWrap.appendChild(card);
+      });
+    }
+
+    function updateProgress(){
+      const total = currentCaseKey ? CASES[currentCaseKey].cards.length : 0;
+      progressText.textContent = `${answeredCards.length} de ${total} cartas concluídas`;
+    }
+
+    function renderDefense(){
+      defenseGrid.innerHTML = "";
+      defenseFields.forEach(field => {
+        const block = document.createElement("div");
+        block.className = "defense-item";
+        block.innerHTML = `
+          <h4>${field.label}</h4>
+          <textarea id="defense-${field.key}" placeholder="Escreva aqui"></textarea>
+        `;
+        defenseGrid.appendChild(block);
+      });
+    }
+
+    function collectDefense(){
+      const defense = {};
+      defenseFields.forEach(field => {
+        const el = document.getElementById(`defense-${field.key}`);
+        defense[field.key] = el ? el.value.trim() : "";
+      });
+      return defense;
+    }
+
+    function buildEvaluationPrompt(){
+      const caseData = CASES[currentCaseKey];
+      const defense = collectDefense();
+      const historyText = answeredCards.map(i =>
+        `Card ${i.card}\nInformação: ${i.info}\nAluno: ${i.student}\nPergunta feita: ${i.question}`
+      ).join("\n\n");
+
+      const defenseText = defenseFields.map(f =>
+        `${f.label}: ${defense[f.key] || "(vazio)"}`
+      ).join("\n");
+
+      return `
+Você é um avaliador de treinamento bancário com foco em assessoria em crédito.
+Analise a investigação feita e a defesa de crédito abaixo.
+
+CLIENTE:
+${caseData.nome}
+
+RESUMO DO CASE:
+${caseData.resumo}
+
+INFORMAÇÕES REVELADAS E PERGUNTAS FEITAS:
+${historyText}
+
+DEFESA DE CRÉDITO:
+${defenseText}
+
+Responda em JSON válido com exatamente estas chaves:
+{
+  "pontosFortes": "texto",
+  "pontosAtencao": "texto",
+  "perguntasImportantesNaoFeitas": ["item 1", "item 2"],
+  "riscosNaoExplorados": "texto",
+  "notaDefesa": "nota de 0 a 10 com breve justificativa",
+  "linhaCreditoMaisCoerente": "texto",
+  "comoMelhorarArgumentacao": "texto"
 }
 
-const dados={
-
-marcos:[
-"Cliente desde 09/2000",
-"Empresário com empresa de ferramentaria",
-"Renda mensal R$ 37 mil",
-"Despesas R$ 21 mil",
-"Perfil conservador",
-"Conta PJ na concorrência",
-"Cartão limite 70k (45k uso)",
-"Cheque especial 25k",
-"Investimentos 525k RF",
-"Patrimônio: casa 1.3MM + carro financiado",
-"Quer crédito 400k para expansão"
-],
-
-angelica:[
-"Médica 35 anos",
-"Cliente desde 10/2024",
-"Renda 27 mil",
-"Despesas 12 mil",
-"Ajuda os pais",
-"Cartão limite 70k (65k uso)",
-"Parcelamento recorrente",
-"Cheque especial 10k com uso",
-"Investimentos 20k poupança",
-"Imóvel financiado em reforma",
-"Precisa organizar vida financeira"
-],
-
-joaquim:[
-"Administrador 62 anos",
-"Empresa de resinas",
-"Renda real 55 mil",
-"Despesas 26 mil",
-"Perfil conservador",
-"Cartão 52k limite (24k uso)",
-"Cheque especial sem uso",
-"150k em DI",
-"1.6MM previdência fora",
-"Patrimônio alto (imóveis + terreno)",
-"Planeja construir casa 2MM"
-]
-
-};
-
-let total=0, feitas=0;
-
-function iniciar(cliente){
-document.getElementById("clientes").style.display="none";
-document.getElementById("jogo").style.display="flex";
-
-let area=document.getElementById("cartas");
-area.innerHTML="";
-
-total=dados[cliente].length;
-feitas=0;
-
-dados[cliente].forEach((info,i)=>{
-let c=document.createElement("div");
-c.className="carta";
-c.innerText="Card "+(i+1);
-
-c.onclick=()=>virar(c,info);
-
-area.appendChild(c);
-});
-}
-
-function virar(carta,info){
-if(carta.classList.contains("virada")) return;
-
-carta.classList.add("virada");
-
-carta.innerHTML=`
-<div>${info}</div>
-<input placeholder="Nome do aluno">
-<textarea placeholder="Pergunta que faria"></textarea>
-<button onclick="salvar(event,'${info}')">Salvar</button>
+Se algum campo estiver fraco ou vazio, aponte isso com clareza.
 `;
-}
+    }
 
-function salvar(e,info){
-e.stopPropagation();
+    function localFallbackFeedback(){
+      const defense = collectDefense();
+      const blankFields = defenseFields.filter(f => !defense[f.key]).map(f => f.label);
 
-let box=e.target.parentElement;
-let nome=box.querySelector("input").value;
-let pergunta=box.querySelector("textarea").value;
+      return {
+        pontosFortes: answeredCards.length > 0
+          ? "A dinâmica foi executada com registro das perguntas e organização das informações reveladas. Isso já favorece uma defesa mais consultiva."
+          : "Ainda não há pontos fortes relevantes porque não houve investigação registrada.",
+        pontosAtencao: blankFields.length
+          ? `Há blocos da defesa sem preenchimento: ${blankFields.join(", ")}.`
+          : "A defesa foi preenchida em todos os blocos, mas ainda vale revisar profundidade e coerência.",
+        perguntasImportantesNaoFeitas: [
+          "Qual é a origem exata do fluxo que pagará a operação?",
+          "O crédito será tomado na pessoa física ou jurídica, e por quê?",
+          "Existe garantia disponível ou preferência por preservar liquidez?"
+        ],
+        riscosNaoExplorados: "Vale observar concentração bancária, comportamento de endividamento, coerência entre objetivo do crédito e fonte de pagamento, além do impacto no fluxo mensal.",
+        notaDefesa: blankFields.length ? "6/10 — a estrutura existe, mas faltam blocos importantes da defesa." : "8/10 — a estrutura está organizada; refine profundidade, risco e argumentação consultiva.",
+        linhaCreditoMaisCoerente: "Defina a linha após confirmar objetivo, prazo, garantias disponíveis e se a operação faz mais sentido em PF ou PJ.",
+        comoMelhorarArgumentacao: "Conecte melhor objetivo do cliente, capacidade de pagamento, estrutura patrimonial, riscos e justificativa técnica da linha sugerida."
+      };
+    }
 
-if(!nome||!pergunta){
-alert("Preencha tudo");
-return;
-}
+    function renderFeedback(feedback){
+      feedbackGrid.innerHTML = "";
 
-let mini=document.createElement("div");
-mini.className="mini-card";
-mini.innerHTML=`<b>${info}</b><br><b>${nome}</b><br>${pergunta}`;
+      const blocks = [
+        ["Pontos fortes da defesa", feedback.pontosFortes],
+        ["Pontos de atenção", feedback.pontosAtencao],
+        ["Perguntas importantes que não foram feitas", feedback.perguntasImportantesNaoFeitas],
+        ["Riscos não explorados", feedback.riscosNaoExplorados],
+        ["Nota da defesa", feedback.notaDefesa],
+        ["Sugestão de linha de crédito mais coerente", feedback.linhaCreditoMaisCoerente],
+        ["Como melhorar a argumentação", feedback.comoMelhorarArgumentacao]
+      ];
 
-document.getElementById("lateral").appendChild(mini);
+      blocks.forEach(([title, value]) => {
+        const card = document.createElement("div");
+        card.className = "feedback-card";
 
-box.style.opacity="0";
-setTimeout(()=>box.remove(),300);
+        let content = "";
+        if(Array.isArray(value)){
+          content = `<ul>${value.map(v => `<li>${escapeHtml(v)}</li>`).join("")}</ul>`;
+        } else {
+          content = `<p>${escapeHtml(String(value || ""))}</p>`;
+        }
 
-feitas++;
+        card.innerHTML = `<h4>${title}</h4>${content}`;
+        feedbackGrid.appendChild(card);
+      });
 
-if(feitas===total){
-document.getElementById("defesa").style.display="block";
-}
-}
+      feedbackModal.classList.add("open");
+    }
 
-async function avaliar(){
+    async function evaluateDefense(){
+      if(!currentCaseKey){
+        alert("Escolha um case primeiro.");
+        return;
+      }
+      if(answeredCards.length !== CASES[currentCaseKey].cards.length){
+        alert("Conclua todas as cartas antes de avaliar a defesa.");
+        return;
+      }
 
-let texto=`
-Objetivo: ${objetivo.value}
-Capacidade: ${capacidade.value}
-Relação: ${relacao.value}
-Garantias: ${garantias.value}
-Riscos: ${riscos.value}
-Recomendação: ${recomendacao.value}
-`;
+      const hasAnyDefense = Object.values(collectDefense()).some(Boolean);
+      if(!hasAnyDefense){
+        alert("Preencha a defesa antes de avaliar.");
+        return;
+      }
 
-try{
+      const btn = document.getElementById("btnEvaluate");
+      const originalText = btn.textContent;
+      btn.textContent = "Avaliando...";
+      btn.disabled = true;
 
-let r=await fetch("https://api.openai.com/v1/responses",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer "+chaveOpenAI
-},
-body:JSON.stringify({
-model:"gpt-4.1-mini",
-input:`Analise essa defesa de crédito:
-1 pontos fortes
-2 pontos de atenção
-3 perguntas não feitas
-4 riscos não explorados
-5 nota de 0 a 10
-6 sugestão de crédito
+      try{
+        let feedback = null;
 
-${texto}`
-})
-});
+        if(openAiKey){
+          const response = await fetch("https://api.openai.com/v1/responses", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${openAiKey}`
+            },
+            body: JSON.stringify({
+              model: openAiModel || "gpt-4.1-mini",
+              input: buildEvaluationPrompt()
+            })
+          });
 
-let d=await r.json();
+          if(!response.ok){
+            throw new Error(`Falha na API: ${response.status}`);
+          }
 
-resultado.innerText=d.output[0].content[0].text;
+          const data = await response.json();
+          const text = extractResponseText(data);
 
-}catch{
-resultado.innerText="Erro ao avaliar. Verifique a chave.";
-}
+          try{
+            feedback = JSON.parse(text);
+          }catch{
+            feedback = localFallbackFeedback();
+          }
+        } else {
+          feedback = localFallbackFeedback();
+        }
 
-modal.style.display="flex";
-}
+        renderFeedback(feedback);
+      } catch (error){
+        console.error(error);
+        renderFeedback(localFallbackFeedback());
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
 
-</script>
+    function extractResponseText(data){
+      if(data && typeof data.output_text === "string" && data.output_text.trim()){
+        return data.output_text.trim();
+      }
 
+      if(Array.isArray(data.output)){
+        for(const item of data.output){
+          if(Array.isArray(item.content)){
+            const textPart = item.content.find(c => c.type === "output_text" || c.type === "text");
+            if(textPart){
+              if(typeof textPart.text === "string") return textPart.text.trim();
+              if(textPart.text && typeof textPart.text.value === "string") return textPart.text.value.trim();
+            }
+          }
+        }
+      }
+
+      return "{}";
+    }
+
+    function escapeHtml(str){
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    document.getElementById("btnOpenConfig").addEventListener("click", () => {
+      apiKeyInput.value = openAiKey;
+      modelInput.value = openAiModel;
+      configModal.classList.add("open");
+    });
+
+    document.getElementById("btnSaveConfig").addEventListener("click", () => {
+      openAiKey = apiKeyInput.value.trim();
+      openAiModel = modelInput.value.trim() || "gpt-4.1-mini";
+      configStatus.textContent = openAiKey
+        ? "Chave salva nesta sessão do navegador."
+        : "Nenhuma chave informada. O sistema usará feedback local.";
+    });
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.getElementById(btn.dataset.close).classList.remove("open");
+      });
+    });
+
+    [configModal, feedbackModal].forEach(modal => {
+      modal.addEventListener("click", (e) => {
+        if(e.target === modal) modal.classList.remove("open");
+      });
+    });
+
+    document.getElementById("btnBackHome").addEventListener("click", () => {
+      showScreen("home");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.getElementById("btnEvaluate").addEventListener("click", evaluateDefense);
+
+    document.getElementById("btnClearDefense").addEventListener("click", () => {
+      defenseFields.forEach(field => {
+        const el = document.getElementById(`defense-${field.key}`);
+        if(el) el.value = "";
+      });
+    });
+
+    renderCaseSelection();
+    renderDefense();
+  </script>
 </body>
 </html>
