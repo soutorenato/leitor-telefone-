@@ -9,176 +9,51 @@
 
 <style>
 *{box-sizing:border-box}
-
-body {
-    font-family: 'Comfortaa', sans-serif;
-    margin: 0;
-    background: #f5f7fb;
-}
+body{font-family:Comfortaa;margin:0;background:#f5f7fb}
 
 /* TOPO */
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: #1E2F55;
-    color: white;
-}
-
-.config {cursor:pointer}
+.topbar{display:flex;justify-content:space-between;padding:15px;background:#1E2F55;color:#fff}
+.config{cursor:pointer}
 
 /* CLIENTES */
-.clientes {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    padding: 20px;
-}
-
-.cliente-card {
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    width: 120px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+.clientes{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;padding:20px}
+.cliente-card{padding:20px;background:#fff;border-radius:10px;cursor:pointer;width:130px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.1)}
 
 /* LAYOUT */
-.container {
-    display: flex;
-    flex-wrap: wrap;
-}
+.container{display:flex;flex-wrap:wrap}
 
 /* CARTAS */
-.cartas {
-    flex: 2;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
+.cartas{flex:2;display:flex;flex-wrap:wrap;gap:10px;padding:10px}
+.carta{
+width:100px;height:140px;background:url('card.png') center/cover;border-radius:10px;
+display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;transition:.3s;
 }
-
-.carta {
-    width: 100px;
-    height: 140px;
-    background: url('card.png') center/cover;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.carta:hover {
-    transform: scale(1.05);
-}
-
-.carta.virada {
-    background: white;
-    color: black;
-    flex-direction: column;
-    padding: 5px;
-    overflow: auto;
-}
+.carta:hover{transform:scale(1.05)}
+.carta.virada{background:#fff;color:#000;flex-direction:column;padding:5px;overflow:auto}
 
 /* LATERAL */
-.lateral {
-    flex: 1;
-    background: white;
-    padding: 10px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.mini-card {
-    background: #f1f3f9;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 12px;
-}
+.lateral{flex:1;background:#fff;padding:10px;max-height:80vh;overflow-y:auto}
+.mini-card{background:#f1f3f9;margin-bottom:10px;padding:10px;border-radius:8px;font-size:12px}
 
 /* INPUT */
-input, textarea {
-    width: 100%;
-    margin: 5px 0;
-    padding: 5px;
-    font-size: 12px;
-}
+input,textarea{width:100%;margin:5px 0;padding:5px;font-size:12px}
 
 /* BOTÃO */
-button {
-    padding: 6px;
-    border: none;
-    background: #FF6A1A;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-}
+button{padding:6px;border:none;background:#FF6A1A;color:#fff;border-radius:5px;cursor:pointer;font-size:12px}
 
 /* DEFESA */
-.defesa {
-    padding: 15px;
-    display: none;
-}
-
-.defesa textarea {
-    height: 60px;
-}
+.defesa{padding:15px;display:none}
+.defesa textarea{height:60px}
 
 /* MODAL */
-.modal {
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.6);
-    display:none;
-    justify-content:center;
-    align-items:center;
-}
-
-.modal-content {
-    background:white;
-    padding:20px;
-    width:90%;
-    max-height:80vh;
-    overflow:auto;
-    border-radius:10px;
-}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;justify-content:center;align-items:center}
+.modal-content{background:#fff;padding:20px;width:90%;max-height:80vh;overflow:auto;border-radius:10px}
 
 /* RESPONSIVO */
 @media(max-width:768px){
-
-    .container {
-        flex-direction: column;
-    }
-
-    .cartas {
-        justify-content: center;
-    }
-
-    .lateral {
-        max-height: 300px;
-    }
-
-    .carta {
-        width: 80px;
-        height: 120px;
-        font-size: 10px;
-    }
-
-    textarea {
-        font-size: 10px;
-    }
-
+.container{flex-direction:column}
+.lateral{max-height:300px}
+.carta{width:80px;height:120px;font-size:10px}
 }
 </style>
 </head>
@@ -186,130 +61,198 @@ button {
 <body>
 
 <div class="topbar">
-    <div>Jogo de Cartas Crédito</div>
-    <div class="config" onclick="config()">⚙️</div>
+<div>Jogo de Cartas Crédito</div>
+<div class="config" onclick="config()">⚙️</div>
 </div>
 
 <div class="clientes" id="clientes">
-    <div class="cliente-card" onclick="iniciar('marcos')">Marcos</div>
-    <div class="cliente-card" onclick="iniciar('angelica')">Angélica</div>
-    <div class="cliente-card" onclick="iniciar('joaquim')">Joaquim</div>
+<div class="cliente-card" onclick="iniciar('marcos')">Marcos</div>
+<div class="cliente-card" onclick="iniciar('angelica')">Angélica</div>
+<div class="cliente-card" onclick="iniciar('joaquim')">Joaquim</div>
 </div>
 
 <div class="container" id="jogo" style="display:none;">
-    <div class="cartas" id="cartas"></div>
-    <div class="lateral" id="lateral"></div>
+<div class="cartas" id="cartas"></div>
+<div class="lateral" id="lateral"></div>
 </div>
 
 <div class="defesa" id="defesa">
-    <h3>Defesa de Crédito</h3>
-    <textarea id="objetivo" placeholder="Objetivo do crédito"></textarea>
-    <textarea id="capacidade" placeholder="Capacidade de pagamento"></textarea>
-    <textarea id="relacao" placeholder="Relação PF/PJ"></textarea>
-    <textarea id="garantias" placeholder="Garantias"></textarea>
-    <textarea id="riscos" placeholder="Pontos de atenção"></textarea>
-    <textarea id="recomendacao" placeholder="Recomendação"></textarea>
+<h3>Defesa de Crédito</h3>
 
-    <button onclick="avaliar()">Avaliar Defesa</button>
+<textarea id="objetivo" placeholder="Objetivo do crédito"></textarea>
+<textarea id="capacidade" placeholder="Capacidade de pagamento"></textarea>
+<textarea id="relacao" placeholder="Relação PF/PJ"></textarea>
+<textarea id="garantias" placeholder="Garantias"></textarea>
+<textarea id="riscos" placeholder="Pontos de atenção"></textarea>
+<textarea id="recomendacao" placeholder="Recomendação"></textarea>
+
+<button onclick="avaliar()">Avaliar Defesa</button>
 </div>
 
 <div class="modal" id="modal" onclick="this.style.display='none'">
-    <div class="modal-content" id="resultado"></div>
+<div class="modal-content" id="resultado"></div>
 </div>
 
 <script>
 
-let chaveOpenAI = "";
+let chaveOpenAI="";
 
 function config(){
-    chaveOpenAI = prompt("Digite sua chave OpenAI:");
+chaveOpenAI=prompt("Cole sua chave OpenAI");
 }
 
-const dados = {
-    marcos:["Cliente antigo","Empresário","Renda 37k","Investimentos altos","Quer crédito"],
-    angelica:["Médica","Endividada","Renda 27k","Pouca reserva","Precisa organizar"],
-    joaquim:["Administrador","Patrimônio alto","Renda elevada","Investimentos fora","Quer construir"]
+const dados={
+
+marcos:[
+"Cliente desde 09/2000",
+"Empresário com empresa de ferramentaria",
+"Renda mensal R$ 37 mil",
+"Despesas R$ 21 mil",
+"Perfil conservador",
+"Conta PJ na concorrência",
+"Cartão limite 70k (45k uso)",
+"Cheque especial 25k",
+"Investimentos 525k RF",
+"Patrimônio: casa 1.3MM + carro financiado",
+"Quer crédito 400k para expansão"
+],
+
+angelica:[
+"Médica 35 anos",
+"Cliente desde 10/2024",
+"Renda 27 mil",
+"Despesas 12 mil",
+"Ajuda os pais",
+"Cartão limite 70k (65k uso)",
+"Parcelamento recorrente",
+"Cheque especial 10k com uso",
+"Investimentos 20k poupança",
+"Imóvel financiado em reforma",
+"Precisa organizar vida financeira"
+],
+
+joaquim:[
+"Administrador 62 anos",
+"Empresa de resinas",
+"Renda real 55 mil",
+"Despesas 26 mil",
+"Perfil conservador",
+"Cartão 52k limite (24k uso)",
+"Cheque especial sem uso",
+"150k em DI",
+"1.6MM previdência fora",
+"Patrimônio alto (imóveis + terreno)",
+"Planeja construir casa 2MM"
+]
+
 };
 
 let total=0, feitas=0;
 
 function iniciar(cliente){
-    document.getElementById("clientes").style.display="none";
-    document.getElementById("jogo").style.display="flex";
+document.getElementById("clientes").style.display="none";
+document.getElementById("jogo").style.display="flex";
 
-    let area=document.getElementById("cartas");
-    area.innerHTML="";
+let area=document.getElementById("cartas");
+area.innerHTML="";
 
-    total=dados[cliente].length;
-    feitas=0;
+total=dados[cliente].length;
+feitas=0;
 
-    dados[cliente].forEach((info,i)=>{
-        let c=document.createElement("div");
-        c.className="carta";
-        c.innerText="Card "+(i+1);
+dados[cliente].forEach((info,i)=>{
+let c=document.createElement("div");
+c.className="carta";
+c.innerText="Card "+(i+1);
 
-        c.onclick=()=>virar(c,info);
+c.onclick=()=>virar(c,info);
 
-        area.appendChild(c);
-    });
+area.appendChild(c);
+});
 }
 
 function virar(carta,info){
-    carta.classList.add("virada");
+if(carta.classList.contains("virada")) return;
 
-    carta.innerHTML=`
-    <div>${info}</div>
-    <input placeholder="Aluno">
-    <textarea placeholder="Pergunta"></textarea>
-    <button onclick="salvar(event,'${info}')">Salvar</button>
-    `;
+carta.classList.add("virada");
+
+carta.innerHTML=`
+<div>${info}</div>
+<input placeholder="Nome do aluno">
+<textarea placeholder="Pergunta que faria"></textarea>
+<button onclick="salvar(event,'${info}')">Salvar</button>
+`;
 }
 
 function salvar(e,info){
-    e.stopPropagation();
+e.stopPropagation();
 
-    let box=e.target.parentElement;
-    let nome=box.querySelector("input").value;
-    let pergunta=box.querySelector("textarea").value;
+let box=e.target.parentElement;
+let nome=box.querySelector("input").value;
+let pergunta=box.querySelector("textarea").value;
 
-    if(!nome||!pergunta){alert("Preencha");return;}
+if(!nome||!pergunta){
+alert("Preencha tudo");
+return;
+}
 
-    let mini=document.createElement("div");
-    mini.className="mini-card";
-    mini.innerHTML=`<b>${info}</b><br>${nome}<br>${pergunta}`;
+let mini=document.createElement("div");
+mini.className="mini-card";
+mini.innerHTML=`<b>${info}</b><br><b>${nome}</b><br>${pergunta}`;
 
-    document.getElementById("lateral").appendChild(mini);
+document.getElementById("lateral").appendChild(mini);
 
-    box.remove();
-    feitas++;
+box.style.opacity="0";
+setTimeout(()=>box.remove(),300);
 
-    if(feitas===total){
-        document.getElementById("defesa").style.display="block";
-    }
+feitas++;
+
+if(feitas===total){
+document.getElementById("defesa").style.display="block";
+}
 }
 
 async function avaliar(){
 
-    let texto=document.getElementById("defesa").innerText;
+let texto=`
+Objetivo: ${objetivo.value}
+Capacidade: ${capacidade.value}
+Relação: ${relacao.value}
+Garantias: ${garantias.value}
+Riscos: ${riscos.value}
+Recomendação: ${recomendacao.value}
+`;
 
-    let r=await fetch("https://api.openai.com/v1/responses",{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            "Authorization":"Bearer "+chaveOpenAI
-        },
-        body:JSON.stringify({
-            model:"gpt-4.1-mini",
-            input:"Analise defesa de crédito e dê feedback:\n"+texto
-        })
-    });
+try{
 
-    let d=await r.json();
+let r=await fetch("https://api.openai.com/v1/responses",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+chaveOpenAI
+},
+body:JSON.stringify({
+model:"gpt-4.1-mini",
+input:`Analise essa defesa de crédito:
+1 pontos fortes
+2 pontos de atenção
+3 perguntas não feitas
+4 riscos não explorados
+5 nota de 0 a 10
+6 sugestão de crédito
 
-    document.getElementById("resultado").innerText=
-    d.output[0].content[0].text;
+${texto}`
+})
+});
 
-    document.getElementById("modal").style.display="flex";
+let d=await r.json();
+
+resultado.innerText=d.output[0].content[0].text;
+
+}catch{
+resultado.innerText="Erro ao avaliar. Verifique a chave.";
+}
+
+modal.style.display="flex";
 }
 
 </script>
