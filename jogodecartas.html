@@ -9,17 +9,16 @@
   <style>
     * { box-sizing: border-box; }
     :root{
-      --bg:#f5f7fb;
+      --bg:#f4f7fc;
       --card:#ffffff;
       --text:#1d2a43;
       --muted:#6f7b93;
       --brand:#1E2F55;
       --accent:#FF6A1A;
-      --accent-2:#ffd8c2;
-      --line:#e7ebf3;
-      --ok:#0f9d58;
+      --accent-soft:#ffe4d3;
+      --line:#e4eaf4;
       --shadow:0 10px 30px rgba(18, 35, 74, 0.08);
-      --radius:18px;
+      --radius:20px;
     }
     body{
       margin:0;
@@ -27,15 +26,10 @@
       background:linear-gradient(180deg,#f7f9fd 0%,#eef3fa 100%);
       color:var(--text);
     }
-    .app{
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-    }
     .topbar{
       position:sticky;
       top:0;
-      z-index:40;
+      z-index:20;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -43,205 +37,93 @@
       padding:16px 20px;
       background:rgba(30,47,85,.96);
       color:#fff;
-      backdrop-filter: blur(10px);
       box-shadow:0 8px 20px rgba(0,0,0,.08);
     }
-    .topbar-title{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .topbar-title strong{ font-size:18px; }
-    .topbar-title span{
-      font-size:12px;
-      opacity:.8;
-    }
-    .toolbar{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .topbar strong{display:block;font-size:18px}
+    .topbar span{font-size:12px;opacity:.85}
     .icon-btn{
       border:none;
       background:rgba(255,255,255,.12);
       color:#fff;
-      width:44px;
-      height:44px;
-      border-radius:12px;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      transition:.2s ease;
+      width:44px;height:44px;border-radius:12px;
+      display:grid;place-items:center;cursor:pointer;
     }
-    .icon-btn:hover{ background:rgba(255,255,255,.2); transform:translateY(-1px); }
     .page{
       width:min(1400px, calc(100% - 24px));
       margin:18px auto 28px;
     }
-    .screen{ display:none; }
-    .screen.active{ display:block; }
-
-    .hero{
-      background:var(--card);
+    .screen{display:none}
+    .screen.active{display:block}
+    .hero,.panel,.game-header{
+      background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow);
       border-radius:24px;
-      padding:22px;
-      margin-bottom:18px;
+      padding:20px;
     }
-    .hero h1{
-      margin:0 0 8px;
-      font-size:24px;
-      color:var(--brand);
-    }
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.5;
-      font-size:14px;
-    }
-
+    .hero{margin-bottom:18px}
+    .hero h1,.game-header h2,.panel h3{margin:0 0 8px;color:var(--brand)}
+    .hero p,.game-header p,.panel p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
     .case-grid{
       display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:18px;
-      margin-top:18px;
     }
     .case-card{
-      background:var(--card);
+      background:#fff;
       border:1px solid var(--line);
-      border-radius:24px;
       box-shadow:var(--shadow);
+      border-radius:24px;
       padding:22px;
       min-height:190px;
+      cursor:pointer;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-      cursor:pointer;
-      transition:.25s ease;
+      transition:.2s ease;
     }
-    .case-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 16px 35px rgba(18, 35, 74, 0.12);
-      border-color:#d9e2f2;
-    }
-    .case-card small{
-      color:var(--muted);
-      font-size:12px;
-    }
-    .case-card h3{
-      margin:8px 0 8px;
-      color:var(--brand);
-      font-size:24px;
-    }
-    .case-card p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-    }
-    .case-card .open{
-      margin-top:16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      color:var(--accent);
-      font-weight:700;
-      font-size:13px;
-    }
-
+    .case-card:hover{transform:translateY(-3px)}
+    .case-card small{color:var(--muted);font-size:12px}
+    .case-card h3{margin:8px 0;color:var(--brand);font-size:24px}
+    .case-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+    .open-row{margin-top:16px;color:var(--accent);font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
     .game-header{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
-      gap:18px;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:20px;
+      gap:16px;
       margin-bottom:18px;
     }
-    .game-header h2{
-      margin:0 0 8px;
-      color:var(--brand);
-    }
-    .game-header p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.5;
-      font-size:14px;
-    }
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
       background:#edf3ff;
       color:var(--brand);
-      border-radius:999px;
       padding:10px 14px;
+      border-radius:999px;
       font-size:12px;
       font-weight:700;
-      white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
     .ghost-btn,.primary-btn,.secondary-btn{
-      border:none;
-      border-radius:14px;
-      padding:12px 16px;
-      cursor:pointer;
-      font-family:inherit;
-      font-weight:700;
-      transition:.2s ease;
+      border:none;border-radius:14px;padding:12px 16px;
+      font-family:inherit;font-weight:700;cursor:pointer;
     }
-    .ghost-btn{
-      background:#eef3fb;
-      color:var(--brand);
-    }
-    .primary-btn{
-      background:var(--accent);
-      color:#fff;
-      box-shadow:0 8px 18px rgba(255,106,26,.28);
-    }
-    .secondary-btn{
-      background:var(--brand);
-      color:#fff;
-    }
-    .ghost-btn:hover,.primary-btn:hover,.secondary-btn:hover{
-      transform:translateY(-1px);
-    }
-
+    .ghost-btn{background:#eef3fb;color:var(--brand)}
+    .primary-btn{background:var(--accent);color:#fff}
+    .secondary-btn{background:var(--brand);color:#fff}
     .game-layout{
       display:grid;
-      grid-template-columns:minmax(0, 1.6fr) minmax(320px, .9fr);
+      grid-template-columns:minmax(0,1.6fr) minmax(320px,.95fr);
       gap:18px;
       align-items:start;
     }
-    .panel{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-    .panel h3{
-      margin:0 0 8px;
-      color:var(--brand);
-      font-size:18px;
-    }
-    .panel p{
-      margin:0 0 14px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-    }
-
     .cards-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
       gap:14px;
     }
     .play-card{
-      position:relative;
       min-height:220px;
       perspective:1000px;
       transition:transform .45s ease, opacity .45s ease;
@@ -258,105 +140,64 @@
       transition:transform .6s;
       transform-style:preserve-3d;
     }
-    .play-card.is-flipped .play-card-inner{
-      transform:rotateY(180deg);
-    }
+    .play-card.flipped .play-card-inner{ transform:rotateY(180deg); }
     .play-card-face{
-      position:absolute;
-      inset:0;
-      border-radius:20px;
-      overflow:hidden;
+      position:absolute; inset:0;
+      border-radius:20px; overflow:hidden;
       backface-visibility:hidden;
       border:1px solid var(--line);
       box-shadow:0 8px 18px rgba(18,35,74,.06);
     }
-    .play-card-front{
+    .front{
       background:
-        linear-gradient(180deg, rgba(30,47,85,.28), rgba(30,47,85,.78)),
+        linear-gradient(180deg, rgba(30,47,85,.22), rgba(30,47,85,.82)),
         url('card.png') center/cover no-repeat;
       color:#fff;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
+      display:flex;flex-direction:column;justify-content:space-between;
       padding:16px;
     }
-    .front-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
+    .front .top{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
     }
-    .front-top span{
+    .front .badge{
+      background:rgba(255,255,255,.16);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:700;
       display:inline-flex;
       align-items:center;
       gap:6px;
-      font-size:11px;
-      font-weight:700;
-      background:rgba(255,255,255,.16);
-      padding:7px 10px;
-      border-radius:999px;
-      backdrop-filter: blur(4px);
     }
-    .front-center{
+    .front .center{
       text-align:center;
       padding:18px 8px;
     }
-    .front-center strong{
-      display:block;
-      font-size:18px;
-      margin-bottom:10px;
+    .front .center strong{display:block;font-size:18px;margin-bottom:8px}
+    .front .center small{font-size:12px;line-height:1.5}
+    .front button{
+      border:none;background:#fff;color:var(--brand);
+      border-radius:14px;padding:12px 14px;font-family:inherit;font-weight:700;cursor:pointer;
     }
-    .front-center small{
-      font-size:12px;
-      line-height:1.5;
-      opacity:.92;
-    }
-    .play-card-front button{
-      align-self:stretch;
-      border:none;
-      background:#fff;
-      color:var(--brand);
-      font-weight:700;
-      padding:12px 14px;
-      border-radius:14px;
-      cursor:pointer;
-      font-family:inherit;
-    }
-
-    .play-card-back{
+    .back{
       background:#fff;
       transform:rotateY(180deg);
       padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      display:flex;flex-direction:column;gap:10px;
     }
-    .play-card-back h4{
-      margin:0;
-      color:var(--brand);
-      font-size:14px;
-      line-height:1.4;
-    }
-    .play-card-back .info-box{
+    .back h4{margin:0;color:var(--brand);font-size:14px}
+    .info-box{
       background:#f7f9fe;
       border:1px solid #e8eef8;
       border-radius:14px;
       padding:10px;
-      color:#3f4b63;
       font-size:12px;
       line-height:1.5;
-      min-height:68px;
+      color:#43506a;
+      min-height:72px;
     }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .field label{
-      font-size:11px;
-      color:var(--muted);
-      font-weight:700;
-    }
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:11px;color:var(--muted);font-weight:700}
     .field input,.field textarea{
       width:100%;
       border:1px solid #dce4f2;
@@ -365,322 +206,190 @@
       font:inherit;
       font-size:12px;
       color:var(--text);
-      background:#fff;
       resize:vertical;
       outline:none;
     }
-    .field input:focus,.field textarea:focus{
-      border-color:#a8bce3;
-      box-shadow:0 0 0 3px rgba(30,47,85,.07);
-    }
-    .field textarea{ min-height:72px; }
-    .card-actions{
-      display:flex;
-      gap:8px;
-      margin-top:auto;
-    }
+    .field textarea{min-height:76px}
+    .card-actions{display:flex;gap:8px;margin-top:auto}
     .card-actions button{
-      flex:1;
-      border:none;
-      border-radius:12px;
-      padding:10px 12px;
-      font-family:inherit;
-      font-weight:700;
-      cursor:pointer;
+      flex:1;border:none;border-radius:12px;padding:10px 12px;font-family:inherit;font-weight:700;cursor:pointer;
     }
-    .save-btn{ background:var(--accent); color:#fff; }
-    .close-btn{ background:#eef3fb; color:var(--brand); }
-
+    .save-btn{background:var(--accent);color:#fff}
+    .close-btn{background:#eef3fb;color:var(--brand)}
     .history-wrap{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      max-height:72vh;
-      overflow:auto;
-      padding-right:4px;
+      display:flex;flex-direction:column;gap:14px;
+      max-height:72vh;overflow:auto;padding-right:4px;
     }
     .history-empty{
-      background:#f8fbff;
-      border:1px dashed #d6deed;
-      border-radius:18px;
-      padding:18px;
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
+      background:#f8fbff;border:1px dashed #d6deed;border-radius:18px;
+      padding:18px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;
     }
     .history-card{
-      background:#f8fbff;
-      border:1px solid #e0e8f6;
-      border-radius:18px;
-      padding:14px;
+      background:#f8fbff;border:1px solid #e0e8f6;border-radius:18px;padding:14px;
       box-shadow:0 6px 14px rgba(18,35,74,.04);
-      animation:slideIn .35s ease;
-    }
-    @keyframes slideIn{
-      from{ opacity:0; transform:translateY(10px);}
-      to{ opacity:1; transform:translateY(0);}
     }
     .history-card .tag{
-      display:inline-flex;
-      background:var(--accent-2);
-      color:#9a470b;
-      border-radius:999px;
-      padding:7px 10px;
-      font-size:11px;
-      font-weight:700;
-      margin-bottom:10px;
+      display:inline-flex;background:var(--accent-soft);color:#9a470b;
+      border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;margin-bottom:10px;
     }
-    .history-card h4{
-      margin:0 0 10px;
-      color:var(--brand);
-      font-size:13px;
-      line-height:1.5;
-    }
-    .history-meta{
-      display:grid;
-      gap:8px;
-      font-size:12px;
-      color:#46516a;
-    }
-    .history-meta strong{ color:var(--brand); }
-
-    .defense-panel{ display:none; margin-top:18px; }
+    .history-card h4{margin:0 0 10px;color:var(--brand);font-size:13px;line-height:1.5}
+    .history-card p{margin:0 0 8px;font-size:12px;line-height:1.6;color:#46516a}
+    .defense-panel{display:none;margin-top:18px}
     .defense-grid{
       display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
+      grid-template-columns:repeat(2,minmax(0,1fr));
       gap:14px;
     }
     .defense-item{
-      background:#fafcff;
-      border:1px solid #e5ebf6;
-      border-radius:18px;
-      padding:12px;
+      background:#fafcff;border:1px solid #e5ebf6;border-radius:18px;padding:12px;
     }
-    .defense-item h4{
-      margin:0 0 8px;
-      font-size:14px;
-      color:var(--brand);
-    }
+    .defense-item h4{margin:0 0 8px;font-size:14px;color:var(--brand)}
     .defense-item textarea{
-      width:100%;
-      min-height:120px;
-      border:1px solid #dce4f2;
-      border-radius:12px;
-      padding:12px;
-      font:inherit;
-      font-size:13px;
-      resize:vertical;
-      outline:none;
+      width:100%;min-height:120px;border:1px solid #dce4f2;border-radius:12px;padding:12px;font:inherit;font-size:13px;resize:vertical;
     }
-    .defense-actions{
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-      margin-top:16px;
-    }
-
+    .defense-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
     .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(10,19,36,.58);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:60;
+      position:fixed;inset:0;background:rgba(10,19,36,.58);
+      display:none;align-items:center;justify-content:center;padding:18px;z-index:50;
     }
-    .modal.open{ display:flex; }
+    .modal.open{display:flex}
     .modal-box{
-      width:min(980px, 100%);
-      max-height:min(88vh, 900px);
-      overflow:auto;
-      background:#fff;
-      border-radius:24px;
-      box-shadow:0 28px 70px rgba(0,0,0,.22);
-      border:1px solid #e8edf7;
+      width:min(980px,100%);max-height:88vh;overflow:auto;background:#fff;
+      border-radius:24px;box-shadow:0 28px 70px rgba(0,0,0,.22);border:1px solid #e8edf7;
     }
     .modal-head{
-      position:sticky;
-      top:0;
-      background:#fff;
-      border-bottom:1px solid var(--line);
-      padding:18px 20px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      z-index:2;
+      position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+      padding:18px 20px;display:flex;justify-content:space-between;align-items:center;
     }
-    .modal-head h3{
-      margin:0;
-      color:var(--brand);
-    }
-    .modal-body{ padding:18px 20px 22px; }
+    .modal-head h3{margin:0;color:var(--brand)}
+    .modal-body{padding:18px 20px 22px}
     .modal-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:14px;
     }
     .feedback-card{
-      border:1px solid #e3eaf6;
-      background:#f9fbff;
-      border-radius:18px;
-      padding:14px;
+      border:1px solid #e3eaf6;background:#f9fbff;border-radius:18px;padding:14px;
     }
-    .feedback-card h4{
-      margin:0 0 10px;
-      color:var(--brand);
-      font-size:14px;
-    }
+    .feedback-card h4{margin:0 0 10px;color:var(--brand);font-size:14px}
     .feedback-card p,.feedback-card ul{
-      margin:0;
-      color:#445069;
-      font-size:13px;
-      line-height:1.7;
-      white-space:pre-wrap;
+      margin:0;color:#445069;font-size:13px;line-height:1.7;white-space:pre-wrap;
     }
-    .feedback-card ul{ padding-left:18px; }
-    .config-grid{
-      display:grid;
-      gap:14px;
+    .feedback-card ul{padding-left:18px}
+    .status{margin-top:10px;font-size:12px;color:var(--muted)}
+    .footer-note{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6}
+    @media (max-width:980px){
+      .case-grid,.defense-grid,.modal-grid,.game-layout{grid-template-columns:1fr}
+      .game-header{flex-direction:column}
+      .history-wrap{max-height:none}
     }
-    .status{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .footer-note{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.6;
-    }
-
-    @media (max-width: 980px){
-      .game-layout{ grid-template-columns:1fr; }
-      .history-wrap{ max-height:none; }
-      .defense-grid,.modal-grid,.case-grid{ grid-template-columns:1fr; }
-      .game-header{ flex-direction:column; }
-    }
-    @media (max-width: 620px){
-      .topbar{ padding:14px; }
-      .page{ width:min(100% - 16px, 1400px); margin:12px auto 24px; }
-      .hero,.panel,.game-header{ padding:16px; border-radius:18px; }
-      .cards-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-      .play-card{ min-height:214px; }
-      .case-card{ min-height:170px; }
-      .front-center strong{ font-size:16px; }
-      .topbar-title strong{ font-size:16px; }
+    @media (max-width:620px){
+      .page{width:min(100% - 16px,1400px);margin:12px auto 24px}
+      .hero,.panel,.game-header{padding:16px;border-radius:18px}
+      .cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .play-card{min-height:214px}
+      .case-card{min-height:170px}
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="topbar-title">
-        <strong>Jogo de Cartas Crédito</strong>
-        <span>Dinâmica prática para investigação consultiva e defesa de crédito</span>
+  <header class="topbar">
+    <div>
+      <strong>Jogo de Cartas Crédito</strong>
+      <span>Dinâmica prática para investigação consultiva e defesa de crédito</span>
+    </div>
+    <button class="icon-btn" type="button" onclick="openConfigModal()" title="Configuração da IA">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </header>
+
+  <main class="page">
+    <section id="screen-home" class="screen active">
+      <div class="hero">
+        <h1>Escolha o cliente para iniciar</h1>
+        <p>Ao selecionar um case, as cartas serão abertas para a dinâmica. Cada carta revela uma informação. Depois disso, o aluno registra a pergunta que faria ao cliente. As respostas ficam organizadas à direita e, ao final, a defesa de crédito é construída em blocos.</p>
       </div>
-      <div class="toolbar">
-        <button class="icon-btn" type="button" id="btnOpenConfig" title="Configuração da IA">
-          <span class="material-symbols-outlined">settings</span>
-        </button>
+      <div class="case-grid" id="caseGrid"></div>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div class="game-header">
+        <div>
+          <h2 id="caseTitle">Case</h2>
+          <p id="caseSubtitle"></p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="pill">
+            <span class="material-symbols-outlined" style="font-size:16px;">style</span>
+            <span id="progressText">0 de 0 cartas concluídas</span>
+          </div>
+          <button class="ghost-btn" type="button" onclick="backToHome()">Trocar case</button>
+        </div>
       </div>
-    </header>
 
-    <main class="page">
-      <section id="screen-home" class="screen active">
-        <div class="hero">
-          <h1>Escolha o cliente para iniciar</h1>
-          <p>Ao selecionar um case, as cartas serão abertas para a dinâmica. Cada carta revela uma informação. Depois disso, o aluno registra a pergunta que faria ao cliente. As respostas ficam organizadas à direita e, ao final, a defesa de crédito é construída em blocos.</p>
-        </div>
-
-        <div class="case-grid" id="caseGrid"></div>
-      </section>
-
-      <section id="screen-game" class="screen">
-        <div class="game-header">
-          <div>
-            <h2 id="caseTitle">Case</h2>
-            <p id="caseSubtitle"></p>
+      <div class="game-layout">
+        <div>
+          <div class="panel">
+            <h3>Cartas da dinâmica</h3>
+            <p>Abra uma carta por vez. Depois de registrar o nome do aluno e a pergunta, a carta sai da área principal e vai para o histórico lateral.</p>
+            <div class="cards-grid" id="cardsGrid"></div>
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <div class="pill">
-              <span class="material-symbols-outlined" style="font-size:16px;">style</span>
-              <span id="progressText">0 de 0 cartas concluídas</span>
+
+          <div class="panel defense-panel" id="defensePanel">
+            <h3>Defesa de crédito</h3>
+            <p>Após concluir todas as cartas, preencha a defesa em blocos e faça a avaliação.</p>
+            <div class="defense-grid" id="defenseGrid"></div>
+            <div class="defense-actions">
+              <button class="ghost-btn" type="button" onclick="clearDefense()">Limpar defesa</button>
+              <button class="primary-btn" type="button" id="btnEvaluate" onclick="evaluateDefense()">Avaliar defesa</button>
             </div>
-            <button class="ghost-btn" type="button" id="btnBackHome">Trocar case</button>
+            <div class="footer-note">Se a chave da OpenAI não for informada, o sistema mostra um feedback local simples para você continuar a aula.</div>
           </div>
         </div>
 
-        <div class="game-layout">
-          <div>
-            <div class="panel">
-              <h3>Cartas da dinâmica</h3>
-              <p>Abra uma carta por vez. Depois de registrar o nome do aluno e a pergunta, a carta sai da área principal e vai para o histórico lateral.</p>
-              <div class="cards-grid" id="cardsGrid"></div>
-            </div>
-
-            <div class="panel defense-panel" id="defensePanel">
-              <h3>Defesa de crédito</h3>
-              <p>Após concluir todas as cartas, preencha a defesa em blocos e faça a avaliação.</p>
-
-              <div class="defense-grid" id="defenseGrid"></div>
-
-              <div class="defense-actions">
-                <button class="ghost-btn" type="button" id="btnClearDefense">Limpar defesa</button>
-                <button class="primary-btn" type="button" id="btnEvaluate">Avaliar defesa</button>
-              </div>
-              <div class="footer-note">Se a chave da OpenAI não for informada, o sistema mostra um feedback local simples para você continuar a aula.</div>
+        <aside class="panel">
+          <h3>Histórico da investigação</h3>
+          <p>As cartas respondidas aparecem aqui com a informação revelada, nome do aluno e pergunta registrada.</p>
+          <div class="history-wrap" id="historyWrap">
+            <div class="history-empty" id="historyEmpty">
+              Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.
             </div>
           </div>
+        </aside>
+      </div>
+    </section>
+  </main>
 
-          <aside class="panel">
-            <h3>Histórico da investigação</h3>
-            <p>As cartas respondidas aparecem aqui com a informação revelada, nome do aluno e pergunta registrada.</p>
-            <div class="history-wrap" id="historyWrap">
-              <div class="history-empty" id="historyEmpty">
-                Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.
-              </div>
-            </div>
-          </aside>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div class="modal" id="configModal">
+  <div class="modal" id="configModal" onclick="closeModalOutside(event, 'configModal')">
     <div class="modal-box">
       <div class="modal-head">
         <h3>Configuração da IA</h3>
-        <button class="icon-btn" type="button" data-close="configModal" style="background:#eef3fb;color:#1E2F55;">
+        <button class="icon-btn" type="button" onclick="closeModal('configModal')" style="background:#eef3fb;color:#1E2F55;">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <div class="modal-body">
-        <div class="config-grid">
-          <div class="field">
-            <label for="apiKeyInput">Chave da OpenAI</label>
-            <input id="apiKeyInput" type="password" placeholder="Cole sua chave aqui" />
-          </div>
-          <div class="field">
-            <label for="modelInput">Modelo</label>
-            <input id="modelInput" type="text" value="gpt-4.1-mini" />
-          </div>
-          <div>
-            <button class="secondary-btn" type="button" id="btnSaveConfig">Salvar configuração</button>
-            <div class="status" id="configStatus">A chave fica apenas nesta página, no navegador.</div>
-          </div>
+        <div class="field">
+          <label for="apiKeyInput">Chave da OpenAI</label>
+          <input id="apiKeyInput" type="password" placeholder="Cole sua chave aqui" />
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label for="modelInput">Modelo</label>
+          <input id="modelInput" type="text" value="gpt-4.1-mini" />
+        </div>
+        <div style="margin-top:14px;">
+          <button class="secondary-btn" type="button" onclick="saveConfig()">Salvar configuração</button>
+          <div class="status" id="configStatus">A chave fica salva apenas no navegador desta máquina.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="modal" id="feedbackModal">
+  <div class="modal" id="feedbackModal" onclick="closeModalOutside(event, 'feedbackModal')">
     <div class="modal-box">
       <div class="modal-head">
         <h3>Avaliação da defesa</h3>
-        <button class="icon-btn" type="button" data-close="feedbackModal" style="background:#eef3fb;color:#1E2F55;">
+        <button class="icon-btn" type="button" onclick="closeModal('feedbackModal')" style="background:#eef3fb;color:#1E2F55;">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -787,221 +496,247 @@
 
     let currentCaseKey = null;
     let answeredCards = [];
-    let openAiKey = "";
-    let openAiModel = "gpt-4.1-mini";
+    let openAiKey = localStorage.getItem("jc_credito_openai_key") || "";
+    let openAiModel = localStorage.getItem("jc_credito_openai_model") || "gpt-4.1-mini";
 
-    const caseGrid = document.getElementById("caseGrid");
-    const screenHome = document.getElementById("screen-home");
-    const screenGame = document.getElementById("screen-game");
-    const caseTitle = document.getElementById("caseTitle");
-    const caseSubtitle = document.getElementById("caseSubtitle");
-    const cardsGrid = document.getElementById("cardsGrid");
-    const historyWrap = document.getElementById("historyWrap");
-    const historyEmpty = document.getElementById("historyEmpty");
-    const progressText = document.getElementById("progressText");
-    const defensePanel = document.getElementById("defensePanel");
-    const defenseGrid = document.getElementById("defenseGrid");
-    const feedbackGrid = document.getElementById("feedbackGrid");
-    const configModal = document.getElementById("configModal");
-    const feedbackModal = document.getElementById("feedbackModal");
-    const apiKeyInput = document.getElementById("apiKeyInput");
-    const modelInput = document.getElementById("modelInput");
-    const configStatus = document.getElementById("configStatus");
+    function $(id){ return document.getElementById(id); }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     function renderCaseSelection(){
+      const caseGrid = $("caseGrid");
       caseGrid.innerHTML = "";
-      Object.entries(CASES).forEach(([key, item], index) => {
+      const entries = Object.entries(CASES);
+
+      for(let i=0;i<entries.length;i++){
+        const key = entries[i][0];
+        const item = entries[i][1];
         const card = document.createElement("article");
         card.className = "case-card";
+        card.onclick = function(){ startCase(key); };
         card.innerHTML = `
           <div>
-            <small>Case ${index + 1}</small>
-            <h3>${item.nome}</h3>
-            <p>${item.resumo}</p>
+            <small>Case ${i + 1}</small>
+            <h3>${escapeHtml(item.nome)}</h3>
+            <p>${escapeHtml(item.resumo)}</p>
           </div>
-          <div class="open">
+          <div class="open-row">
             <span>Iniciar dinâmica</span>
             <span class="material-symbols-outlined">arrow_forward</span>
           </div>
         `;
-        card.addEventListener("click", () => startCase(key));
         caseGrid.appendChild(card);
-      });
+      }
     }
 
     function showScreen(name){
-      screenHome.classList.toggle("active", name === "home");
-      screenGame.classList.toggle("active", name === "game");
+      $("screen-home").classList.remove("active");
+      $("screen-game").classList.remove("active");
+      $("screen-" + name).classList.add("active");
     }
 
     function startCase(caseKey){
       currentCaseKey = caseKey;
       answeredCards = [];
       const item = CASES[caseKey];
-      caseTitle.textContent = `Case — ${item.nome}`;
-      caseSubtitle.textContent = item.resumo;
+
+      $("caseTitle").textContent = "Case — " + item.nome;
+      $("caseSubtitle").textContent = item.resumo;
+      $("defensePanel").style.display = "none";
+
       renderCards(item.cards);
       renderHistory();
       renderDefense();
       updateProgress();
-      defensePanel.style.display = "none";
       showScreen("game");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function renderCards(cards){
+      const cardsGrid = $("cardsGrid");
       cardsGrid.innerHTML = "";
-      cards.forEach((info, index) => {
+
+      for(let i=0;i<cards.length;i++){
+        const info = cards[i];
         const wrapper = document.createElement("div");
         wrapper.className = "play-card";
-        wrapper.dataset.index = index;
-
-        const safeInfo = info
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-
+        wrapper.id = "play-card-" + i;
         wrapper.innerHTML = `
           <div class="play-card-inner">
-            <div class="play-card-face play-card-front">
-              <div class="front-top">
-                <span><span class="material-symbols-outlined" style="font-size:14px;">style</span>Card ${index + 1}</span>
-                <span>B7</span>
+            <div class="play-card-face front">
+              <div class="top">
+                <span class="badge"><span class="material-symbols-outlined" style="font-size:14px;">style</span>Card ${i + 1}</span>
+                <span class="badge">B7</span>
               </div>
-              <div class="front-center">
+              <div class="center">
                 <strong>Vire a carta</strong>
                 <small>Revele uma informação do cliente e registre a pergunta do aluno.</small>
               </div>
-              <button type="button" class="btn-flip">Abrir card</button>
+              <button type="button" onclick="flipCard(${i})">Abrir card</button>
             </div>
-            <div class="play-card-face play-card-back">
+            <div class="play-card-face back">
               <h4>Informação revelada</h4>
-              <div class="info-box">${safeInfo}</div>
+              <div class="info-box">${escapeHtml(info)}</div>
 
               <div class="field">
                 <label>Nome do aluno</label>
-                <input type="text" class="student-input" placeholder="Digite o nome" />
+                <input type="text" id="student-${i}" placeholder="Digite o nome">
               </div>
 
               <div class="field">
                 <label>Pergunta que faria ao cliente</label>
-                <textarea class="question-input" placeholder="Escreva a pergunta"></textarea>
+                <textarea id="question-${i}" placeholder="Escreva a pergunta"></textarea>
               </div>
 
               <div class="card-actions">
-                <button type="button" class="close-btn">Voltar</button>
-                <button type="button" class="save-btn">Salvar</button>
+                <button type="button" class="close-btn" onclick="unflipCard(${i})">Voltar</button>
+                <button type="button" class="save-btn" onclick="saveCard(${i})">Salvar</button>
               </div>
             </div>
           </div>
         `;
-
-        const flipBtn = wrapper.querySelector(".btn-flip");
-        const closeBtn = wrapper.querySelector(".close-btn");
-        const saveBtn = wrapper.querySelector(".save-btn");
-
-        flipBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          wrapper.classList.add("is-flipped");
-        });
-
-        closeBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          wrapper.classList.remove("is-flipped");
-        });
-
-        saveBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const student = wrapper.querySelector(".student-input").value.trim();
-          const question = wrapper.querySelector(".question-input").value.trim();
-
-          if(!student || !question){
-            alert("Preencha o nome do aluno e a pergunta antes de salvar.");
-            return;
-          }
-
-          answeredCards.push({
-            card: index + 1,
-            info,
-            student,
-            question
-          });
-
-          renderHistory();
-          updateProgress();
-
-          wrapper.classList.add("fly-out");
-          setTimeout(() => wrapper.remove(), 420);
-
-          if(answeredCards.length === CASES[currentCaseKey].cards.length){
-            defensePanel.style.display = "block";
-            defensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        });
-
         cardsGrid.appendChild(wrapper);
-      });
+      }
     }
 
-    function renderHistory(){
-      historyWrap.innerHTML = "";
-      if(answeredCards.length === 0){
-        historyWrap.appendChild(historyEmpty);
+    function flipCard(index){
+      const el = $("play-card-" + index);
+      if(el) el.classList.add("flipped");
+    }
+
+    function unflipCard(index){
+      const el = $("play-card-" + index);
+      if(el) el.classList.remove("flipped");
+    }
+
+    function saveCard(index){
+      const info = CASES[currentCaseKey].cards[index];
+      const studentEl = $("student-" + index);
+      const questionEl = $("question-" + index);
+
+      const student = studentEl ? studentEl.value.trim() : "";
+      const question = questionEl ? questionEl.value.trim() : "";
+
+      if(!student || !question){
+        alert("Preencha o nome do aluno e a pergunta antes de salvar.");
         return;
       }
 
-      answeredCards.forEach(item => {
+      for(let i=0;i<answeredCards.length;i++){
+        if(answeredCards[i].card === index + 1){
+          alert("Essa carta já foi salva.");
+          return;
+        }
+      }
+
+      answeredCards.push({
+        card:index + 1,
+        info:info,
+        student:student,
+        question:question
+      });
+
+      renderHistory();
+      updateProgress();
+
+      const wrapper = $("play-card-" + index);
+      if(wrapper){
+        wrapper.classList.add("fly-out");
+        setTimeout(function(){
+          if(wrapper && wrapper.parentNode){
+            wrapper.parentNode.removeChild(wrapper);
+          }
+        }, 420);
+      }
+
+      if(answeredCards.length === CASES[currentCaseKey].cards.length){
+        $("defensePanel").style.display = "block";
+        $("defensePanel").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function renderHistory(){
+      const wrap = $("historyWrap");
+      wrap.innerHTML = "";
+
+      if(answeredCards.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "history-empty";
+        empty.innerHTML = "Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.";
+        wrap.appendChild(empty);
+        return;
+      }
+
+      for(let i=0;i<answeredCards.length;i++){
+        const item = answeredCards[i];
         const card = document.createElement("div");
         card.className = "history-card";
         card.innerHTML = `
           <div class="tag">Card ${item.card}</div>
           <h4>${escapeHtml(item.info)}</h4>
-          <div class="history-meta">
-            <div><strong>Aluno:</strong> ${escapeHtml(item.student)}</div>
-            <div><strong>Pergunta:</strong> ${escapeHtml(item.question)}</div>
-          </div>
+          <p><strong>Aluno:</strong> ${escapeHtml(item.student)}</p>
+          <p><strong>Pergunta:</strong> ${escapeHtml(item.question)}</p>
         `;
-        historyWrap.appendChild(card);
-      });
+        wrap.appendChild(card);
+      }
     }
 
     function updateProgress(){
       const total = currentCaseKey ? CASES[currentCaseKey].cards.length : 0;
-      progressText.textContent = `${answeredCards.length} de ${total} cartas concluídas`;
+      $("progressText").textContent = answeredCards.length + " de " + total + " cartas concluídas";
     }
 
     function renderDefense(){
-      defenseGrid.innerHTML = "";
-      defenseFields.forEach(field => {
+      const grid = $("defenseGrid");
+      grid.innerHTML = "";
+      for(let i=0;i<defenseFields.length;i++){
+        const field = defenseFields[i];
         const block = document.createElement("div");
         block.className = "defense-item";
         block.innerHTML = `
-          <h4>${field.label}</h4>
+          <h4>${escapeHtml(field.label)}</h4>
           <textarea id="defense-${field.key}" placeholder="Escreva aqui"></textarea>
         `;
-        defenseGrid.appendChild(block);
-      });
+        grid.appendChild(block);
+      }
     }
 
     function collectDefense(){
       const defense = {};
-      defenseFields.forEach(field => {
-        const el = document.getElementById(`defense-${field.key}`);
+      for(let i=0;i<defenseFields.length;i++){
+        const field = defenseFields[i];
+        const el = $("defense-" + field.key);
         defense[field.key] = el ? el.value.trim() : "";
-      });
+      }
       return defense;
+    }
+
+    function clearDefense(){
+      for(let i=0;i<defenseFields.length;i++){
+        const field = defenseFields[i];
+        const el = $("defense-" + field.key);
+        if(el) el.value = "";
+      }
     }
 
     function buildEvaluationPrompt(){
       const caseData = CASES[currentCaseKey];
       const defense = collectDefense();
-      const historyText = answeredCards.map(i =>
-        `Card ${i.card}\nInformação: ${i.info}\nAluno: ${i.student}\nPergunta feita: ${i.question}`
-      ).join("\n\n");
 
-      const defenseText = defenseFields.map(f =>
-        `${f.label}: ${defense[f.key] || "(vazio)"}`
-      ).join("\n");
+      const historyText = answeredCards.map(function(i){
+        return "Card " + i.card + "\nInformação: " + i.info + "\nAluno: " + i.student + "\nPergunta feita: " + i.question;
+      }).join("\n\n");
+
+      const defenseText = defenseFields.map(function(f){
+        return f.label + ": " + (defense[f.key] || "(vazio)");
+      }).join("\n");
 
       return `
 Você é um avaliador de treinamento bancário com foco em assessoria em crédito.
@@ -1029,28 +764,26 @@ Responda em JSON válido com exatamente estas chaves:
   "linhaCreditoMaisCoerente": "texto",
   "comoMelhorarArgumentacao": "texto"
 }
-
-Se algum campo estiver fraco ou vazio, aponte isso com clareza.
 `;
     }
 
     function localFallbackFeedback(){
       const defense = collectDefense();
-      const blankFields = defenseFields.filter(f => !defense[f.key]).map(f => f.label);
+      const blankFields = defenseFields.filter(function(f){ return !defense[f.key]; }).map(function(f){ return f.label; });
 
       return {
         pontosFortes: answeredCards.length > 0
-          ? "A dinâmica foi executada com registro das perguntas e organização das informações reveladas. Isso já favorece uma defesa mais consultiva."
+          ? "A dinâmica foi executada com registro das perguntas e organização das informações reveladas. Isso favorece uma defesa mais consultiva."
           : "Ainda não há pontos fortes relevantes porque não houve investigação registrada.",
         pontosAtencao: blankFields.length
-          ? `Há blocos da defesa sem preenchimento: ${blankFields.join(", ")}.`
-          : "A defesa foi preenchida em todos os blocos, mas ainda vale revisar profundidade e coerência.",
+          ? "Há blocos da defesa sem preenchimento: " + blankFields.join(", ") + "."
+          : "A defesa foi preenchida em todos os blocos. Vale revisar profundidade e coerência entre objetivo, risco e recomendação.",
         perguntasImportantesNaoFeitas: [
           "Qual é a origem exata do fluxo que pagará a operação?",
           "O crédito será tomado na pessoa física ou jurídica, e por quê?",
           "Existe garantia disponível ou preferência por preservar liquidez?"
         ],
-        riscosNaoExplorados: "Vale observar concentração bancária, comportamento de endividamento, coerência entre objetivo do crédito e fonte de pagamento, além do impacto no fluxo mensal.",
+        riscosNaoExplorados: "Observe concentração bancária, comportamento de endividamento, coerência entre objetivo do crédito e fonte de pagamento, além do impacto no fluxo mensal.",
         notaDefesa: blankFields.length ? "6/10 — a estrutura existe, mas faltam blocos importantes da defesa." : "8/10 — a estrutura está organizada; refine profundidade, risco e argumentação consultiva.",
         linhaCreditoMaisCoerente: "Defina a linha após confirmar objetivo, prazo, garantias disponíveis e se a operação faz mais sentido em PF ou PJ.",
         comoMelhorarArgumentacao: "Conecte melhor objetivo do cliente, capacidade de pagamento, estrutura patrimonial, riscos e justificativa técnica da linha sugerida."
@@ -1058,6 +791,7 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
     }
 
     function renderFeedback(feedback){
+      const feedbackGrid = $("feedbackGrid");
       feedbackGrid.innerHTML = "";
 
       const blocks = [
@@ -1070,22 +804,45 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
         ["Como melhorar a argumentação", feedback.comoMelhorarArgumentacao]
       ];
 
-      blocks.forEach(([title, value]) => {
+      for(let i=0;i<blocks.length;i++){
+        const title = blocks[i][0];
+        const value = blocks[i][1];
         const card = document.createElement("div");
         card.className = "feedback-card";
 
         let content = "";
         if(Array.isArray(value)){
-          content = `<ul>${value.map(v => `<li>${escapeHtml(v)}</li>`).join("")}</ul>`;
+          content = "<ul>" + value.map(function(v){ return "<li>" + escapeHtml(v) + "</li>"; }).join("") + "</ul>";
         } else {
-          content = `<p>${escapeHtml(String(value || ""))}</p>`;
+          content = "<p>" + escapeHtml(String(value || "")) + "</p>";
         }
 
-        card.innerHTML = `<h4>${title}</h4>${content}`;
+        card.innerHTML = "<h4>" + escapeHtml(title) + "</h4>" + content;
         feedbackGrid.appendChild(card);
-      });
+      }
 
-      feedbackModal.classList.add("open");
+      openModal("feedbackModal");
+    }
+
+    function extractResponseText(data){
+      if(data && typeof data.output_text === "string" && data.output_text.trim()){
+        return data.output_text.trim();
+      }
+
+      if(data && Array.isArray(data.output)){
+        for(let i=0;i<data.output.length;i++){
+          const item = data.output[i];
+          if(item && Array.isArray(item.content)){
+            for(let j=0;j<item.content.length;j++){
+              const part = item.content[j];
+              if(part && typeof part.text === "string") return part.text.trim();
+              if(part && part.text && typeof part.text.value === "string") return part.text.value.trim();
+            }
+          }
+        }
+      }
+
+      return "{}";
     }
 
     async function evaluateDefense(){
@@ -1093,19 +850,21 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
         alert("Escolha um case primeiro.");
         return;
       }
+
       if(answeredCards.length !== CASES[currentCaseKey].cards.length){
         alert("Conclua todas as cartas antes de avaliar a defesa.");
         return;
       }
 
-      const hasAnyDefense = Object.values(collectDefense()).some(Boolean);
+      const defense = collectDefense();
+      const hasAnyDefense = Object.values(defense).some(Boolean);
       if(!hasAnyDefense){
         alert("Preencha a defesa antes de avaliar.");
         return;
       }
 
-      const btn = document.getElementById("btnEvaluate");
-      const originalText = btn.textContent;
+      const btn = $("btnEvaluate");
+      const original = btn.textContent;
       btn.textContent = "Avaliando...";
       btn.disabled = true;
 
@@ -1114,10 +873,10 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
 
         if(openAiKey){
           const response = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${openAiKey}`
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":"Bearer " + openAiKey
             },
             body: JSON.stringify({
               model: openAiModel || "gpt-4.1-mini",
@@ -1126,7 +885,7 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
           });
 
           if(!response.ok){
-            throw new Error(`Falha na API: ${response.status}`);
+            throw new Error("Falha na API: " + response.status);
           }
 
           const data = await response.json();
@@ -1134,7 +893,7 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
 
           try{
             feedback = JSON.parse(text);
-          }catch{
+          }catch(err){
             feedback = localFallbackFeedback();
           }
         } else {
@@ -1146,79 +905,48 @@ Se algum campo estiver fraco ou vazio, aponte isso com clareza.
         console.error(error);
         renderFeedback(localFallbackFeedback());
       } finally {
-        btn.textContent = originalText;
+        btn.textContent = original;
         btn.disabled = false;
       }
     }
 
-    function extractResponseText(data){
-      if(data && typeof data.output_text === "string" && data.output_text.trim()){
-        return data.output_text.trim();
-      }
-
-      if(Array.isArray(data.output)){
-        for(const item of data.output){
-          if(Array.isArray(item.content)){
-            const textPart = item.content.find(c => c.type === "output_text" || c.type === "text");
-            if(textPart){
-              if(typeof textPart.text === "string") return textPart.text.trim();
-              if(textPart.text && typeof textPart.text.value === "string") return textPart.text.value.trim();
-            }
-          }
-        }
-      }
-
-      return "{}";
+    function openConfigModal(){
+      $("apiKeyInput").value = openAiKey;
+      $("modelInput").value = openAiModel;
+      $("configStatus").textContent = openAiKey
+        ? "Chave carregada do navegador."
+        : "A chave fica salva apenas no navegador desta máquina.";
+      openModal("configModal");
     }
 
-    function escapeHtml(str){
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    document.getElementById("btnOpenConfig").addEventListener("click", () => {
-      apiKeyInput.value = openAiKey;
-      modelInput.value = openAiModel;
-      configModal.classList.add("open");
-    });
-
-    document.getElementById("btnSaveConfig").addEventListener("click", () => {
-      openAiKey = apiKeyInput.value.trim();
-      openAiModel = modelInput.value.trim() || "gpt-4.1-mini";
-      configStatus.textContent = openAiKey
-        ? "Chave salva nesta sessão do navegador."
+    function saveConfig(){
+      openAiKey = $("apiKeyInput").value.trim();
+      openAiModel = $("modelInput").value.trim() || "gpt-4.1-mini";
+      localStorage.setItem("jc_credito_openai_key", openAiKey);
+      localStorage.setItem("jc_credito_openai_model", openAiModel);
+      $("configStatus").textContent = openAiKey
+        ? "Configuração salva com sucesso neste navegador."
         : "Nenhuma chave informada. O sistema usará feedback local.";
-    });
+    }
 
-    document.querySelectorAll("[data-close]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.getElementById(btn.dataset.close).classList.remove("open");
-      });
-    });
+    function openModal(id){
+      $(id).classList.add("open");
+    }
 
-    [configModal, feedbackModal].forEach(modal => {
-      modal.addEventListener("click", (e) => {
-        if(e.target === modal) modal.classList.remove("open");
-      });
-    });
+    function closeModal(id){
+      $(id).classList.remove("open");
+    }
 
-    document.getElementById("btnBackHome").addEventListener("click", () => {
+    function closeModalOutside(event, id){
+      if(event.target && event.target.id === id){
+        closeModal(id);
+      }
+    }
+
+    function backToHome(){
       showScreen("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    document.getElementById("btnEvaluate").addEventListener("click", evaluateDefense);
-
-    document.getElementById("btnClearDefense").addEventListener("click", () => {
-      defenseFields.forEach(field => {
-        const el = document.getElementById(`defense-${field.key}`);
-        if(el) el.value = "";
-      });
-    });
+    }
 
     renderCaseSelection();
     renderDefense();
