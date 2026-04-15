@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Cartas Crédito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root{
+      --bg:#f4f7fc;
+      --card:#ffffff;
+      --text:#1d2a43;
+      --muted:#6f7b93;
+      --brand:#1E2F55;
+      --accent:#FF6A1A;
+      --accent-soft:#ffe4d3;
+      --line:#e4eaf4;
+      --shadow:0 10px 30px rgba(18, 35, 74, 0.08);
+      --radius:20px;
+    }
+    body {
+      margin: 0;
+      font-family: 'Comfortaa', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .topbar {
+      background: var(--brand);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .topbar strong { display:block; font-size:18px; }
+    .topbar small { opacity:.85; }
+    .gear-btn, .btn {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+    .gear-btn {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      font-size: 20px;
+    }
+    .btn {
+      padding: 12px 16px;
+      font-weight: 700;
+    }
+    .btn-secondary { background:#eef3fb; color:var(--brand); }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-dark { background:var(--brand); color:#fff; }
+
+    .page {
+      width: min(1400px, calc(100% - 24px));
+      margin: 18px auto 28px;
+    }
+    .box, .case-box, .mini-card, .defense-card, .modal-content {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero, .header-game, .section-box {
+      padding: 20px;
+    }
+    .hero { margin-bottom: 18px; }
+    .hero h1, .section-title, .header-game h2 {
+      margin: 0 0 8px;
+      color: var(--brand);
+    }
+    .hero p, .muted, .header-game p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .hidden { display:none !important; }
+
+    .case-list {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:18px;
+    }
+    .case-box {
+      padding:22px;
+      min-height:180px;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .case-box:hover { transform:translateY(-3px); }
+    .case-box small { color:var(--muted); }
+    .case-box h3 { margin:8px 0; color:var(--brand); font-size:24px; }
+    .case-box p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+    .open-text { margin-top:16px; color:var(--accent); font-weight:700; }
+
+    .header-game {
+      margin-bottom:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .pill {
+      background:#edf3ff;
+      color:var(--brand);
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:12px;
+      font-weight:700;
+      display:inline-block;
+    }
+
+    .layout {
+      display:grid;
+      grid-template-columns:minmax(0,1.45fr) minmax(320px,.95fr);
+      gap:18px;
+      align-items:start;
+    }
+    .cards-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+      gap:14px;
+    }
+    .card-box {
+      min-height:220px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background:#fff;
+    }
+    .card-front {
+      background:
+        linear-gradient(180deg, rgba(30,47,85,.22), rgba(30,47,85,.82)),
+        url('card.png') center/cover no-repeat;
+      color:#fff;
+      padding:16px;
+      min-height:220px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .badge {
+      display:inline-block;
+      background:rgba(255,255,255,.18);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+    .card-front strong {
+      font-size:18px;
+      display:block;
+      margin-bottom:8px;
+    }
+    .card-front p {
+      margin:0;
+      font-size:12px;
+      line-height:1.55;
+      opacity:.95;
+    }
+    .card-open-btn {
+      border:none;
+      background:#fff;
+      color:var(--brand);
+      font-weight:700;
+      font-family:inherit;
+      padding:12px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+
+    .history-list {
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      max-height:72vh;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .history-empty {
+      background:#f8fbff;
+      border:1px dashed #d6deed;
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:13px;
+    }
+    .mini-card {
+      padding:14px;
+      background:#f8fbff;
+    }
+    .mini-card .tag {
+      display:inline-block;
+      background:var(--accent-soft);
+      color:#9a470b;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .mini-card h4 {
+      margin:0 0 10px;
+      color:var(--brand);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .mini-card p {
+      margin:0 0 8px;
+      font-size:12px;
+      line-height:1.6;
+      color:#46516a;
+      white-space: pre-wrap;
+    }
+
+    .defense-panel { margin-top:18px; }
+    .defense-grid {
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    .defense-card {
+      padding:12px;
+      background:#fafcff;
+    }
+    .defense-card h4 {
+      margin:0 0 8px;
+      color:var(--brand);
+      font-size:14px;
+    }
+    .defense-card textarea {
+      width:100%;
+      min-height:120px;
+      border:1px solid #dce4f2;
+      border-radius:12px;
+      padding:12px;
+      font:inherit;
+      font-size:13px;
+      resize:vertical;
+      outline:none;
+    }
+    .defense-actions {
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:16px;
+      flex-wrap:wrap;
+    }
+    .footer-note {
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .modal {
+      position:fixed;
+      inset:0;
+      background:rgba(10,19,36,.58);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modal.show { display:flex; }
+    .modal-content {
+      width:min(980px, 100%);
+      max-height:88vh;
+      overflow:auto;
+      background:#fff;
+    }
+    .modal-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:2;
+    }
+    .modal-head h3 {
+      margin:0;
+      color:var(--brand);
+    }
+    .modal-body { padding:18px 20px 22px; }
+
+    .field {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:12px;
+    }
+    .field label {
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .field input, .field textarea {
+      width:100%;
+      border:1px solid #dce4f2;
+      border-radius:12px;
+      padding:10px 12px;
+      font:inherit;
+      font-size:12px;
+      color:var(--text);
+      resize:vertical;
+      outline:none;
+    }
+    .field textarea { min-height:88px; }
+
+    .card-modal-grid {
+      display:grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap:14px;
+    }
+    .info-box {
+      background:#f7f9fe;
+      border:1px solid #e8eef8;
+      border-radius:14px;
+      padding:12px;
+      font-size:13px;
+      line-height:1.6;
+      color:#43506a;
+    }
+    .response-box {
+      background:#fff8f2;
+      border:1px solid #ffe1cc;
+      border-radius:14px;
+      padding:12px;
+      color:#7f4a1f;
+      font-size:13px;
+      line-height:1.6;
+      white-space:pre-wrap;
+      min-height:72px;
+    }
+    .modal-actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top:8px;
+    }
+    .feedback-grid {
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    .feedback-item {
+      background:#f9fbff;
+      border:1px solid #e3eaf6;
+      border-radius:18px;
+      padding:14px;
+    }
+    .feedback-item h4 {
+      margin:0 0 10px;
+      color:var(--brand);
+      font-size:14px;
+    }
+    .feedback-item p, .feedback-item ul {
+      margin:0;
+      color:#445069;
+      font-size:13px;
+      line-height:1.7;
+      white-space:pre-wrap;
+    }
+    .feedback-item ul { padding-left:18px; }
+    .status {
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .case-list, .layout, .defense-grid, .feedback-grid { grid-template-columns:1fr; }
+      .header-game { flex-direction:column; }
+      .history-list { max-height:none; }
+    }
+    @media (max-width: 620px) {
+      .page { width:min(100% - 16px, 1400px); margin:12px auto 24px; }
+      .hero, .section-box, .header-game { padding:16px; }
+      .cards-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .case-box { min-height:160px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <strong>Jogo de Cartas Crédito</strong>
+      <small>Dinâmica prática para investigação consultiva e defesa de crédito</small>
+    </div>
+    <button class="gear-btn" id="openConfigBtn" type="button">⚙</button>
+  </div>
+
+  <main class="page">
+    <section id="homeScreen">
+      <div class="hero box">
+        <h1>Escolha o cliente para iniciar</h1>
+        <p>Ao selecionar um case, as cartas serão abertas para a dinâmica. Cada carta revela uma informação. O aluno faz a pergunta, recebe a resposta do cliente por IA e depois salva tudo no histórico. No final, a defesa de crédito é avaliada.</p>
+      </div>
+      <div class="case-list" id="caseList"></div>
+    </section>
+
+    <section id="gameScreen" class="hidden">
+      <div class="header-game box">
+        <div>
+          <h2 id="gameTitle">Case</h2>
+          <p id="gameSubtitle"></p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <span class="pill" id="progressPill">0 de 0 cartas concluídas</span>
+          <button class="btn btn-secondary" id="backBtn" type="button">Trocar case</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <div class="section-box box">
+            <h3 class="section-title">Cartas da dinâmica</h3>
+            <p class="muted">Clique em um card para abrir o modal, fazer a pergunta e receber a resposta do cliente.</p>
+            <div class="cards-grid" id="cardsGrid"></div>
+          </div>
+
+          <div class="section-box box defense-panel hidden" id="defensePanel">
+            <h3 class="section-title">Defesa de crédito</h3>
+            <p class="muted">Após concluir todas as cartas, preencha a defesa em blocos e faça a avaliação final.</p>
+            <div class="defense-grid" id="defenseGrid"></div>
+            <div class="defense-actions">
+              <button class="btn btn-secondary" type="button" id="clearDefenseBtn">Limpar defesa</button>
+              <button class="btn btn-primary" type="button" id="evaluateBtn">Avaliar defesa</button>
+            </div>
+            <div class="footer-note">Se a chave da OpenAI não for informada, o sistema usa respostas locais simples para não travar a aula.</div>
+          </div>
+        </div>
+
+        <aside class="section-box box">
+          <h3 class="section-title">Histórico da investigação</h3>
+          <p class="muted">Cada card salvo vai para cá com a informação revelada, nome do aluno, pergunta e resposta.</p>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="configModal">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3>Configuração da IA</h3>
+        <button class="gear-btn" id="closeConfigBtn" type="button" style="background:#eef3fb;color:#1E2F55;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="apiKeyInput">Chave da OpenAI</label>
+          <input id="apiKeyInput" type="password" placeholder="Cole sua chave aqui">
+        </div>
+        <div class="field">
+          <label for="modelInput">Modelo</label>
+          <input id="modelInput" type="text" value="gpt-4.1-mini">
+        </div>
+        <button class="btn btn-primary" type="button" id="saveConfigBtn">Salvar configuração</button>
+        <div class="status" id="configStatus">A chave fica salva apenas no navegador desta máquina.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="cardModal">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3 id="cardModalTitle">Card</h3>
+        <button class="gear-btn" id="closeCardModalBtn" type="button" style="background:#eef3fb;color:#1E2F55;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="card-modal-grid">
+          <div>
+            <div class="field">
+              <label>Informação revelada</label>
+              <div class="info-box" id="cardInfoBox"></div>
+            </div>
+            <div class="field">
+              <label for="studentNameInput">Nome do aluno</label>
+              <input id="studentNameInput" type="text" placeholder="Digite o nome">
+            </div>
+            <div class="field">
+              <label for="questionInput">Pergunta do aluno</label>
+              <textarea id="questionInput" placeholder="Escreva a pergunta"></textarea>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" type="button" id="closeQuestionBtn">Fechar</button>
+              <button class="btn btn-dark" type="button" id="askAiBtn">Perguntar ao cliente</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="field">
+              <label>Resposta do cliente</label>
+              <div class="response-box" id="responseBox">A resposta aparecerá aqui depois da pergunta.</div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" type="button" id="saveCardBtn">Salvar no histórico</button>
+            </div>
+            <div class="status" id="cardStatus"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="feedbackModal">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3>Avaliação da defesa</h3>
+        <button class="gear-btn" id="closeFeedbackBtn" type="button" style="background:#eef3fb;color:#1E2F55;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="feedback-grid" id="feedbackGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const CASES = {
+        marcos: {
+          nome: "Marcos",
+          resumo: "Empresário, cliente antigo, busca R$ 400 mil para abrir uma nova frente da empresa voltada a projetos estruturais.",
+          cards: [
+            "Marcos tem 45 anos e é empresário/engenheiro.",
+            "Cliente desde 09/2000.",
+            "Possui empresa de ferramentaria.",
+            "É casado e tem 2 filhos.",
+            "Renda mensal de R$ 37 mil.",
+            "Despesas mensais de R$ 21 mil.",
+            "Declaração de IR completa.",
+            "Contribui com INSS.",
+            "Perfil de investidor conservador.",
+            "Conta PJ concentrada na concorrência.",
+            "Sem restrições no CPF.",
+            "Cartão com limite de R$ 70 mil, sendo R$ 45 mil em utilização.",
+            "Cheque especial de R$ 25 mil, com uso dentro dos 10 dias sem juros.",
+            "Investimentos de R$ 525 mil em renda fixa no B7 Bank.",
+            "Possui R$ 270 mil em previdência na concorrência.",
+            "Tem 1 HR-V financiado (R$ 90 mil) no B7 Bank.",
+            "Tem 1 casa quitada na Zona Sul de São Paulo avaliada em R$ 1,3 milhão.",
+            "Gosta de viajar com a família.",
+            "Pratica esportes radicais.",
+            "Deseja R$ 400 mil de crédito para abrir uma nova frente da empresa de engenharia voltada para projetos estruturais."
+          ]
+        },
+        angelica: {
+          nome: "Angélica",
+          resumo: "Médica, cliente nova, precisa organizar a vida financeira, construir patrimônio e melhorar o uso do crédito.",
+          cards: [
+            "Angélica tem 35 anos e é médica.",
+            "Cliente desde 10/2024.",
+            "É solteira.",
+            "Tem 1 golden retriever.",
+            "Não tem filhos, mas ajuda os pais com despesas da casa.",
+            "Renda mensal de R$ 27 mil.",
+            "Despesas mensais de R$ 12 mil.",
+            "Declaração de IR simplificada.",
+            "Perfil de investidor ainda não preenchido.",
+            "Sem restrições no CPF.",
+            "Cartão com limite de R$ 70 mil, com R$ 65 mil em utilização.",
+            "No sistema, há recorrência no parcelamento da fatura.",
+            "Cheque especial de R$ 10 mil com uso integral acima de 10 dias.",
+            "Tem R$ 20 mil na poupança no B7 Bank.",
+            "Comprou o primeiro imóvel financiado no concorrente.",
+            "O imóvel está em fase de reforma.",
+            "Gosta de shows.",
+            "Gosta de gastronomia.",
+            "Necessidades: construção de patrimônio, organização do crédito e investimentos pessoais."
+          ]
+        },
+        joaquim: {
+          nome: "Joaquim",
+          resumo: "Administrador com patrimônio relevante, projetos familiares e de construção, além de forte oportunidade de planejamento patrimonial.",
+          cards: [
+            "Joaquim tem 62 anos e é administrador.",
+            "Tem uma empresa de fabricação de resinas plásticas.",
+            "Cliente desde 05/2022.",
+            "É casado.",
+            "Tem 3 filhos.",
+            "Renda mensal real de R$ 55 mil.",
+            "Despesas mensais de R$ 26 mil.",
+            "Declaração de IR completa.",
+            "Perfil de investidor conservador.",
+            "Sem restrições no CPF.",
+            "Cartão com limite de R$ 52 mil, sendo R$ 24 mil em utilização.",
+            "Cheque especial de R$ 40 mil sem uso.",
+            "Tem R$ 150 mil em fundo DI com liquidez.",
+            "Possui R$ 1,6 milhão em previdência na concorrência.",
+            "Possui R$ 480 mil em renda fixa na concorrência.",
+            "Tem um apartamento quitado na Mooca avaliado em R$ 700 mil que gera renda de aluguel.",
+            "Tem um sobrado quitado em Santo André avaliado em R$ 1,2 milhão, onde mora com a família.",
+            "Comprou um terreno em condomínio fechado em Indaiatuba.",
+            "Pretende construir em até 2 anos, com custo estimado entre R$ 1,5 milhão e R$ 2 milhões.",
+            "Tem 1 SUV e 1 moto.",
+            "Gosta de pescar em alto mar com amigos.",
+            "Gosta de passar tempo com os netos.",
+            "Projetos: viagem de 40 anos de casados, levar a neta Maria Vitória para a Disney aos 5 anos e construir a casa em Indaiatuba."
+          ]
+        }
+      };
+
+      const defenseFields = [
+        { key: "objetivo", label: "Objetivo do crédito" },
+        { key: "capacidade", label: "Capacidade de pagamento" },
+        { key: "relacao", label: "Relação PF / PJ / CLT" },
+        { key: "garantias", label: "Garantias e patrimônio" },
+        { key: "pontos", label: "Pontos de atenção" },
+        { key: "recomendacao", label: "Recomendação final" },
+        { key: "linha", label: "Sugestão de linha de crédito" },
+        { key: "hipotese", label: "Hipótese do gerente / visão final" }
+      ];
+
+      let currentCaseKey = null;
+      let answeredCards = [];
+      let openAiKey = localStorage.getItem("jc_credito_openai_key") || "";
+      let openAiModel = localStorage.getItem("jc_credito_openai_model") || "gpt-4.1-mini";
+      let activeCardIndex = null;
+      let activeCardResponse = "";
+
+      const $ = (selector) => document.querySelector(selector);
+      const escapeHtml = (str) => String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+      const caseList = $("#caseList");
+      const homeScreen = $("#homeScreen");
+      const gameScreen = $("#gameScreen");
+      const gameTitle = $("#gameTitle");
+      const gameSubtitle = $("#gameSubtitle");
+      const cardsGrid = $("#cardsGrid");
+      const historyList = $("#historyList");
+      const defenseGrid = $("#defenseGrid");
+      const defensePanel = $("#defensePanel");
+      const progressPill = $("#progressPill");
+      const feedbackGrid = $("#feedbackGrid");
+
+      const configModal = $("#configModal");
+      const cardModal = $("#cardModal");
+      const feedbackModal = $("#feedbackModal");
+
+      function showHome() {
+        homeScreen.classList.remove("hidden");
+        gameScreen.classList.add("hidden");
+      }
+
+      function showGame() {
+        homeScreen.classList.add("hidden");
+        gameScreen.classList.remove("hidden");
+      }
+
+      function openModal(modal) { modal.classList.add("show"); }
+      function closeModal(modal) { modal.classList.remove("show"); }
+
+      function renderCaseList() {
+        caseList.innerHTML = "";
+        Object.keys(CASES).forEach((key, index) => {
+          const item = CASES[key];
+          const box = document.createElement("div");
+          box.className = "case-box";
+          box.innerHTML = `
+            <small>Case ${index + 1}</small>
+            <h3>${escapeHtml(item.nome)}</h3>
+            <p>${escapeHtml(item.resumo)}</p>
+            <div class="open-text">Iniciar dinâmica</div>
+          `;
+          box.addEventListener("click", () => startCase(key));
+          caseList.appendChild(box);
+        });
+      }
+
+      function startCase(caseKey) {
+        currentCaseKey = caseKey;
+        answeredCards = [];
+        activeCardIndex = null;
+        activeCardResponse = "";
+        const item = CASES[caseKey];
+        gameTitle.textContent = "Case — " + item.nome;
+        gameSubtitle.textContent = item.resumo;
+        renderCards();
+        renderHistory();
+        renderDefense();
+        updateProgress();
+        defensePanel.classList.add("hidden");
+        showGame();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function renderCards() {
+        cardsGrid.innerHTML = "";
+        CASES[currentCaseKey].cards.forEach((info, index) => {
+          const alreadySaved = answeredCards.some(item => item.card === index + 1);
+          if (alreadySaved) return;
+
+          const wrap = document.createElement("div");
+          wrap.className = "card-box";
+          wrap.innerHTML = `
+            <div class="card-front">
+              <div>
+                <span class="badge">Card ${index + 1}</span>
+                <strong>Vire a carta</strong>
+                <p>Abra o modal, faça a pergunta e receba a resposta do cliente.</p>
+              </div>
+              <button class="card-open-btn" type="button">Abrir card</button>
+            </div>
+          `;
+          wrap.querySelector(".card-open-btn").addEventListener("click", () => openCardModal(index));
+          cardsGrid.appendChild(wrap);
+        });
+      }
+
+      function openCardModal(index) {
+        activeCardIndex = index;
+        activeCardResponse = "";
+        const info = CASES[currentCaseKey].cards[index];
+        $("#cardModalTitle").textContent = "Card " + (index + 1);
+        $("#cardInfoBox").textContent = info;
+        $("#studentNameInput").value = "";
+        $("#questionInput").value = "";
+        $("#responseBox").textContent = "A resposta aparecerá aqui depois da pergunta.";
+        $("#cardStatus").textContent = "";
+        openModal(cardModal);
+      }
+
+      function renderHistory() {
+        historyList.innerHTML = "";
+        if (answeredCards.length === 0) {
+          historyList.innerHTML = `<div class="history-empty">Nenhuma carta respondida ainda.<br>Abra um card para começar a dinâmica.</div>`;
+          return;
+        }
+
+        answeredCards.forEach(item => {
+          const mini = document.createElement("div");
+          mini.className = "mini-card";
+          mini.innerHTML = `
+            <div class="tag">Card ${item.card}</div>
+            <h4>${escapeHtml(item.info)}</h4>
+            <p><strong>Aluno:</strong> ${escapeHtml(item.student)}</p>
+            <p><strong>Pergunta:</strong> ${escapeHtml(item.question)}</p>
+            <p><strong>Resposta:</strong> ${escapeHtml(item.answer)}</p>
+          `;
+          historyList.appendChild(mini);
+        });
+      }
+
+      function renderDefense() {
+        defenseGrid.innerHTML = `
+          <div class="defense-card" style="grid-column:1/-1;">
+            <h4>Defesa de Crédito</h4>
+            <textarea id="defense-text" placeholder="Faça aqui a defesa de crédito completa"></textarea>
+          </div>
+        `;
+      }
+
+      function collectDefense() {
+        const el = document.getElementById("defense-text");
+        return {
+          texto: el ? el.value.trim() : ""
+        };
+      }
+
+      function clearDefense() {
+        const el = document.getElementById("defense-text");
+        if (el) el.value = "";
+      }
+
+      function updateProgress() {
+        const total = currentCaseKey ? CASES[currentCaseKey].cards.length : 0;
+        progressPill.textContent = answeredCards.length + " de " + total + " cartas concluídas";
+      }
+
+      function buildConversationHistory() {
+        if (!answeredCards.length) return "Ainda não houve perguntas anteriores.";
+        return answeredCards.map(item =>
+          `Card ${item.card}\nInformação revelada: ${item.info}\nPergunta do aluno: ${item.question}\nResposta do cliente: ${item.answer}`
+        ).join("\n\n");
+      }
+
+function localClientAnswer(caseKey, info, question) {
+        const q = question.toLowerCase();
+
+        if (caseKey === "marcos") {
+          if (q.includes("renda")) return "Minha renda vem basicamente da minha retirada mensal da empresa. Ela costuma ser estável.";
+          if (q.includes("pj") || q.includes("concorr")) return "Minha conta PJ ficou no outro banco mais por costume e relacionamento antigo.";
+          if (q.includes("400") || q.includes("crédito") || q.includes("projeto")) return "Quero esse crédito para estruturar uma nova frente focada em projetos estruturais, porque surgiu uma oportunidade real de expansão.";
+          if (q.includes("garantia") || q.includes("imóvel")) return "Tenho a casa quitada e um bom patrimônio, mas gostaria de entender a melhor estrutura antes de oferecer algo em garantia.";
+          return "Posso te explicar melhor esse ponto. Meu objetivo é crescer a operação sem desorganizar meu fluxo financeiro.";
+        }
+
+        if (caseKey === "angelica") {
+          if (q.includes("cartão") || q.includes("fatura")) return "Tenho usado bastante o cartão e acabei parcelando algumas faturas por causa da reforma e de gastos do dia a dia.";
+          if (q.includes("pais")) return "Ajudo meus pais mensalmente, então isso pesa um pouco no meu orçamento.";
+          if (q.includes("imóvel") || q.includes("reforma")) return "Comprei meu primeiro imóvel e ainda estou na fase de reforma, então meu caixa ficou apertado.";
+          if (q.includes("invest") || q.includes("poupança")) return "Ainda não organizei meus investimentos direito. Deixei esse valor parado na poupança mesmo.";
+          return "Hoje eu sinto que preciso organizar melhor meu dinheiro e reduzir esse aperto do crédito.";
+        }
+
+        if (caseKey === "joaquim") {
+          if (q.includes("indaiatuba") || q.includes("casa") || q.includes("constru")) return "Quero construir em Indaiatuba nos próximos dois anos, mas sem mexer de forma desorganizada no meu patrimônio.";
+          if (q.includes("previd") || q.includes("concorr")) return "Tenho bastante recurso em outra instituição porque fui concentrando isso lá ao longo do tempo.";
+          if (q.includes("renda")) return "Minha renda real é maior do que aparece em alguns sistemas, porque parte vem da empresa e parte de outras fontes.";
+          if (q.includes("fam") || q.includes("filh") || q.includes("net")) return "Tenho uma relação muito próxima com a família e também penso bastante em planejamento para o futuro deles.";
+          return "Meu foco é organizar patrimônio, projetos familiares e tomar boas decisões sem perder liquidez desnecessariamente.";
+        }
+
+        return "Posso detalhar melhor esse ponto. Quero entender a melhor estrutura para seguir com segurança.";
+      }
+
+      function buildAskPrompt(question, info) {
+        const caseData = CASES[currentCaseKey];
+        return `
+Você é o cliente do case abaixo. Responda como o próprio cliente, em português do Brasil, de forma natural, objetiva e coerente com o perfil apresentado. Não invente fatos absurdos. Pode complementar com nuances plausíveis, desde que consistentes com o caso. Responda em no máximo 5 frases.
+
+CLIENTE:
+${caseData.nome}
+
+RESUMO DO CASE:
+${caseData.resumo}
+
+INFORMAÇÃO DA CARTA ABERTA:
+${info}
+
+HISTÓRICO ANTERIOR DA CONVERSA:
+${buildConversationHistory()}
+
+PERGUNTA DO ALUNO:
+${question}
+`;
+      }
+
+      async function askAiForCard() {
+        if (activeCardIndex === null) return;
+
+        const student = $("#studentNameInput").value.trim();
+        const question = $("#questionInput").value.trim();
+        const info = CASES[currentCaseKey].cards[activeCardIndex];
+
+        if (!student || !question) {
+          alert("Preencha o nome do aluno e a pergunta antes de consultar a resposta.");
+          return;
+        }
+
+        const btn = $("#askAiBtn");
+        const original = btn.textContent;
+        btn.textContent = "Respondendo...";
+        btn.disabled = true;
+        $("#cardStatus").textContent = "";
+
+        try {
+          let answer = "";
+
+          if (openAiKey) {
+            const response = await fetch("https://api.openai.com/v1/responses", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + openAiKey
+              },
+              body: JSON.stringify({
+                model: openAiModel || "gpt-4.1-mini",
+                input: buildAskPrompt(question, info)
+              })
+            });
+
+            if (!response.ok) throw new Error("Falha na API: " + response.status);
+            const data = await response.json();
+            answer = extractResponseText(data).trim();
+          } else {
+            answer = localClientAnswer(currentCaseKey, info, question);
+          }
+
+          activeCardResponse = answer || localClientAnswer(currentCaseKey, info, question);
+          $("#responseBox").textContent = activeCardResponse;
+          $("#cardStatus").textContent = "Resposta gerada. Agora você pode salvar no histórico.";
+        } catch (error) {
+          console.error(error);
+          activeCardResponse = localClientAnswer(currentCaseKey, info, question);
+          $("#responseBox").textContent = activeCardResponse;
+          $("#cardStatus").textContent = "A IA não respondeu. Foi usado um retorno local para seguir a dinâmica.";
+        } finally {
+          btn.textContent = original;
+          btn.disabled = false;
+        }
+      }
+
+      function saveCardToHistory() {
+        if (activeCardIndex === null) return;
+
+        const student = $("#studentNameInput").value.trim();
+        const question = $("#questionInput").value.trim();
+        const info = CASES[currentCaseKey].cards[activeCardIndex];
+
+        if (!student || !question) {
+          alert("Preencha o nome do aluno e a pergunta antes de salvar.");
+          return;
+        }
+        if (!activeCardResponse) {
+          alert("Gere primeiro a resposta do cliente antes de salvar.");
+          return;
+        }
+
+        answeredCards.push({
+          card: activeCardIndex + 1,
+          info,
+          student,
+          question,
+          answer: activeCardResponse
+        });
+
+        renderHistory();
+        renderCards();
+        updateProgress();
+        closeModal(cardModal);
+
+        activeCardIndex = null;
+        activeCardResponse = "";
+
+        if (answeredCards.length === CASES[currentCaseKey].cards.length) {
+          defensePanel.classList.remove("hidden");
+          defensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      function localFallbackFeedback() {
+        const defense = collectDefense();
+        const blankDefense = !defense.texto;
+
+        return {
+          analiseDefesa: blankDefense
+            ? "A defesa de crédito não foi preenchida ou ficou muito superficial."
+            : "A defesa foi apresentada, mas precisa mostrar com mais clareza como as perguntas, respostas e informações do cliente sustentam a decisão de crédito.",
+          pontosNaoExplorados: answeredCards.length
+            ? answeredCards.slice(0, 3).map(item =>
+                `Você deixou de considerar o ponto levantado por ${item.student} no Card ${item.card}: ${item.question} | Resposta do cliente: ${item.answer}`
+              ).join("\n\n")
+            : "Nenhum ponto foi explorado porque ainda não houve investigação registrada.",
+          feedbackMelhoria: "Conecte melhor o que foi perguntado com a defesa final. Mostre como cada resposta ajuda a sustentar capacidade de pagamento, riscos, garantias, finalidade do crédito e coerência da proposta.",
+          perguntasSugeridas: [
+            "Qual é a origem exata do fluxo que pagará essa operação?",
+            "Essa operação faz mais sentido na pessoa física ou jurídica, e por quê?",
+            "Existe alguma garantia disponível ou interesse em preservar liquidez?"
+          ]
+        };
+      }
+
+function buildEvaluationPrompt() {
+        const caseData = CASES[currentCaseKey];
+        const historyText = answeredCards.map(item =>
+          `Card ${item.card}\nInformação: ${item.info}\nAluno: ${item.student}\nPergunta: ${item.question}\nResposta: ${item.answer}`
+        ).join("\n\n");
+
+        const defenseText = document.getElementById("defense-text").value || "(não preenchido)";
+
+        return `
+Você é um especialista em análise de crédito.
+
+Analise o seguinte caso:
+
+CLIENTE:
+${caseData.nome}
+
+INFORMAÇÕES LEVANTADAS (PERGUNTAS E RESPOSTAS):
+${historyText}
+
+DEFESA DE CRÉDITO DO GERENTE:
+${defenseText}
+
+Faça uma análise crítica com base no que foi perguntado e respondido.
+
+IMPORTANTE:
+1. Identifique pontos que foram levantados pelos alunos e NÃO foram utilizados na defesa.
+2. Sempre que possível, cite o nome do aluno.
+Exemplo: "Você deixou de considerar o ponto levantado pelo aluno João..."
+3. Avalie se a defesa ignorou respostas importantes do cliente.
+4. Avalie a qualidade do raciocínio da defesa.
+5. Sugira melhorias claras.
+6. Sugira perguntas melhores que poderiam ter sido feitas.
+
+Responda em JSON válido com exatamente estas chaves:
+{
+  "analiseDefesa": "Análise geral da defesa",
+  "pontosNaoExplorados": "Quais perguntas/respostas foram ignoradas citando alunos",
+  "feedbackMelhoria": "Como melhorar a defesa",
+  "perguntasSugeridas": ["pergunta 1", "pergunta 2", "pergunta 3"]
+}
+`;
+      }
+
+function extractResponseText(data) {
+        if (data && typeof data.output_text === "string" && data.output_text.trim()) {
+          return data.output_text.trim();
+        }
+        if (data && Array.isArray(data.output)) {
+          for (const out of data.output) {
+            if (out && Array.isArray(out.content)) {
+              for (const part of out.content) {
+                if (part && typeof part.text === "string") return part.text.trim();
+                if (part && part.text && typeof part.text.value === "string") return part.text.value.trim();
+              }
+            }
+          }
+        }
+        return "";
+      }
+
+      function renderFeedback(feedback) {
+        feedbackGrid.innerHTML = "";
+        const blocks = [
+          ["Análise da defesa", feedback.analiseDefesa],
+          ["Pontos não explorados", feedback.pontosNaoExplorados],
+          ["Como melhorar", feedback.feedbackMelhoria],
+          ["Perguntas sugeridas", feedback.perguntasSugeridas]
+        ];
+
+        blocks.forEach(([title, value]) => {
+          const item = document.createElement("div");
+          item.className = "feedback-item";
+          let content = "";
+          if (Array.isArray(value)) {
+            content = "<ul>" + value.map(v => "<li>" + escapeHtml(v) + "</li>").join("") + "</ul>";
+          } else {
+            content = "<p>" + escapeHtml(String(value || "")) + "</p>";
+          }
+          item.innerHTML = `<h4>${escapeHtml(title)}</h4>${content}`;
+          feedbackGrid.appendChild(item);
+        });
+
+        openModal(feedbackModal);
+      }
+
+async function evaluateDefense() {
+        if (!currentCaseKey) {
+          alert("Escolha um case primeiro.");
+          return;
+        }
+        if (answeredCards.length !== CASES[currentCaseKey].cards.length) {
+          alert("Conclua todas as cartas antes de avaliar a defesa.");
+          return;
+        }
+
+        const defense = collectDefense();
+        const hasAnyDefense = Object.values(defense).some(Boolean);
+        if (!hasAnyDefense) {
+          alert("Preencha a defesa antes de avaliar.");
+          return;
+        }
+
+        const btn = $("#evaluateBtn");
+        const original = btn.textContent;
+        btn.textContent = "Avaliando...";
+        btn.disabled = true;
+
+        try {
+          let feedback = null;
+
+          if (openAiKey) {
+            const response = await fetch("https://api.openai.com/v1/responses", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + openAiKey
+              },
+              body: JSON.stringify({
+                model: openAiModel || "gpt-4.1-mini",
+                input: buildEvaluationPrompt()
+              })
+            });
+
+            if (!response.ok) throw new Error("Falha na API: " + response.status);
+
+            const data = await response.json();
+            const text = extractResponseText(data);
+
+            try {
+              feedback = JSON.parse(text);
+            } catch (e) {
+              feedback = localFallbackFeedback();
+            }
+          } else {
+            feedback = localFallbackFeedback();
+          }
+
+          renderFeedback(feedback);
+        } catch (error) {
+          console.error(error);
+          renderFeedback(localFallbackFeedback());
+        } finally {
+          btn.textContent = original;
+          btn.disabled = false;
+        }
+      }
+
+      function loadConfigIntoFields() {
+        $("#apiKeyInput").value = openAiKey;
+        $("#modelInput").value = openAiModel;
+        $("#configStatus").textContent = openAiKey
+          ? "Chave carregada do navegador."
+          : "A chave fica salva apenas no navegador desta máquina.";
+      }
+
+      function saveConfig() {
+        openAiKey = $("#apiKeyInput").value.trim();
+        openAiModel = $("#modelInput").value.trim() || "gpt-4.1-mini";
+        localStorage.setItem("jc_credito_openai_key", openAiKey);
+        localStorage.setItem("jc_credito_openai_model", openAiModel);
+        $("#configStatus").textContent = openAiKey
+          ? "Configuração salva com sucesso neste navegador."
+          : "Nenhuma chave informada. O sistema usará respostas e avaliação locais.";
+      }
+
+      $("#openConfigBtn").addEventListener("click", () => {
+        loadConfigIntoFields();
+        openModal(configModal);
+      });
+      $("#closeConfigBtn").addEventListener("click", () => closeModal(configModal));
+      $("#closeCardModalBtn").addEventListener("click", () => closeModal(cardModal));
+      $("#closeQuestionBtn").addEventListener("click", () => closeModal(cardModal));
+      $("#closeFeedbackBtn").addEventListener("click", () => closeModal(feedbackModal));
+
+      [configModal, cardModal, feedbackModal].forEach(modal => {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) closeModal(modal);
+        });
+      });
+
+      $("#saveConfigBtn").addEventListener("click", saveConfig);
+      $("#backBtn").addEventListener("click", showHome);
+      $("#clearDefenseBtn").addEventListener("click", clearDefense);
+      $("#evaluateBtn").addEventListener("click", evaluateDefense);
+      $("#askAiBtn").addEventListener("click", askAiForCard);
+      $("#saveCardBtn").addEventListener("click", saveCardToHistory);
+
+      renderCaseList();
+      renderDefense();
+      showHome();
+    })();
+  </script>
+</body>
+</html>
