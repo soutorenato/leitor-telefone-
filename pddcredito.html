@@ -3,48 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comitê de Crédito - Multi Cases</title>
+<title>Ficha 360 Crédito PF Alta Renda</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Comfortaa',sans-serif;background:#f4f6f8;overflow:hidden}
-.header{
-height:78px;background:linear-gradient(90deg,#1E2F55,#111827);
-display:flex;align-items:center;justify-content:space-between;
-padding:0 24px;color:#fff;
+body{
+font-family:'Comfortaa',sans-serif;
+background:#f4f6f8;
+overflow:hidden;
+color:#111827;
 }
-.header-left,.header-right{display:flex;align-items:center;gap:16px}
+.header{
+height:78px;
+background:linear-gradient(90deg,#1E2F55,#111827);
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0 24px;
+color:#fff;
+}
 .header h1{font-size:22px}
 .header span{color:#FF6A1A}
-.stage-btn{
-width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
-font-weight:700;background:#1f2937;color:#fff;
+
+.header-left,.header-right{
+display:flex;
+align-items:center;
+gap:14px;
 }
-.stage-btn.active{background:#FF6A1A;color:#111827}
+
+.stage-btn{
+width:40px;
+height:40px;
+border-radius:50%;
+border:none;
+cursor:pointer;
+font-weight:700;
+background:#1f2937;
+color:#fff;
+}
+
+.stage-btn.active{
+background:#FF6A1A;
+color:#111827;
+}
+
 .case-selector{
 position:relative;
 }
+
 .case-trigger{
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.15);
-width:42px;height:42px;border-radius:12px;
-display:flex;align-items:center;justify-content:center;
+width:42px;
+height:42px;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
 cursor:pointer;
+background:rgba(255,255,255,.1);
+border:1px solid rgba(255,255,255,.12);
 }
+
 .case-dropdown{
 display:none;
 position:absolute;
-top:52px;right:0;
+top:54px;
+right:0;
+width:230px;
 background:#fff;
-border-radius:12px;
+border-radius:14px;
 box-shadow:0 12px 30px rgba(0,0,0,.18);
-min-width:180px;
 overflow:hidden;
 z-index:999;
 }
+
 .case-option{
 padding:14px;
 cursor:pointer;
@@ -52,6 +86,7 @@ font-size:13px;
 border-bottom:1px solid #eee;
 }
 .case-option:hover{background:#f8fafc}
+
 .main{
 height:calc(100vh - 78px);
 padding:18px;
@@ -60,34 +95,56 @@ grid-template-columns:repeat(3,1fr);
 grid-template-rows:repeat(2,1fr);
 gap:16px;
 }
+
 .panel{
-background:#fff;border-radius:18px;padding:18px;
+background:#fff;
+border-radius:18px;
+padding:18px;
 border:1px solid #e5e7eb;
 box-shadow:0 8px 24px rgba(15,23,42,.08);
 overflow:hidden;
 }
+
 .panel-header{
-display:flex;justify-content:space-between;align-items:center;
+display:flex;
+justify-content:space-between;
+align-items:center;
 margin-bottom:14px;
 }
+
 .panel-title{
-display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;
+display:flex;
+align-items:center;
+gap:8px;
+font-weight:700;
+font-size:15px;
 }
-.material-symbols-outlined{color:#FF6A1A}
-.content{overflow-y:auto}
+
+.material-symbols-outlined{
+color:#FF6A1A;
+}
+
+.content{
+overflow-y:auto;
+}
+
 .item{
-display:flex;justify-content:space-between;
-padding:10px 0;border-bottom:1px solid #eef2f7;
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #eef2f7;
 font-size:13px;
 }
+
 .label{color:#64748b}
 .value{font-weight:700}
 .good{color:#15803d}
 .alert{color:#b45309}
 .danger{color:#dc2626}
+
 .btn{
-background:rgba(255,106,26,.1);
-border:1px solid rgba(255,106,26,.3);
+background:rgba(255,106,26,.10);
+border:1px solid rgba(255,106,26,.30);
 color:#FF6A1A;
 padding:7px 12px;
 border-radius:999px;
@@ -95,32 +152,78 @@ cursor:pointer;
 font-size:12px;
 font-weight:700;
 }
+
 .modal{
-display:none;position:fixed;inset:0;
-background:rgba(0,0,0,.5);
-align-items:center;justify-content:center;
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.55);
+align-items:center;
+justify-content:center;
 z-index:9999;
 }
+
 .modal-box{
-background:#fff;width:850px;max-height:80vh;
-overflow-y:auto;border-radius:20px;padding:24px;
+width:920px;
+max-height:82vh;
+overflow-y:auto;
+background:#fff;
+border-radius:20px;
+padding:24px;
 }
+
 .close{
-float:right;border:none;background:none;
-font-size:28px;cursor:pointer;
+float:right;
+background:none;
+border:none;
+font-size:28px;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #e5e7eb;
+}
+
+th{
+color:#64748b;
+}
+
+.accordion{
+background:rgba(255,106,26,.10);
+border:1px solid rgba(255,106,26,.30);
+padding:14px;
+border-radius:12px;
+margin:10px 0;
+cursor:pointer;
+font-weight:700;
+color:#FF6A1A;
+}
+
+.acc-content{
+display:none;
+background:#f8fafc;
+padding:14px;
+border-radius:12px;
+margin-bottom:12px;
+line-height:1.6;
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-
 <div class="header-left">
 <h1>Ficha 360 Crédito PF Alta Renda <span id="caseTitle">| Case 01</span></h1>
 </div>
 
 <div class="header-right">
-
 <button id="btn1" class="stage-btn active" onclick="setStage(1)">1</button>
 <button id="btn2" class="stage-btn" onclick="setStage(2)">2</button>
 
@@ -131,11 +234,10 @@ font-size:28px;cursor:pointer;
 
 <div class="case-dropdown" id="caseDropdown">
 <div class="case-option" onclick="setCase(1)">Case 01 — Henrique Martins</div>
-<div class="case-option" onclick="setCase(2)">Case 02 — Maria Aparecida da Silva</div>
-<div class="case-option" onclick="setCase(3)">Case 03 — Lucas Barreto de Moraes</div>
+<div class="case-option" onclick="setCase(2)">Case 02 — Maria Aparecida</div>
+<div class="case-option" onclick="setCase(3)">Case 03 — Lucas Barreto</div>
 </div>
 </div>
-
 </div>
 </div>
 
@@ -153,77 +255,141 @@ font-size:28px;cursor:pointer;
 let currentCase = 1;
 let currentStage = 1;
 
-const cases = {
+const titles = {
+cliente:"Dados Complementares do Cliente",
+saldo:"Extrato da Conta Corrente",
+cartao:"Faturas do Cartão de Crédito",
+investimentos:"Investimentos",
+produtos:"Produtos Contratados",
+historico:"Histórico de Atendimento"
+};
 
+const cases = {
 1:{
 title:"Case 01",
-name:"Henrique Martins",
 data:{
 1:{
+cards:{
 cliente:["Henrique Martins","Advogado","R$ 40.000","Sem Restritivos"],
 saldo:["R$ 18.500","R$ 40.000","R$ 58.500"],
 cartao:["R$ 5.000","R$ 3.280","Adimplente"],
-invest:["R$ 150.000"],
+investimentos:["R$ 150.000"],
 produtos:["Nenhum"],
 historico:["Sem registros"]
 },
+modals:{
+cliente:`<p>Cliente sem restritivos no momento da concessão.</p>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>05/01/2026</td><td>Honorários</td><td class="good">+R$ 22.000</td><td>R$ 30.200</td></tr><tr><td>12/01/2026</td><td>Recebimento Cliente</td><td class="good">+R$ 18.000</td><td>R$ 48.200</td></tr><tr><td>25/01/2026</td><td>Despesas</td><td class="danger">-R$ 29.700</td><td>R$ 18.500</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Nov/25</td><td>R$ 2.980</td><td class="good">Pago</td></tr><tr><td>Dez/25</td><td>R$ 3.140</td><td class="good">Pago</td></tr><tr><td>Jan/26</td><td>R$ 3.280</td><td class="good">Pago</td></tr></table>`,
+investimentos:`<p>Saldo total investido: <strong>R$ 150.000</strong></p>`,
+produtos:`<p>Cliente ainda não possuía produtos contratados.</p>`,
+historico:`<p>Sem histórico relevante.</p>`
+}
+},
 2:{
+cards:{
 cliente:["Henrique Martins","Advogado","R$ 40.000","Com Restrição"],
 saldo:["-R$ 37.438","R$ 40.000","R$ 2.561"],
 cartao:["R$ 80.000","R$ 38.700","Em Atraso"],
-invest:["R$ 0"],
+investimentos:["R$ 0"],
 produtos:["3 Produtos"],
 historico:["Jan/2026"]
+},
+modals:{
+cliente:`<ul><li>Pendência em Cartório: R$ 18.420</li><li>Restrição Bancária: R$ 42.880</li></ul>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>02/04/26</td><td>PIX Mariana</td><td class="danger">-R$ 4.800</td><td>-R$ 3.237</td></tr><tr><td>04/04/26</td><td>PIX Roberto</td><td class="danger">-R$ 7.250</td><td>-R$ 10.487</td></tr><tr><td>18/04/26</td><td>PIX Gustavo</td><td class="danger">-R$ 12.451</td><td>-R$ 37.438</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Fev/26</td><td>R$ 21.480</td><td class="danger">Não paga</td></tr><tr><td>Mar/26</td><td>R$ 34.920</td><td class="danger">Não paga</td></tr><tr><td>Abr/26</td><td>R$ 38.700</td><td class="danger">Não paga</td></tr></table>`,
+investimentos:`<p>Saldo atual: <strong>R$ 0</strong></p>`,
+produtos:`<div class="accordion" onclick="toggleAcc('c1e')">Empréstimo</div><div id="c1e" class="acc-content">Valor: R$ 100.000<br>Prazo: 60 meses<br>Taxa: 2,00% a.m.<br>Parcela: R$ 2.878</div><div class="accordion" onclick="toggleAcc('c1s')">Seguro Vida</div><div id="c1s" class="acc-content">Cobertura: R$ 1.200.000<br>Parcela: R$ 1.322,37</div><div class="accordion" onclick="toggleAcc('c1c')">Consórcio</div><div id="c1c" class="acc-content">Carta: R$ 1.000.000<br>Parcela: R$ 1.200,00</div>`,
+historico:`<p>Jan/2026 — Paulo Eduardo atualizou renda via extrato, aprovou empréstimo, consórcio, seguro e aumento de limite de cartão.</p>`
+}
 }
 }
 },
 
 2:{
 title:"Case 02",
-name:"Maria Aparecida da Silva",
 data:{
 1:{
+cards:{
 cliente:["Maria Aparecida da Silva","Médica","R$ 35.000","Sem Restritivos"],
 saldo:["R$ 92.000","R$ 15.000","R$ 107.000"],
 cartao:["R$ 25.000","R$ 8.300","Adimplente"],
-invest:["R$ 1.000.000"],
+investimentos:["R$ 1.000.000"],
 produtos:["Nenhum"],
 historico:["15/03/2025"]
 },
+modals:{
+cliente:`<p>Renda validada via holerite em 13/03/2026.</p>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>13/03/26</td><td>Salário Hospital</td><td class="good">+R$ 35.000</td><td>R$ 110.000</td></tr><tr><td>14/03/26</td><td>Despesas Gerais</td><td class="danger">-R$ 18.000</td><td>R$ 92.000</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Jan/26</td><td>R$ 7.900</td><td class="good">Pago</td></tr><tr><td>Fev/26</td><td>R$ 8.300</td><td class="good">Pago</td></tr></table>`,
+investimentos:`<p>Saldo Investido: <strong>R$ 1.000.000</strong></p>`,
+produtos:`<p>Sem produtos contratados.</p>`,
+historico:`<p>15/03/2025 — Cliente demonstrou interesse em compra de imóvel.</p>`
+}
+},
 2:{
+cards:{
 cliente:["Maria Aparecida da Silva","Médica","R$ 35.000","Sem Restritivos"],
 saldo:["-R$ 12.300","R$ 15.000","R$ 2.700"],
 cartao:["R$ 25.000","R$ 24.100","Em atraso"],
-invest:["R$ 420.000"],
-produtos:["Crédito Imob + Seguro"],
+investimentos:["R$ 420.000"],
+produtos:["Financ. + Seguro"],
 historico:["Abr/2026"]
+},
+modals:{
+cliente:`<p>Sem restritivos externos, porém com deterioração interna de fluxo.</p>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>02/04/26</td><td>Débito Parcela Financiamento</td><td class="danger">-R$ 11.240</td><td>-R$ 8.700</td></tr><tr><td>14/04/26</td><td>Despesas Diversas</td><td class="danger">-R$ 3.600</td><td>-R$ 12.300</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Abr/26</td><td>R$ 24.100</td><td class="danger">Em atraso</td></tr></table>`,
+investimentos:`<p>Saldo remanescente: <strong>R$ 420.000</strong></p>`,
+produtos:`<div class="accordion" onclick="toggleAcc('c2f')">Crédito Imobiliário</div><div id="c2f" class="acc-content">Valor: R$ 1.200.000<br>Prazo: 240 meses<br>Taxa: 13,39% a.a.<br>Parcela estimada: R$ 14.800</div><div class="accordion" onclick="toggleAcc('c2s')">Seguro Residencial</div><div id="c2s" class="acc-content">Cobertura: R$ 1.200.000<br>Parcela: R$ 340,00</div>`,
+historico:`<p>Mar/2026 — Contratado crédito imobiliário de R$ 1,2MM + seguro residencial.</p>`
+}
 }
 }
 },
 
 3:{
 title:"Case 03",
-name:"Lucas Barreto de Moraes",
 data:{
 1:{
+cards:{
 cliente:["Lucas Barreto de Moraes","Empresário","R$ 60.000","Sem Restritivos"],
 saldo:["R$ 120.000","R$ 50.000","R$ 170.000"],
 cartao:["R$ 30.000","R$ 11.000","Adimplente"],
-invest:["R$ 500.000"],
+investimentos:["R$ 500.000"],
 produtos:["Nenhum"],
 historico:["Sem registros"]
 },
+modals:{
+cliente:`<p>Cliente empresário, renda atualizada por extrato e movimentação recorrente na conta.</p>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>03/02/26</td><td>Recebimento pró-labore</td><td class="good">+R$ 35.000</td><td>R$ 95.000</td></tr><tr><td>10/02/26</td><td>Distribuição de lucros</td><td class="good">+R$ 25.000</td><td>R$ 120.000</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Dez/25</td><td>R$ 9.800</td><td class="good">Pago</td></tr><tr><td>Jan/26</td><td>R$ 11.000</td><td class="good">Pago</td></tr></table>`,
+investimentos:`<p>Saldo investido: <strong>R$ 500.000</strong></p><p>Investimentos usados como argumento de conforto patrimonial.</p>`,
+produtos:`<p>Cliente ainda não possuía crédito pessoal com garantia contratado.</p>`,
+historico:`<p>Sem registros relevantes antes da contratação.</p>`
+}
+},
 2:{
+cards:{
 cliente:["Lucas Barreto de Moraes","Empresário","R$ 60.000","Com Restrição"],
 saldo:["-R$ 48.200","R$ 50.000","R$ 1.800"],
-cartao:["R$ 120.000","R$ 118.000","Em atraso"],
-invest:["R$ 0"],
-produtos:["Capital Giro + Cartão"],
+cartao:["R$ 30.000","R$ 28.900","Em atraso"],
+investimentos:["R$ 0"],
+produtos:["Crédito c/ Garantia"],
 historico:["Fev/2026"]
+},
+modals:{
+cliente:`<ul><li>Restrição bancária: R$ 76.500</li><li>Apontamento comercial vinculado à empresa: R$ 118.000</li></ul>`,
+saldo:`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr><tr><td>04/04/26</td><td>PIX enviado - Sócio</td><td class="danger">-R$ 18.000</td><td>R$ 22.000</td></tr><tr><td>08/04/26</td><td>PIX enviado - Fornecedor</td><td class="danger">-R$ 31.000</td><td>-R$ 9.000</td></tr><tr><td>12/04/26</td><td>PIX enviado - Conta PJ</td><td class="danger">-R$ 39.200</td><td>-R$ 48.200</td></tr></table>`,
+cartao:`<table><tr><th>Mês</th><th>Fatura</th><th>Status</th></tr><tr><td>Fev/26</td><td>R$ 18.400</td><td class="danger">Pago parcial</td></tr><tr><td>Mar/26</td><td>R$ 24.700</td><td class="danger">Não pago</td></tr><tr><td>Abr/26</td><td>R$ 28.900</td><td class="danger">Em atraso</td></tr></table>`,
+investimentos:`<p>Saldo atual: <strong>R$ 0</strong></p><p>Os investimentos que davam conforto à operação foram resgatados/liquidados, reduzindo a proteção percebida.</p>`,
+produtos:`<div class="accordion" onclick="toggleAcc('c3g')">Crédito Pessoal com Garantia de Investimento</div><div id="c3g" class="acc-content">Valor contratado: R$ 300.000<br>Prazo: 36 meses<br>Taxa: 1,19% a.m.<br>Parcela estimada: R$ 10.045</div>`,
+historico:`<p>Fev/2026 — Cliente contratou crédito pessoal com garantia de investimento. A análise considerou os R$ 500 mil investidos como conforto, mas não avaliou adequadamente a dependência da empresa e a possibilidade de resgate dos recursos.</p>`
 }
 }
 }
-
+}
 };
 
 function renderDashboard(){
@@ -233,12 +399,12 @@ const d = c.data[currentStage];
 document.getElementById("caseTitle").innerText = "| " + c.title;
 
 document.getElementById("dashboard").innerHTML = `
-${createPanel("Dados do Cliente","person",["Nome","Profissão","Renda","Serasa"],d.cliente,"cliente")}
-${createPanel("Saldo e Limites","account_balance_wallet",["Saldo Atual","Limite","Disponível"],d.saldo,"saldo")}
-${createPanel("Cartão de Crédito","credit_card",["Limite","Fatura","Status"],d.cartao,"cartao")}
-${createPanel("Investimentos","trending_up",["Saldo Investimentos"],d.invest,"invest")}
-${createPanel("Produtos","inventory_2",["Produtos"],d.produtos,"produtos")}
-${createPanel("Histórico","history",["Último Registro"],d.historico,"historico")}
+${createPanel("Dados do Cliente","person",["Nome","Profissão","Renda","Serasa"],d.cards.cliente,"cliente")}
+${createPanel("Saldo e Limites","account_balance_wallet",["Saldo Atual","Limite","Disponível"],d.cards.saldo,"saldo")}
+${createPanel("Cartão de Crédito","credit_card",["Limite","Fatura","Status"],d.cards.cartao,"cartao")}
+${createPanel("Investimentos","trending_up",["Saldo Investimentos"],d.cards.investimentos,"investimentos")}
+${createPanel("Produtos","inventory_2",["Produtos"],d.cards.produtos,"produtos")}
+${createPanel("Histórico","history",["Último Registro"],d.cards.historico,"historico")}
 `;
 
 document.getElementById("btn1").classList.toggle("active",currentStage===1);
@@ -271,6 +437,7 @@ renderDashboard();
 
 function setCase(c){
 currentCase=c;
+currentStage=1;
 renderDashboard();
 document.getElementById("caseDropdown").style.display="none";
 }
@@ -281,13 +448,20 @@ dd.style.display=dd.style.display==="block"?"none":"block";
 }
 
 function openModal(type){
-document.getElementById("modalTitle").innerText=type;
-document.getElementById("modalContent").innerHTML="<p>Detalhamento deste bloco pode ser customizado individualmente por case/etapa.</p>";
-document.getElementById("modal").style.display="flex";
+const d = cases[currentCase].data[currentStage];
+
+document.getElementById("modalTitle").innerText = titles[type];
+document.getElementById("modalContent").innerHTML = d.modals[type];
+document.getElementById("modal").style.display = "flex";
 }
 
 function closeModal(){
 document.getElementById("modal").style.display="none";
+}
+
+function toggleAcc(id){
+const el=document.getElementById(id);
+el.style.display=el.style.display==="block"?"none":"block";
 }
 
 renderDashboard();
