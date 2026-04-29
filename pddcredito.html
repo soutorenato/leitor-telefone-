@@ -9,397 +9,353 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+    font-family:'Comfortaa',sans-serif;
+    background:#0b1120;
+    color:#fff;
+    overflow:hidden;
 }
 
-body {
-  margin: 0;
-  font-family: 'Comfortaa', sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  overflow: hidden;
+.header{
+    height:70px;
+    padding:0 25px;
+    background:linear-gradient(90deg,#1E2F55,#111827);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-.header {
-  height: 72px;
-  background: linear-gradient(90deg, #1E2F55, #111827);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+.header h1{
+    font-size:22px;
 }
 
-.header h1 {
-  margin: 0;
-  font-size: 22px;
-  color: #fff;
+.header span{
+    color:#FF6A1A;
 }
 
-.header span {
-  color: #FF6A1A;
-  font-weight: 700;
+.main{
+    height:calc(100vh - 70px);
+    padding:18px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(2,1fr);
+    gap:16px;
 }
 
-.case-info {
-  font-size: 13px;
-  color: #cbd5e1;
+.panel{
+    background:#111827;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.08);
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
 }
 
-.main {
-  height: calc(100vh - 72px);
-  padding: 20px;
-  display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 16px;
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
 }
 
-.panel {
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 18px;
-  padding: 18px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+.panel-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:15px;
 }
 
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
+.material-symbols-outlined{
+    color:#FF6A1A;
 }
 
-.panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
+.content{
+    overflow-y:auto;
+    padding-right:5px;
 }
 
-.material-symbols-outlined {
-  color: #FF6A1A;
+.item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    font-size:13px;
 }
 
-.content {
-  overflow-y: auto;
-  padding-right: 6px;
+.label{color:#94a3b8;}
+.value{font-weight:700;}
+.good{color:#86efac;}
+.alert{color:#fbbf24;}
+.danger{color:#f87171;}
+
+.btn{
+    background:rgba(255,106,26,0.12);
+    color:#FF6A1A;
+    border:1px solid rgba(255,106,26,0.35);
+    border-radius:999px;
+    padding:7px 12px;
+    cursor:pointer;
+    font-size:12px;
+    font-family:inherit;
+    font-weight:700;
 }
 
-.item {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  font-size: 13px;
+.btn:hover{
+    background:#FF6A1A;
+    color:#111827;
 }
 
-.label {
-  color: #94a3b8;
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    align-items:center;
+    justify-content:center;
+    z-index:99;
 }
 
-.value {
-  color: #f8fafc;
-  font-weight: 700;
-  text-align: right;
+.modal-box{
+    width:800px;
+    max-height:80vh;
+    overflow-y:auto;
+    background:#111827;
+    padding:25px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.08);
 }
 
-.alert {
-  color: #fbbf24;
+.modal-box h2{
+    margin-bottom:18px;
 }
 
-.danger {
-  color: #f87171;
-}
-
-.good {
-  color: #86efac;
-}
-
-.btn {
-  background: rgba(255,106,26,0.12);
-  color: #FF6A1A;
-  border: 1px solid rgba(255,106,26,0.45);
-  border-radius: 999px;
-  padding: 7px 12px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.btn:hover {
-  background: #FF6A1A;
-  color: #111827;
-}
-
-.badge {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(255,106,26,0.15);
-  color: #FF6A1A;
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.72);
-  align-items: center;
-  justify-content: center;
-  z-index: 99;
-}
-
-.modal-box {
-  width: 760px;
-  max-height: 78vh;
-  background: #111827;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,0.14);
-  padding: 24px;
-  overflow-y: auto;
-}
-
-.modal h2 {
-  margin-top: 0;
-  color: #fff;
-}
-
-.modal p, .modal li {
-  color: #cbd5e1;
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-.close {
-  float: right;
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 26px;
-  cursor: pointer;
-}
-
-.footer-note {
-  margin-top: auto;
-  font-size: 11px;
-  color: #64748b;
-  padding-top: 10px;
+.close{
+    float:right;
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:28px;
+    cursor:pointer;
 }
 </style>
 </head>
-
 <body>
 
 <div class="header">
-  <h1>Ficha 360 Crédito PF Alta Renda <span>| Case 01</span></h1>
-  <div class="case-info">Comitê Reverso de Crédito | Operação já concedida</div>
+    <h1>Ficha 360 Crédito PF Alta Renda <span>| Case 01</span></h1>
+    <div>Comitê Reverso de Crédito</div>
 </div>
 
 <div class="main">
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">person</span>Dados do Cliente</div>
-      <button class="btn" onclick="openModal('cliente')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Nome</div><div class="value">Dr. Henrique Martins</div></div>
-      <div class="item"><div class="label">Perfil</div><div class="value">Alta Renda PF</div></div>
-      <div class="item"><div class="label">Profissão</div><div class="value">Advogado</div></div>
-      <div class="item"><div class="label">Renda atualizada</div><div class="value good">R$ 40.000/mês</div></div>
-      <div class="item"><div class="label">Fonte da renda</div><div class="value">Extrato bancário</div></div>
-      <div class="item"><div class="label">Tempo de relacionamento</div><div class="value">3 anos e 8 meses</div></div>
-      <div class="item"><div class="label">Status anterior</div><div class="value good">Sem atraso interno</div></div>
-    </div>
-    <div class="footer-note">Visão cadastral no momento da contratação.</div>
-  </section>
+    <!-- DADOS CLIENTE -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">person</span>
+                Dados do Cliente
+            </div>
+            <button class="btn" onclick="openModal('cliente')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Nome</span><span class="value">Dr. Henrique Martins</span></div>
+            <div class="item"><span class="label">Profissão</span><span class="value">Advogado</span></div>
+            <div class="item"><span class="label">Renda Atualizada</span><span class="value good">R$ 40.000</span></div>
+            <div class="item"><span class="label">Fonte da Renda</span><span class="value">Extrato Bancário</span></div>
+            <div class="item"><span class="label">Tempo Relacionamento</span><span class="value">3 anos</span></div>
+            <div class="item"><span class="label">Restrição Serasa</span><span class="value good">Sem Restritivos</span></div>
+        </div>
+    </section>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">account_balance_wallet</span>Saldo e Movimentação</div>
-      <button class="btn" onclick="openModal('saldo')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Saldo médio conta</div><div class="value">R$ 18.500</div></div>
-      <div class="item"><div class="label">Entrada média mensal</div><div class="value good">R$ 40.000</div></div>
-      <div class="item"><div class="label">Saída média mensal</div><div class="value alert">R$ 36.800</div></div>
-      <div class="item"><div class="label">Sobra estimada</div><div class="value alert">R$ 3.200</div></div>
-      <div class="item"><div class="label">Concentração de entradas</div><div class="value alert">Alta</div></div>
-      <div class="item"><div class="label">Oscilação mensal</div><div class="value alert">Relevante</div></div>
-    </div>
-    <div class="footer-note">A renda aparece boa, mas a sobra mensal é apertada.</div>
-  </section>
+    <!-- SALDO -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                Saldo e Limites
+            </div>
+            <button class="btn" onclick="openModal('saldo')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Saldo Atual</span><span class="value">R$ 18.500</span></div>
+            <div class="item"><span class="label">Limite Conta</span><span class="value alert">R$ 20.000</span></div>
+            <div class="item"><span class="label">Limite Total</span><span class="value">R$ 38.500</span></div>
+        </div>
+    </section>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">credit_card</span>Cartão de Crédito</div>
-      <button class="btn" onclick="openModal('cartao')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Uso médio anterior</div><div class="value">R$ 5.000</div></div>
-      <div class="item"><div class="label">Limite anterior</div><div class="value">R$ 5.000</div></div>
-      <div class="item"><div class="label">Novo limite aprovado</div><div class="value danger">R$ 80.000</div></div>
-      <div class="item"><div class="label">Aumento concedido</div><div class="value danger">16x</div></div>
-      <div class="item"><div class="label">Risco potencial</div><div class="value danger">Elevado</div></div>
-    </div>
-    <div class="footer-note">O limite liberado amplia a exposição potencial.</div>
-  </section>
+    <!-- CARTÃO -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">credit_card</span>
+                Cartão de Crédito
+            </div>
+            <button class="btn" onclick="openModal('cartao')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Limite Cartão</span><span class="value danger">R$ 80.000</span></div>
+            <div class="item"><span class="label">Status Atual</span><span class="value danger">Em Atraso</span></div>
+        </div>
+    </section>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">trending_up</span>Investimentos</div>
-      <button class="btn" onclick="openModal('investimentos')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Total investido</div><div class="value good">R$ 150.000</div></div>
-      <div class="item"><div class="label">Liquidez</div><div class="value alert">Parcial</div></div>
-      <div class="item"><div class="label">Uso como reserva</div><div class="value alert">Não confirmado</div></div>
-      <div class="item"><div class="label">Resgates recentes</div><div class="value alert">Sim</div></div>
-      <div class="item"><div class="label">Cobertura sobre empréstimo</div><div class="value">150%</div></div>
-    </div>
-    <div class="footer-note">Patrimônio não significa necessariamente capacidade de pagamento.</div>
-  </section>
+    <!-- INVESTIMENTOS -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">trending_up</span>
+                Investimentos
+            </div>
+            <button class="btn" onclick="openModal('investimentos')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Antes da Operação</span><span class="value good">R$ 150.000</span></div>
+            <div class="item"><span class="label">Situação Atual</span><span class="value danger">R$ 0</span></div>
+            <div class="item"><span class="label">Movimentação</span><span class="value alert">Resgatado Integralmente</span></div>
+        </div>
+    </section>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">request_quote</span>Operação Concedida</div>
-      <button class="btn" onclick="openModal('operacao')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Empréstimo pessoal</div><div class="value">R$ 100.000</div></div>
-      <div class="item"><div class="label">Taxa</div><div class="value">2,00% a.m.</div></div>
-      <div class="item"><div class="label">Prazo</div><div class="value">60 meses</div></div>
-      <div class="item"><div class="label">Parcela estimada</div><div class="value">R$ 2.878</div></div>
-      <div class="item"><div class="label">Seguro de vida</div><div class="value">Contratado</div></div>
-      <div class="item"><div class="label">Consórcio</div><div class="value">Contratado</div></div>
-    </div>
-    <div class="footer-note">A operação foi analisada junto com outros produtos.</div>
-  </section>
+    <!-- OPERAÇÃO -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">request_quote</span>
+                Operação Concedida
+            </div>
+            <button class="btn" onclick="openModal('operacao')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Empréstimo</span><span class="value">R$ 100.000</span></div>
+            <div class="item"><span class="label">Prazo</span><span class="value">60x</span></div>
+            <div class="item"><span class="label">Taxa</span><span class="value">2,00% a.m.</span></div>
+            <div class="item"><span class="label">Parcela</span><span class="value">R$ 2.878</span></div>
+            <div class="item"><span class="label">Seguro Vida</span><span class="value">Sim</span></div>
+            <div class="item"><span class="label">Consórcio</span><span class="value">Sim</span></div>
+        </div>
+    </section>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title"><span class="material-symbols-outlined">warning</span>Evolução e Alertas</div>
-      <button class="btn" onclick="openModal('alertas')">Detalhar</button>
-    </div>
-    <div class="content">
-      <div class="item"><div class="label">Mês 1</div><div class="value good">Pago</div></div>
-      <div class="item"><div class="label">Mês 2</div><div class="value good">Pago</div></div>
-      <div class="item"><div class="label">Mês 3</div><div class="value alert">Deterioração</div></div>
-      <div class="item"><div class="label">Mês 4</div><div class="value danger">Não pagamento</div></div>
-      <div class="item"><div class="label">Situação</div><div class="value danger">Início de PDD</div></div>
-      <div class="item"><div class="label">Hipótese central</div><div class="value danger">Falha de originação</div></div>
-    </div>
-    <div class="footer-note">Inadimplência precoce costuma indicar problema já existente.</div>
-  </section>
+    <!-- EVOLUÇÃO -->
+    <section class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="material-symbols-outlined">warning</span>
+                Evolução da Operação
+            </div>
+            <button class="btn" onclick="openModal('evolucao')">Detalhar</button>
+        </div>
+        <div class="content">
+            <div class="item"><span class="label">Mês 1</span><span class="value good">Pago</span></div>
+            <div class="item"><span class="label">Mês 2</span><span class="value good">Pago</span></div>
+            <div class="item"><span class="label">Mês 3</span><span class="value alert">Deterioração</span></div>
+            <div class="item"><span class="label">Mês 4</span><span class="value danger">Inadimplência</span></div>
+            <div class="item"><span class="label">Status</span><span class="value danger">PDD Iniciada</span></div>
+        </div>
+    </section>
 
 </div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
-  <div class="modal-box">
-    <button class="close" onclick="closeModal()">×</button>
-    <h2 id="modalTitle"></h2>
-    <div id="modalContent"></div>
-  </div>
+    <div class="modal-box">
+        <button class="close" onclick="closeModal()">×</button>
+        <h2 id="modalTitle"></h2>
+        <div id="modalContent"></div>
+    </div>
 </div>
 
 <script>
 const details = {
-  cliente: {
-    title: "Dados do Cliente",
-    content: `
-      <p>Cliente pessoa física de alta renda, advogado, com renda atualizada por extrato em R$ 40.000 mensais.</p>
-      <ul>
-        <li>O ponto de atenção é que a renda foi validada por movimentação bancária, mas não necessariamente por recorrência comprovada.</li>
-        <li>A análise deveria ter investigado se os créditos em conta eram mensais, recorrentes e sustentáveis.</li>
-        <li>Como advogado, poderia haver renda variável por honorários, causas pontuais ou recebimentos não recorrentes.</li>
-      </ul>
-    `
-  },
-  saldo: {
-    title: "Saldo e Movimentação",
-    content: `
-      <p>Apesar da renda aparente de R$ 40 mil, a movimentação mostra saídas muito próximas das entradas.</p>
-      <ul>
-        <li>Entrada média: R$ 40.000.</li>
-        <li>Saída média: R$ 36.800.</li>
-        <li>Sobra estimada antes da nova dívida: apenas R$ 3.200.</li>
-        <li>A nova parcela estimada de R$ 2.878 praticamente consumiria toda a sobra mensal.</li>
-      </ul>
-      <p><strong>Ponto de debate:</strong> havia capacidade real de pagamento ou apenas renda bruta aparente?</p>
-    `
-  },
-  cartao: {
-    title: "Cartão de Crédito",
-    content: `
-      <p>O cliente utilizava historicamente cerca de R$ 5 mil no cartão e recebeu aumento de limite para R$ 80 mil.</p>
-      <ul>
-        <li>O aumento foi de 16 vezes o comportamento anterior.</li>
-        <li>Mesmo que o limite não tenha sido usado no ato, ele representa risco potencial liberado.</li>
-        <li>A análise deveria ter considerado a exposição consolidada: empréstimo + cartão + consórcio + seguro.</li>
-      </ul>
-      <p><strong>Pergunta para sala:</strong> o limite foi compatível com o comportamento histórico do cliente?</p>
-    `
-  },
-  investimentos: {
-    title: "Investimentos",
-    content: `
-      <p>O cliente possuía R$ 150 mil investidos no banco, o que poderia gerar sensação de conforto na análise.</p>
-      <ul>
-        <li>Mas investimento não é garantia formal se não estiver vinculado à operação.</li>
-        <li>Era necessário entender liquidez, finalidade e estabilidade desses recursos.</li>
-        <li>Também deveria ser avaliado se esses valores eram reserva pessoal, fluxo operacional ou capital destinado a outros compromissos.</li>
-      </ul>
-      <p><strong>Conceito:</strong> patrimônio sem vinculação formal não reduz automaticamente o risco de crédito.</p>
-    `
-  },
-  operacao: {
-    title: "Operação Concedida",
-    content: `
-      <p>Foi concedido empréstimo pessoal de R$ 100 mil, taxa de 2% ao mês, prazo de 60 meses.</p>
-      <ul>
-        <li>Parcela aproximada: R$ 2.878.</li>
-        <li>No mesmo momento, houve aumento expressivo de limite de cartão.</li>
-        <li>Também foram contratados seguro de vida e consórcio.</li>
-        <li>O erro provável foi analisar a venda como pacote comercial, e não como risco consolidado.</li>
-      </ul>
-      <p><strong>Reflexão:</strong> a operação parecia saudável isoladamente, mas o conjunto aumentou a vulnerabilidade financeira.</p>
-    `
-  },
-  alertas: {
-    title: "Evolução e Alertas",
-    content: `
-      <p>A operação apresentou deterioração muito cedo.</p>
-      <ul>
-        <li>Primeiros meses pagos.</li>
-        <li>No terceiro mês, sinais de dificuldade.</li>
-        <li>No quarto mês, ausência de pagamento.</li>
-        <li>Início de PDD.</li>
-      </ul>
-      <p><strong>Leitura técnica:</strong> inadimplência em quatro meses normalmente indica que o problema já existia na concessão e não foi identificado.</p>
-      <p><strong>Frase para fechamento:</strong> PDD precoce raramente nasce depois da contratação. Ela apenas revela uma fragilidade que já estava escondida.</p>
-    `
-  }
-};
 
-function openModal(type) {
-  document.getElementById("modalTitle").innerHTML = details[type].title;
-  document.getElementById("modalContent").innerHTML = details[type].content;
-  document.getElementById("modal").style.display = "flex";
+cliente:{
+title:"Dados do Cliente",
+content:`
+<p>Cliente PF Alta Renda com renda atualizada por extrato bancário.</p>
+<ul>
+<li>Profissão: Advogado</li>
+<li>Renda considerada: R$ 40 mil/mês</li>
+<li>Sem restritivos no Serasa</li>
+</ul>
+`
+},
+
+saldo:{
+title:"Extrato e Movimentação",
+content:`
+<p><strong>Extrato Fictício dos Últimos 30 Dias:</strong></p>
+<ul>
+<li>Recebimento Honorários Escritório: +R$ 18.000</li>
+<li>Recebimento Cliente Jurídico: +R$ 22.000</li>
+<li>Escola Filhos: -R$ 5.500</li>
+<li>Financiamento Imóvel: -R$ 9.200</li>
+<li>Leasing Veículo: -R$ 4.300</li>
+<li>Condomínio: -R$ 2.800</li>
+<li>Folha Assistente Jurídico: -R$ 6.500</li>
+<li>Despesas Gerais: -R$ 8.500</li>
+</ul>
+`
+},
+
+cartao:{
+title:"Detalhamento do Cartão de Crédito",
+content:`
+<p><strong>Consumo Atual:</strong></p>
+<ul>
+<li>Fatura Atual: R$ 38.700</li>
+<li>Pagamento Realizado: Não</li>
+<li>Status: Em atraso</li>
+<li>Rotativo Iniciado</li>
+</ul>
+`
+},
+
+investimentos:{
+title:"Comparativo de Investimentos",
+content:`
+<p><strong>Antes da Concessão:</strong> R$ 150.000</p>
+<p><strong>Após 4 Meses:</strong> R$ 0</p>
+<p>Cliente resgatou integralmente os recursos após deterioração do fluxo de caixa.</p>
+`
+},
+
+operacao:{
+title:"Detalhes da Operação",
+content:`
+<ul>
+<li>Empréstimo: R$ 100.000</li>
+<li>Taxa: 2,00% a.m.</li>
+<li>Prazo: 60 meses</li>
+<li>Seguro de Vida agregado</li>
+<li>Consórcio agregado</li>
+</ul>
+`
+},
+
+evolucao:{
+title:"Evolução da Operação",
+content:`
+<p>Inadimplência em apenas 4 meses sugere provável falha de originação.</p>
+<ul>
+<li>Cliente começou a demonstrar deterioração no 3º mês.</li>
+<li>Parou de pagar no 4º mês.</li>
+<li>Operação entrou em PDD.</li>
+</ul>
+`
 }
 
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
+};
+
+function openModal(type){
+document.getElementById('modalTitle').innerHTML=details[type].title;
+document.getElementById('modalContent').innerHTML=details[type].content;
+document.getElementById('modal').style.display='flex';
+}
+
+function closeModal(){
+document.getElementById('modal').style.display='none';
 }
 </script>
 
