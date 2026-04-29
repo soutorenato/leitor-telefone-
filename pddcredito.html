@@ -28,13 +28,8 @@ body{
     border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-.header h1{
-    font-size:22px;
-}
-
-.header span{
-    color:#FF6A1A;
-}
+.header h1{font-size:22px;}
+.header span{color:#FF6A1A;}
 
 .main{
     height:calc(100vh - 70px);
@@ -70,9 +65,7 @@ body{
     font-size:15px;
 }
 
-.material-symbols-outlined{
-    color:#FF6A1A;
-}
+.material-symbols-outlined{color:#FF6A1A;}
 
 .content{
     overflow-y:auto;
@@ -121,8 +114,8 @@ body{
 }
 
 .modal-box{
-    width:800px;
-    max-height:80vh;
+    width:850px;
+    max-height:82vh;
     overflow-y:auto;
     background:#111827;
     padding:25px;
@@ -130,9 +123,7 @@ body{
     border:1px solid rgba(255,255,255,0.08);
 }
 
-.modal-box h2{
-    margin-bottom:18px;
-}
+.modal-box h2{margin-bottom:18px;}
 
 .close{
     float:right;
@@ -142,8 +133,53 @@ body{
     font-size:28px;
     cursor:pointer;
 }
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th{
+    color:#94a3b8;
+    border-bottom:1px solid rgba(255,255,255,.15);
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.accordion{
+    background:rgba(255,106,26,0.12);
+    border:1px solid rgba(255,106,26,0.35);
+    color:#FF6A1A;
+    padding:14px;
+    border-radius:12px;
+    margin:10px 0;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.acc-content{
+    display:none;
+    background:#0b1120;
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:12px;
+    color:#cbd5e1;
+    line-height:1.6;
+}
+
+.note{
+    margin-top:18px;
+    color:#fbbf24;
+    line-height:1.6;
+}
 </style>
 </head>
+
 <body>
 
 <div class="header">
@@ -153,112 +189,99 @@ body{
 
 <div class="main">
 
-    <!-- DADOS CLIENTE -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">person</span>
-                Dados do Cliente
-            </div>
-            <button class="btn" onclick="openModal('cliente')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">person</span>
+            Dados do Cliente
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Nome</span><span class="value">Dr. Henrique Martins</span></div>
-            <div class="item"><span class="label">Profissão</span><span class="value">Advogado</span></div>
-            <div class="item"><span class="label">Renda Atualizada</span><span class="value good">R$ 40.000</span></div>
-            <div class="item"><span class="label">Fonte da Renda</span><span class="value">Extrato Bancário</span></div>
-            <div class="item"><span class="label">Tempo Relacionamento</span><span class="value">3 anos</span></div>
-            <div class="item"><span class="label">Restrição Serasa</span><span class="value good">Sem Restritivos</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('cliente')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Nome</span><span class="value">Dr. Henrique Martins</span></div>
+        <div class="item"><span class="label">Profissão</span><span class="value">Advogado</span></div>
+        <div class="item"><span class="label">Renda Atualizada</span><span class="value good">R$ 40.000</span></div>
+        <div class="item"><span class="label">Fonte da Renda</span><span class="value">Extrato Bancário</span></div>
+        <div class="item"><span class="label">Tempo Relacionamento</span><span class="value">3 anos</span></div>
+        <div class="item"><span class="label">Restrição Serasa</span><span class="value good">Sem Restritivos</span></div>
+    </div>
+</section>
 
-    <!-- SALDO -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">account_balance_wallet</span>
-                Saldo e Limites
-            </div>
-            <button class="btn" onclick="openModal('saldo')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">account_balance_wallet</span>
+            Saldo e Limites
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Saldo Atual</span><span class="value">R$ 18.500</span></div>
-            <div class="item"><span class="label">Limite Conta</span><span class="value alert">R$ 20.000</span></div>
-            <div class="item"><span class="label">Limite Total</span><span class="value">R$ 38.500</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('saldo')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Saldo Atual</span><span class="value danger">-R$ 37.438,10</span></div>
+        <div class="item"><span class="label">Limite Conta</span><span class="value alert">R$ 40.000</span></div>
+        <div class="item"><span class="label">Limite Disponível</span><span class="value danger">R$ 2.561,90</span></div>
+    </div>
+</section>
 
-    <!-- CARTÃO -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">credit_card</span>
-                Cartão de Crédito
-            </div>
-            <button class="btn" onclick="openModal('cartao')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">credit_card</span>
+            Cartão de Crédito
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Limite Cartão</span><span class="value danger">R$ 80.000</span></div>
-            <div class="item"><span class="label">Status Atual</span><span class="value danger">Em Atraso</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('cartao')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Limite Cartão</span><span class="value danger">R$ 80.000</span></div>
+        <div class="item"><span class="label">Fatura Atual</span><span class="value danger">R$ 38.700</span></div>
+        <div class="item"><span class="label">Status Atual</span><span class="value danger">Em Atraso</span></div>
+    </div>
+</section>
 
-    <!-- INVESTIMENTOS -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">trending_up</span>
-                Investimentos
-            </div>
-            <button class="btn" onclick="openModal('investimentos')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">trending_up</span>
+            Investimentos
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Antes da Operação</span><span class="value good">R$ 150.000</span></div>
-            <div class="item"><span class="label">Situação Atual</span><span class="value danger">R$ 0</span></div>
-            <div class="item"><span class="label">Movimentação</span><span class="value alert">Resgatado Integralmente</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('investimentos')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Saldo Investimento</span><span class="value danger">R$ 0,00</span></div>
+    </div>
+</section>
 
-    <!-- OPERAÇÃO -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">request_quote</span>
-                Operação Concedida
-            </div>
-            <button class="btn" onclick="openModal('operacao')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">inventory_2</span>
+            Produtos
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Empréstimo</span><span class="value">R$ 100.000</span></div>
-            <div class="item"><span class="label">Prazo</span><span class="value">60x</span></div>
-            <div class="item"><span class="label">Taxa</span><span class="value">2,00% a.m.</span></div>
-            <div class="item"><span class="label">Parcela</span><span class="value">R$ 2.878</span></div>
-            <div class="item"><span class="label">Seguro Vida</span><span class="value">Sim</span></div>
-            <div class="item"><span class="label">Consórcio</span><span class="value">Sim</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('produtos')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Empréstimo Pessoal</span><span class="value">Ativo</span></div>
+        <div class="item"><span class="label">Seguro de Vida</span><span class="value">Ativo</span></div>
+        <div class="item"><span class="label">Consórcio Imobiliário</span><span class="value">Ativo</span></div>
+    </div>
+</section>
 
-    <!-- EVOLUÇÃO -->
-    <section class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="material-symbols-outlined">warning</span>
-                Evolução da Operação
-            </div>
-            <button class="btn" onclick="openModal('evolucao')">Detalhar</button>
+<section class="panel">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="material-symbols-outlined">history</span>
+            Histórico de Atendimento
         </div>
-        <div class="content">
-            <div class="item"><span class="label">Mês 1</span><span class="value good">Pago</span></div>
-            <div class="item"><span class="label">Mês 2</span><span class="value good">Pago</span></div>
-            <div class="item"><span class="label">Mês 3</span><span class="value alert">Deterioração</span></div>
-            <div class="item"><span class="label">Mês 4</span><span class="value danger">Inadimplência</span></div>
-            <div class="item"><span class="label">Status</span><span class="value danger">PDD Iniciada</span></div>
-        </div>
-    </section>
+        <button class="btn" onclick="openModal('historico')">Detalhar</button>
+    </div>
+    <div class="content">
+        <div class="item"><span class="label">Último Registro</span><span class="value">Jan/2026</span></div>
+        <div class="item"><span class="label">Gerente</span><span class="value">Paulo Eduardo</span></div>
+        <div class="item"><span class="label">Tipo</span><span class="value alert">Contratação de Produtos</span></div>
+    </div>
+</section>
 
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="modal">
     <div class="modal-box">
         <button class="close" onclick="closeModal()">×</button>
@@ -276,73 +299,168 @@ content:`
 <p>Cliente PF Alta Renda com renda atualizada por extrato bancário.</p>
 <ul>
 <li>Profissão: Advogado</li>
-<li>Renda considerada: R$ 40 mil/mês</li>
-<li>Sem restritivos no Serasa</li>
+<li>Renda considerada: R$ 40.000/mês</li>
+<li>Restrição Serasa: Sem restritivos</li>
 </ul>
 `
 },
 
 saldo:{
-title:"Extrato e Movimentação",
+title:"Extrato da Conta Corrente",
 content:`
-<p><strong>Extrato Fictício dos Últimos 30 Dias:</strong></p>
-<ul>
-<li>Recebimento Honorários Escritório: +R$ 18.000</li>
-<li>Recebimento Cliente Jurídico: +R$ 22.000</li>
-<li>Escola Filhos: -R$ 5.500</li>
-<li>Financiamento Imóvel: -R$ 9.200</li>
-<li>Leasing Veículo: -R$ 4.300</li>
-<li>Condomínio: -R$ 2.800</li>
-<li>Folha Assistente Jurídico: -R$ 6.500</li>
-<li>Despesas Gerais: -R$ 8.500</li>
-</ul>
+<table>
+<tr>
+<th style="text-align:left;">Data</th>
+<th style="text-align:left;">Descrição</th>
+<th style="text-align:right;">Valor</th>
+<th style="text-align:right;">Saldo</th>
+</tr>
+
+<tr>
+<td>01/04/2026</td>
+<td>Saldo anterior</td>
+<td style="text-align:right;">-</td>
+<td style="text-align:right;">R$ 1.562,90</td>
+</tr>
+
+<tr>
+<td>02/04/2026</td>
+<td>PIX enviado - Mariana Lopes</td>
+<td style="text-align:right;color:#f87171;">-R$ 4.800,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 3.237,10</td>
+</tr>
+
+<tr>
+<td>04/04/2026</td>
+<td>PIX enviado - Roberto Lima</td>
+<td style="text-align:right;color:#f87171;">-R$ 7.250,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 10.487,10</td>
+</tr>
+
+<tr>
+<td>07/04/2026</td>
+<td>PIX enviado - Carla Mendes</td>
+<td style="text-align:right;color:#f87171;">-R$ 5.900,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 16.387,10</td>
+</tr>
+
+<tr>
+<td>10/04/2026</td>
+<td>PIX enviado - Felipe Andrade</td>
+<td style="text-align:right;color:#f87171;">-R$ 8.600,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 24.987,10</td>
+</tr>
+
+<tr>
+<td>14/04/2026</td>
+<td>PIX enviado - Juliana Rocha</td>
+<td style="text-align:right;color:#f87171;">-R$ 6.750,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 31.737,10</td>
+</tr>
+
+<tr>
+<td>18/04/2026</td>
+<td>PIX enviado - Gustavo Nunes</td>
+<td style="text-align:right;color:#f87171;">-R$ 5.701,00</td>
+<td style="text-align:right;color:#f87171;">-R$ 37.438,10</td>
+</tr>
+</table>
+
+<p class="note">
+Ponto de atenção: não há entradas recentes. O cliente está utilizando praticamente todo o limite da conta.
+</p>
 `
 },
 
 cartao:{
-title:"Detalhamento do Cartão de Crédito",
+title:"Faturas do Cartão de Crédito",
 content:`
-<p><strong>Consumo Atual:</strong></p>
-<ul>
-<li>Fatura Atual: R$ 38.700</li>
-<li>Pagamento Realizado: Não</li>
-<li>Status: Em atraso</li>
-<li>Rotativo Iniciado</li>
-</ul>
+<table>
+<tr>
+<th style="text-align:left;">Mês</th>
+<th style="text-align:right;">Valor da Fatura</th>
+<th style="text-align:center;">Pagamento</th>
+<th style="text-align:center;">Status</th>
+</tr>
+
+<tr>
+<td>Fevereiro/2026</td>
+<td style="text-align:right;">R$ 21.480,75</td>
+<td style="text-align:center;color:#f87171;">Não pago</td>
+<td style="text-align:center;color:#f87171;">Em atraso</td>
+</tr>
+
+<tr>
+<td>Março/2026</td>
+<td style="text-align:right;">R$ 34.920,40</td>
+<td style="text-align:center;color:#f87171;">Não pago</td>
+<td style="text-align:center;color:#f87171;">Em atraso</td>
+</tr>
+
+<tr>
+<td>Abril/2026</td>
+<td style="text-align:right;">R$ 38.700,00</td>
+<td style="text-align:center;color:#f87171;">Não pago</td>
+<td style="text-align:center;color:#f87171;">Rotativo / atraso</td>
+</tr>
+</table>
 `
 },
 
 investimentos:{
-title:"Comparativo de Investimentos",
+title:"Investimentos",
 content:`
-<p><strong>Antes da Concessão:</strong> R$ 150.000</p>
-<p><strong>Após 4 Meses:</strong> R$ 0</p>
-<p>Cliente resgatou integralmente os recursos após deterioração do fluxo de caixa.</p>
+<p><strong>Saldo atual em investimentos:</strong> R$ 0,00</p>
+<p>O cliente não possui mais recursos investidos no banco neste momento.</p>
 `
 },
 
-operacao:{
-title:"Detalhes da Operação",
+produtos:{
+title:"Produtos Contratados",
 content:`
-<ul>
-<li>Empréstimo: R$ 100.000</li>
-<li>Taxa: 2,00% a.m.</li>
-<li>Prazo: 60 meses</li>
-<li>Seguro de Vida agregado</li>
-<li>Consórcio agregado</li>
-</ul>
+<div class="accordion" onclick="toggleAcc('emp')">Empréstimo Pessoal</div>
+<div id="emp" class="acc-content">
+<p>Valor contratado: <strong>R$ 100.000</strong></p>
+<p>Prazo: <strong>60 meses</strong></p>
+<p>Taxa: <strong>2,00% a.m.</strong></p>
+<p>Parcela: <strong>R$ 2.878</strong></p>
+</div>
+
+<div class="accordion" onclick="toggleAcc('seg')">Seguro de Vida</div>
+<div id="seg" class="acc-content">
+<p>Cobertura: <strong>R$ 1.200.000</strong></p>
+<p>Parcela mensal: <strong>R$ 1.322,37</strong></p>
+</div>
+
+<div class="accordion" onclick="toggleAcc('con')">Consórcio Imobiliário</div>
+<div id="con" class="acc-content">
+<p>Carta de crédito: <strong>R$ 1.000.000</strong></p>
+<p>Parcela mensal: <strong>R$ 1.200,00</strong></p>
+</div>
 `
 },
 
-evolucao:{
-title:"Evolução da Operação",
+historico:{
+title:"Histórico de Atendimento",
 content:`
-<p>Inadimplência em apenas 4 meses sugere provável falha de originação.</p>
-<ul>
-<li>Cliente começou a demonstrar deterioração no 3º mês.</li>
-<li>Parou de pagar no 4º mês.</li>
-<li>Operação entrou em PDD.</li>
-</ul>
+<div class="accordion" onclick="toggleAcc('hist1')">
+Atendimento em Janeiro/2026 | Gerente Paulo Eduardo
+</div>
+
+<div id="hist1" class="acc-content">
+<p>
+Cliente contratou um empréstimo no valor de <strong>R$ 100.000</strong>, um consórcio imobiliário e um seguro de vida.
+</p>
+<p>
+Na mesma oportunidade, foi atualizada a renda através de extrato bancário no valor de <strong>R$ 40.000/mês</strong>.
+</p>
+<p>
+Também foi realizado aumento do limite do cartão de crédito de <strong>R$ 5.000 para R$ 80.000</strong>.
+</p>
+<p>
+Cliente advogado, com boa movimentação com o banco e sem restritivos no Serasa no momento da contratação.
+</p>
+</div>
 `
 }
 
@@ -356,6 +474,11 @@ document.getElementById('modal').style.display='flex';
 
 function closeModal(){
 document.getElementById('modal').style.display='none';
+}
+
+function toggleAcc(id){
+const el = document.getElementById(id);
+el.style.display = el.style.display === "block" ? "none" : "block";
 }
 </script>
 
