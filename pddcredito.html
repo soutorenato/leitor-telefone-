@@ -3,471 +3,294 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ficha 360 Crédito PF Alta Renda</title>
+<title>Comitê de Crédito - Multi Cases</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-
-body{
-  font-family:'Comfortaa',sans-serif;
-  background:#f4f6f8;
-  color:#111827;
-  overflow:hidden;
-}
-
+body{font-family:'Comfortaa',sans-serif;background:#f4f6f8;overflow:hidden}
 .header{
-  height:78px;
-  background:linear-gradient(90deg,#1E2F55,#111827);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0 24px;
-  color:#fff;
+height:78px;background:linear-gradient(90deg,#1E2F55,#111827);
+display:flex;align-items:center;justify-content:space-between;
+padding:0 24px;color:#fff;
 }
-
-.header-center{
-  display:flex;
-  align-items:center;
-  gap:20px;
-}
-
+.header-left,.header-right{display:flex;align-items:center;gap:16px}
 .header h1{font-size:22px}
 .header span{color:#FF6A1A}
-
-.stage-buttons{display:flex;gap:10px}
-
 .stage-btn{
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.18);
-  cursor:pointer;
-  font-weight:700;
-  font-family:inherit;
-  background:#1f2937;
-  color:#cbd5e1;
+width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+font-weight:700;background:#1f2937;color:#fff;
 }
-
-.stage-btn.active{
-  background:#FF6A1A !important;
-  color:#111827 !important;
-  border-color:#FF6A1A;
+.stage-btn.active{background:#FF6A1A;color:#111827}
+.case-selector{
+position:relative;
 }
-
+.case-trigger{
+background:rgba(255,255,255,.1);
+border:1px solid rgba(255,255,255,.15);
+width:42px;height:42px;border-radius:12px;
+display:flex;align-items:center;justify-content:center;
+cursor:pointer;
+}
+.case-dropdown{
+display:none;
+position:absolute;
+top:52px;right:0;
+background:#fff;
+border-radius:12px;
+box-shadow:0 12px 30px rgba(0,0,0,.18);
+min-width:180px;
+overflow:hidden;
+z-index:999;
+}
+.case-option{
+padding:14px;
+cursor:pointer;
+font-size:13px;
+border-bottom:1px solid #eee;
+}
+.case-option:hover{background:#f8fafc}
 .main{
-  height:calc(100vh - 78px);
-  padding:18px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  grid-template-rows:repeat(2,1fr);
-  gap:16px;
+height:calc(100vh - 78px);
+padding:18px;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+grid-template-rows:repeat(2,1fr);
+gap:16px;
 }
-
 .panel{
-  background:#fff;
-  border-radius:18px;
-  border:1px solid #e5e7eb;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
+background:#fff;border-radius:18px;padding:18px;
+border:1px solid #e5e7eb;
+box-shadow:0 8px 24px rgba(15,23,42,.08);
+overflow:hidden;
 }
-
 .panel-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:14px;
+display:flex;justify-content:space-between;align-items:center;
+margin-bottom:14px;
 }
-
 .panel-title{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:15px;
-  font-weight:700;
+display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;
 }
-
 .material-symbols-outlined{color:#FF6A1A}
-
 .content{overflow-y:auto}
-
 .item{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px solid #eef2f7;
-  font-size:13px;
+display:flex;justify-content:space-between;
+padding:10px 0;border-bottom:1px solid #eef2f7;
+font-size:13px;
 }
-
 .label{color:#64748b}
 .value{font-weight:700}
 .good{color:#15803d}
 .alert{color:#b45309}
 .danger{color:#dc2626}
-
 .btn{
-  background:rgba(255,106,26,.10);
-  color:#FF6A1A;
-  border:1px solid rgba(255,106,26,.35);
-  border-radius:999px;
-  padding:7px 12px;
-  cursor:pointer;
-  font-size:12px;
-  font-weight:700;
-  font-family:inherit;
+background:rgba(255,106,26,.1);
+border:1px solid rgba(255,106,26,.3);
+color:#FF6A1A;
+padding:7px 12px;
+border-radius:999px;
+cursor:pointer;
+font-size:12px;
+font-weight:700;
 }
-
-.btn:hover{
-  background:#FF6A1A;
-  color:#111827;
-}
-
 .modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  align-items:center;
-  justify-content:center;
-  z-index:999;
+display:none;position:fixed;inset:0;
+background:rgba(0,0,0,.5);
+align-items:center;justify-content:center;
+z-index:9999;
 }
-
 .modal-box{
-  width:900px;
-  max-height:82vh;
-  overflow-y:auto;
-  background:#fff;
-  color:#111827;
-  border-radius:20px;
-  padding:24px;
-  border:1px solid #e5e7eb;
+background:#fff;width:850px;max-height:80vh;
+overflow-y:auto;border-radius:20px;padding:24px;
 }
-
 .close{
-  float:right;
-  background:none;
-  border:none;
-  color:#111827;
-  font-size:28px;
-  cursor:pointer;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-}
-
-th,td{
-  padding:10px;
-  border-bottom:1px solid #e5e7eb;
-}
-
-th{
-  color:#64748b;
-}
-
-.accordion{
-  background:rgba(255,106,26,.10);
-  border:1px solid rgba(255,106,26,.35);
-  color:#FF6A1A;
-  padding:14px;
-  border-radius:12px;
-  margin:10px 0;
-  cursor:pointer;
-  font-weight:700;
-}
-
-.acc-content{
-  display:none;
-  background:#f8fafc;
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:12px;
-  color:#334155;
-  line-height:1.6;
+float:right;border:none;background:none;
+font-size:28px;cursor:pointer;
 }
 </style>
 </head>
-
 <body>
 
 <div class="header">
-  <div class="header-center">
-    <h1>Ficha 360 Crédito PF Alta Renda <span>| Case 01</span></h1>
-    <div class="stage-buttons">
-      <button id="btn1" class="stage-btn active" onclick="setStage(1)">1</button>
-      <button id="btn2" class="stage-btn" onclick="setStage(2)">2</button>
-    </div>
-  </div>
+
+<div class="header-left">
+<h1>Ficha 360 Crédito PF Alta Renda <span id="caseTitle">| Case 01</span></h1>
 </div>
 
-<div class="main">
+<div class="header-right">
 
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">person</span>Dados do Cliente</div>
-    <button class="btn" onclick="openModal('cliente')">Detalhar</button>
-  </div>
-  <div class="content" id="cliente-card"></div>
-</section>
+<button id="btn1" class="stage-btn active" onclick="setStage(1)">1</button>
+<button id="btn2" class="stage-btn" onclick="setStage(2)">2</button>
 
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">account_balance_wallet</span>Saldo e Limites</div>
-    <button class="btn" onclick="openModal('saldo')">Detalhar</button>
-  </div>
-  <div class="content" id="saldo-card"></div>
-</section>
+<div class="case-selector">
+<div class="case-trigger" onclick="toggleCases()">
+<span class="material-symbols-outlined" style="color:#fff;">person</span>
+</div>
 
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">credit_card</span>Cartão de Crédito</div>
-    <button class="btn" onclick="openModal('cartao')">Detalhar</button>
-  </div>
-  <div class="content" id="cartao-card"></div>
-</section>
-
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">trending_up</span>Investimentos</div>
-    <button class="btn" onclick="openModal('investimentos')">Detalhar</button>
-  </div>
-  <div class="content" id="investimentos-card"></div>
-</section>
-
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">inventory_2</span>Produtos</div>
-    <button class="btn" onclick="openModal('produtos')">Detalhar</button>
-  </div>
-  <div class="content" id="produtos-card"></div>
-</section>
-
-<section class="panel">
-  <div class="panel-header">
-    <div class="panel-title"><span class="material-symbols-outlined">history</span>Histórico de Atendimento</div>
-    <button class="btn" onclick="openModal('historico')">Detalhar</button>
-  </div>
-  <div class="content" id="historico-card"></div>
-</section>
+<div class="case-dropdown" id="caseDropdown">
+<div class="case-option" onclick="setCase(1)">Case 01 — Henrique Martins</div>
+<div class="case-option" onclick="setCase(2)">Case 02 — Maria Aparecida da Silva</div>
+<div class="case-option" onclick="setCase(3)">Case 03 — Lucas Barreto de Moraes</div>
+</div>
+</div>
 
 </div>
+</div>
+
+<div class="main" id="dashboard"></div>
 
 <div class="modal" id="modal">
-  <div class="modal-box">
-    <button class="close" onclick="closeModal()">×</button>
-    <h2 id="modalTitle"></h2>
-    <div id="modalContent"></div>
-  </div>
+<div class="modal-box">
+<button class="close" onclick="closeModal()">×</button>
+<h2 id="modalTitle"></h2>
+<div id="modalContent"></div>
+</div>
 </div>
 
 <script>
+let currentCase = 1;
 let currentStage = 1;
 
-const data = {
-  1: {
-    cards: {
-      cliente: `
-        <div class="item"><span class="label">Nome</span><span class="value">Dr. Henrique Martins</span></div>
-        <div class="item"><span class="label">Profissão</span><span class="value">Advogado</span></div>
-        <div class="item"><span class="label">Renda Atualizada</span><span class="value good">R$ 40.000</span></div>
-        <div class="item"><span class="label">Fonte da Renda</span><span class="value">Extrato Bancário</span></div>
-        <div class="item"><span class="label">Restrição Serasa</span><span class="value good">Sem Restritivos</span></div>
-      `,
-      saldo: `
-        <div class="item"><span class="label">Saldo Atual</span><span class="value good">R$ 18.500</span></div>
-        <div class="item"><span class="label">Limite Conta</span><span class="value">R$ 40.000</span></div>
-        <div class="item"><span class="label">Limite Disponível</span><span class="value good">R$ 58.500</span></div>
-      `,
-      cartao: `
-        <div class="item"><span class="label">Limite Cartão</span><span class="value">R$ 5.000</span></div>
-        <div class="item"><span class="label">Fatura Atual</span><span class="value">R$ 3.280</span></div>
-        <div class="item"><span class="label">Status</span><span class="value good">Adimplente</span></div>
-      `,
-      investimentos: `
-        <div class="item"><span class="label">Saldo Investimento</span><span class="value good">R$ 150.000</span></div>
-      `,
-      produtos: `
-        <div class="item"><span class="label">Empréstimo Pessoal</span><span class="value">Não contratado</span></div>
-        <div class="item"><span class="label">Seguro de Vida</span><span class="value">Não contratado</span></div>
-        <div class="item"><span class="label">Consórcio</span><span class="value">Não contratado</span></div>
-      `,
-      historico: `
-        <div class="item"><span class="label">Histórico</span><span class="value">Sem registro relevante</span></div>
-      `
-    },
-    modals: {
-      cliente: `<p>Na fase de concessão, o cliente aparecia sem restritivos no Serasa.</p>`,
-      saldo: `
-        <table>
-          <tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr>
-          <tr><td>02/01/2026</td><td>Saldo anterior</td><td>-</td><td>R$ 8.200,00</td></tr>
-          <tr><td>05/01/2026</td><td>Honorários advocatícios</td><td class="good">+R$ 22.000,00</td><td>R$ 30.200,00</td></tr>
-          <tr><td>12/01/2026</td><td>Transferência recebida</td><td class="good">+R$ 18.000,00</td><td>R$ 48.200,00</td></tr>
-          <tr><td>18/01/2026</td><td>PIX enviado</td><td class="danger">-R$ 12.500,00</td><td>R$ 35.700,00</td></tr>
-          <tr><td>25/01/2026</td><td>Despesas diversas</td><td class="danger">-R$ 17.200,00</td><td>R$ 18.500,00</td></tr>
-        </table>
-      `,
-      cartao: `
-        <table>
-          <tr><th>Mês</th><th>Fatura</th><th>Pagamento</th><th>Status</th></tr>
-          <tr><td>Nov/2025</td><td>R$ 2.980,00</td><td>Pago</td><td class="good">Em dia</td></tr>
-          <tr><td>Dez/2025</td><td>R$ 3.140,00</td><td>Pago</td><td class="good">Em dia</td></tr>
-          <tr><td>Jan/2026</td><td>R$ 3.280,00</td><td>Pago</td><td class="good">Em dia</td></tr>
-        </table>
-      `,
-      investimentos: `<p><strong>Saldo em investimentos:</strong> R$ 150.000,00</p><p>Carteira com liquidez parcial e bom relacionamento patrimonial no momento da concessão.</p>`,
-      produtos: `<p>Neste momento, o cliente ainda não possuía os produtos contratados no pacote da concessão.</p>`,
-      historico: `<p>Sem histórico relevante registrado antes da contratação dos produtos.</p>`
-    }
-  },
+const cases = {
 
-  2: {
-    cards: {
-      cliente: `
-        <div class="item"><span class="label">Nome</span><span class="value">Dr. Henrique Martins</span></div>
-        <div class="item"><span class="label">Profissão</span><span class="value">Advogado</span></div>
-        <div class="item"><span class="label">Renda Atualizada</span><span class="value good">R$ 40.000</span></div>
-        <div class="item"><span class="label">Fonte da Renda</span><span class="value">Extrato Bancário</span></div>
-        <div class="item"><span class="label">Restrição Serasa</span><span class="value danger">Com Restrição</span></div>
-      `,
-      saldo: `
-        <div class="item"><span class="label">Saldo Atual</span><span class="value danger">-R$ 37.438,10</span></div>
-        <div class="item"><span class="label">Limite Conta</span><span class="value">R$ 40.000</span></div>
-        <div class="item"><span class="label">Limite Disponível</span><span class="value danger">R$ 2.561,90</span></div>
-      `,
-      cartao: `
-        <div class="item"><span class="label">Limite Cartão</span><span class="value danger">R$ 80.000</span></div>
-        <div class="item"><span class="label">Fatura Atual</span><span class="value danger">R$ 38.700</span></div>
-        <div class="item"><span class="label">Status</span><span class="value danger">Em Atraso</span></div>
-      `,
-      investimentos: `
-        <div class="item"><span class="label">Saldo Investimento</span><span class="value danger">R$ 0,00</span></div>
-      `,
-      produtos: `
-        <div class="item"><span class="label">Empréstimo Pessoal</span><span class="value">Ativo</span></div>
-        <div class="item"><span class="label">Seguro de Vida</span><span class="value">Ativo</span></div>
-        <div class="item"><span class="label">Consórcio</span><span class="value">Ativo</span></div>
-      `,
-      historico: `
-        <div class="item"><span class="label">Último Registro</span><span class="value">Jan/2026</span></div>
-        <div class="item"><span class="label">Gerente</span><span class="value">Paulo Eduardo</span></div>
-        <div class="item"><span class="label">Tipo</span><span class="value alert">Contratação de Produtos</span></div>
-      `
-    },
-    modals: {
-      cliente: `
-        <p><strong>Restritivos identificados:</strong></p>
-        <ul>
-          <li>Pendência em cartório: R$ 18.420,00</li>
-          <li>Restrição bancária: R$ 42.880,00</li>
-        </ul>
-      `,
-      saldo: `
-        <table>
-          <tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Saldo</th></tr>
-          <tr><td>01/04/2026</td><td>Saldo anterior</td><td>-</td><td>R$ 1.562,90</td></tr>
-          <tr><td>02/04/2026</td><td>PIX enviado - Mariana Lopes</td><td class="danger">-R$ 4.800,00</td><td class="danger">-R$ 3.237,10</td></tr>
-          <tr><td>04/04/2026</td><td>PIX enviado - Roberto Lima</td><td class="danger">-R$ 7.250,00</td><td class="danger">-R$ 10.487,10</td></tr>
-          <tr><td>07/04/2026</td><td>PIX enviado - Carla Mendes</td><td class="danger">-R$ 5.900,00</td><td class="danger">-R$ 16.387,10</td></tr>
-          <tr><td>10/04/2026</td><td>PIX enviado - Felipe Andrade</td><td class="danger">-R$ 8.600,00</td><td class="danger">-R$ 24.987,10</td></tr>
-          <tr><td>14/04/2026</td><td>PIX enviado - Juliana Rocha</td><td class="danger">-R$ 6.750,00</td><td class="danger">-R$ 31.737,10</td></tr>
-          <tr><td>18/04/2026</td><td>PIX enviado - Gustavo Nunes</td><td class="danger">-R$ 5.701,00</td><td class="danger">-R$ 37.438,10</td></tr>
-        </table>
-      `,
-      cartao: `
-        <table>
-          <tr><th>Mês</th><th>Fatura</th><th>Pagamento</th><th>Status</th></tr>
-          <tr><td>Fevereiro/2026</td><td>R$ 21.480,75</td><td class="danger">Não pago</td><td class="danger">Em atraso</td></tr>
-          <tr><td>Março/2026</td><td>R$ 34.920,40</td><td class="danger">Não pago</td><td class="danger">Em atraso</td></tr>
-          <tr><td>Abril/2026</td><td>R$ 38.700,00</td><td class="danger">Não pago</td><td class="danger">Rotativo / atraso</td></tr>
-        </table>
-      `,
-      investimentos: `<p><strong>Saldo atual em investimentos:</strong> R$ 0,00</p><p>Cliente resgatou integralmente os recursos após a deterioração financeira.</p>`,
-      produtos: `
-        <div class="accordion" onclick="toggleAcc('emp')">Empréstimo Pessoal</div>
-        <div id="emp" class="acc-content">
-          <p>Valor contratado: <strong>R$ 100.000</strong></p>
-          <p>Prazo: <strong>60 meses</strong></p>
-          <p>Taxa: <strong>2,00% a.m.</strong></p>
-          <p>Parcela: <strong>R$ 2.878</strong></p>
-        </div>
+1:{
+title:"Case 01",
+name:"Henrique Martins",
+data:{
+1:{
+cliente:["Henrique Martins","Advogado","R$ 40.000","Sem Restritivos"],
+saldo:["R$ 18.500","R$ 40.000","R$ 58.500"],
+cartao:["R$ 5.000","R$ 3.280","Adimplente"],
+invest:["R$ 150.000"],
+produtos:["Nenhum"],
+historico:["Sem registros"]
+},
+2:{
+cliente:["Henrique Martins","Advogado","R$ 40.000","Com Restrição"],
+saldo:["-R$ 37.438","R$ 40.000","R$ 2.561"],
+cartao:["R$ 80.000","R$ 38.700","Em Atraso"],
+invest:["R$ 0"],
+produtos:["3 Produtos"],
+historico:["Jan/2026"]
+}
+}
+},
 
-        <div class="accordion" onclick="toggleAcc('seg')">Seguro de Vida</div>
-        <div id="seg" class="acc-content">
-          <p>Cobertura: <strong>R$ 1.200.000</strong></p>
-          <p>Parcela mensal: <strong>R$ 1.322,37</strong></p>
-        </div>
+2:{
+title:"Case 02",
+name:"Maria Aparecida da Silva",
+data:{
+1:{
+cliente:["Maria Aparecida da Silva","Médica","R$ 35.000","Sem Restritivos"],
+saldo:["R$ 92.000","R$ 15.000","R$ 107.000"],
+cartao:["R$ 25.000","R$ 8.300","Adimplente"],
+invest:["R$ 1.000.000"],
+produtos:["Nenhum"],
+historico:["15/03/2025"]
+},
+2:{
+cliente:["Maria Aparecida da Silva","Médica","R$ 35.000","Sem Restritivos"],
+saldo:["-R$ 12.300","R$ 15.000","R$ 2.700"],
+cartao:["R$ 25.000","R$ 24.100","Em atraso"],
+invest:["R$ 420.000"],
+produtos:["Crédito Imob + Seguro"],
+historico:["Abr/2026"]
+}
+}
+},
 
-        <div class="accordion" onclick="toggleAcc('con')">Consórcio Imobiliário</div>
-        <div id="con" class="acc-content">
-          <p>Carta de crédito: <strong>R$ 1.000.000</strong></p>
-          <p>Parcela mensal: <strong>R$ 1.200,00</strong></p>
-        </div>
-      `,
-      historico: `
-        <div class="accordion" onclick="toggleAcc('hist1')">Atendimento em Janeiro/2026 | Gerente Paulo Eduardo</div>
-        <div id="hist1" class="acc-content">
-          <p>Cliente contratou empréstimo no valor de <strong>R$ 100.000</strong>, consórcio imobiliário e seguro de vida.</p>
-          <p>Foi atualizada a renda através de extrato bancário no valor de <strong>R$ 40.000/mês</strong>.</p>
-          <p>Foi feito aumento do limite do cartão de crédito de <strong>R$ 5.000 para R$ 80.000</strong>.</p>
-          <p>Cliente advogado, com boa movimentação com o banco.</p>
-        </div>
-      `
-    }
-  }
+3:{
+title:"Case 03",
+name:"Lucas Barreto de Moraes",
+data:{
+1:{
+cliente:["Lucas Barreto de Moraes","Empresário","R$ 60.000","Sem Restritivos"],
+saldo:["R$ 120.000","R$ 50.000","R$ 170.000"],
+cartao:["R$ 30.000","R$ 11.000","Adimplente"],
+invest:["R$ 500.000"],
+produtos:["Nenhum"],
+historico:["Sem registros"]
+},
+2:{
+cliente:["Lucas Barreto de Moraes","Empresário","R$ 60.000","Com Restrição"],
+saldo:["-R$ 48.200","R$ 50.000","R$ 1.800"],
+cartao:["R$ 120.000","R$ 118.000","Em atraso"],
+invest:["R$ 0"],
+produtos:["Capital Giro + Cartão"],
+historico:["Fev/2026"]
+}
+}
+}
+
 };
 
-const titles = {
-  cliente:"Dados Complementares do Cliente",
-  saldo:"Extrato da Conta Corrente",
-  cartao:"Faturas do Cartão de Crédito",
-  investimentos:"Investimentos",
-  produtos:"Produtos",
-  historico:"Histórico de Atendimento"
-};
+function renderDashboard(){
+const c = cases[currentCase];
+const d = c.data[currentStage];
 
-function renderStage(){
-  const cards = data[currentStage].cards;
+document.getElementById("caseTitle").innerText = "| " + c.title;
 
-  document.getElementById("cliente-card").innerHTML = cards.cliente;
-  document.getElementById("saldo-card").innerHTML = cards.saldo;
-  document.getElementById("cartao-card").innerHTML = cards.cartao;
-  document.getElementById("investimentos-card").innerHTML = cards.investimentos;
-  document.getElementById("produtos-card").innerHTML = cards.produtos;
-  document.getElementById("historico-card").innerHTML = cards.historico;
+document.getElementById("dashboard").innerHTML = `
+${createPanel("Dados do Cliente","person",["Nome","Profissão","Renda","Serasa"],d.cliente,"cliente")}
+${createPanel("Saldo e Limites","account_balance_wallet",["Saldo Atual","Limite","Disponível"],d.saldo,"saldo")}
+${createPanel("Cartão de Crédito","credit_card",["Limite","Fatura","Status"],d.cartao,"cartao")}
+${createPanel("Investimentos","trending_up",["Saldo Investimentos"],d.invest,"invest")}
+${createPanel("Produtos","inventory_2",["Produtos"],d.produtos,"produtos")}
+${createPanel("Histórico","history",["Último Registro"],d.historico,"historico")}
+`;
 
-  document.getElementById("btn1").classList.toggle("active", currentStage === 1);
-  document.getElementById("btn2").classList.toggle("active", currentStage === 2);
+document.getElementById("btn1").classList.toggle("active",currentStage===1);
+document.getElementById("btn2").classList.toggle("active",currentStage===2);
+}
+
+function createPanel(title,icon,labels,values,key){
+let items="";
+labels.forEach((l,i)=>{
+items+=`<div class="item"><span class="label">${l}</span><span class="value">${values[i]}</span></div>`;
+});
+
+return `
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">
+<span class="material-symbols-outlined">${icon}</span>${title}
+</div>
+<button class="btn" onclick="openModal('${key}')">Detalhar</button>
+</div>
+<div class="content">${items}</div>
+</div>
+`;
 }
 
 function setStage(stage){
-  currentStage = stage;
-  renderStage();
+currentStage=stage;
+renderDashboard();
+}
+
+function setCase(c){
+currentCase=c;
+renderDashboard();
+document.getElementById("caseDropdown").style.display="none";
+}
+
+function toggleCases(){
+const dd=document.getElementById("caseDropdown");
+dd.style.display=dd.style.display==="block"?"none":"block";
 }
 
 function openModal(type){
-  document.getElementById("modalTitle").innerHTML = titles[type];
-  document.getElementById("modalContent").innerHTML = data[currentStage].modals[type];
-  document.getElementById("modal").style.display = "flex";
+document.getElementById("modalTitle").innerText=type;
+document.getElementById("modalContent").innerHTML="<p>Detalhamento deste bloco pode ser customizado individualmente por case/etapa.</p>";
+document.getElementById("modal").style.display="flex";
 }
 
 function closeModal(){
-  document.getElementById("modal").style.display = "none";
+document.getElementById("modal").style.display="none";
 }
 
-function toggleAcc(id){
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === "block" ? "none" : "block";
-}
-
-renderStage();
+renderDashboard();
 </script>
 
 </body>
