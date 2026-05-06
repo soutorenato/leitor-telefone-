@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -39,6 +38,10 @@
       font-size: 24px;
     }
 
+    header small {
+      opacity: 0.9;
+    }
+
     .container {
       padding: 28px;
     }
@@ -66,7 +69,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 900px;
+      min-width: 950px;
     }
 
     th {
@@ -75,6 +78,17 @@
       padding: 14px;
       text-align: left;
       font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th.sortable span {
+      font-size: 17px;
+      vertical-align: middle;
     }
 
     td {
@@ -135,6 +149,32 @@
       font-weight: 700;
     }
 
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .resumo-box {
+      background: #f4f8ff;
+      border-radius: 16px;
+      padding: 16px;
+      border-left: 5px solid #003b71;
+    }
+
+    .resumo-box strong {
+      display: block;
+      color: #003b71;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .resumo-box span {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -142,11 +182,12 @@
       background: rgba(0,0,0,0.45);
       z-index: 999;
       padding: 24px;
+      overflow-y: auto;
     }
 
     .modal-content {
       background: white;
-      max-width: 900px;
+      max-width: 950px;
       margin: 40px auto;
       border-radius: 20px;
       padding: 24px;
@@ -202,6 +243,7 @@
       padding: 14px;
       border-radius: 14px;
       border-left: 4px solid #003b71;
+      line-height: 1.5;
     }
 
     .info-box strong {
@@ -209,6 +251,31 @@
       color: #003b71;
       margin-bottom: 5px;
       font-size: 12px;
+    }
+
+    .historico-titulo {
+      grid-column: 1 / -1;
+      margin-top: 12px;
+      color: #003b71;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e8f0ff;
+      color: #003b71;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .resumo {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     @media (max-width: 700px) {
@@ -231,6 +298,10 @@
       .modal-content {
         margin: 10px auto;
       }
+
+      .resumo {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -247,6 +318,28 @@
 
 <div class="container">
 
+  <div class="resumo">
+    <div class="resumo-box">
+      <strong>Total de Clientes</strong>
+      <span id="totalClientes">0</span>
+    </div>
+
+    <div class="resumo-box">
+      <strong>Risco Total da Carteira</strong>
+      <span id="riscoCarteira">R$ 0,00</span>
+    </div>
+
+    <div class="resumo-box">
+      <strong>PDD Total Gerada</strong>
+      <span id="pddCarteira">R$ 0,00</span>
+    </div>
+
+    <div class="resumo-box">
+      <strong>Cliente com Maior PDD</strong>
+      <span id="maiorPdd">-</span>
+    </div>
+  </div>
+
   <div class="card">
     <h2>
       <span class="material-symbols-outlined">table_chart</span>
@@ -258,8 +351,15 @@
         <thead>
           <tr>
             <th>Cliente</th>
-            <th>Risco Total</th>
-            <th>PDD Gerada</th>
+            <th class="sortable" onclick="ordenarTabela('risco')">
+              Risco Total
+              <span class="material-symbols-outlined">swap_vert</span>
+            </th>
+            <th class="sortable" onclick="ordenarTabela('pdd')">
+              PDD Gerada
+              <span class="material-symbols-outlined">swap_vert</span>
+            </th>
+            <th>% PDD sobre Risco</th>
             <th>Status</th>
             <th>Observação / Atuação</th>
             <th>Ficha</th>
@@ -306,13 +406,19 @@ const clientes = [
     telefone: "(11) 98841-2234",
     email: "marcos.almeida@email.com",
     endereco: "Rua das Palmeiras, 245 - São Paulo/SP",
-    risco: 185000,
-    pdd: 27800,
+    risco: 85000,
+    pdd: 42500,
+    historico: [
+      "12/09/2025 - Tentativa de contato sem sucesso. Cliente não atendeu ligação.",
+      "03/11/2025 - Enviado e-mail solicitando regularização do contrato em atraso.",
+      "18/01/2026 - Cliente atendeu e informou que faria o pagamento até 25/01/2026.",
+      "02/03/2026 - Pagamento não identificado. Nova tentativa de contato sem sucesso."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 45000, 62, 9200],
-      ["Cartão de Crédito", 18000, 41, 3100],
-      ["Cheque Especial", 12000, 38, 1800],
-      ["Crédito com Garantia", 110000, 25, 13700]
+      ["Crédito Pessoal", 35000, 124, 21000],
+      ["Cartão de Crédito", 18000, 96, 9000],
+      ["Cheque Especial", 12000, 88, 6500],
+      ["Crédito com Garantia", 20000, 75, 6000]
     ]
   },
   {
@@ -321,12 +427,18 @@ const clientes = [
     telefone: "(11) 97722-4411",
     email: "fernanda.costa@email.com",
     endereco: "Av. Santo Amaro, 1800 - São Paulo/SP",
-    risco: 94000,
-    pdd: 15100,
+    risco: 310000,
+    pdd: 46500,
+    historico: [
+      "22/08/2025 - Cliente localizada por telefone. Informou dificuldade temporária de caixa.",
+      "14/10/2025 - Cliente solicitou envio de segunda via por e-mail.",
+      "07/12/2025 - Enviado e-mail com resumo das pendências.",
+      "21/02/2026 - Cliente informou intenção de regularizar parcialmente em março."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 30000, 55, 6500],
-      ["Cartão de Crédito", 14000, 29, 2100],
-      ["Crédito Imobiliário", 50000, 18, 6500]
+      ["Crédito Imobiliário", 240000, 48, 26000],
+      ["Crédito Pessoal", 50000, 72, 15500],
+      ["Cartão de Crédito", 20000, 35, 5000]
     ]
   },
   {
@@ -335,12 +447,19 @@ const clientes = [
     telefone: "(11) 96633-7788",
     email: "ricardo.lima@email.com",
     endereco: "Rua Vergueiro, 920 - São Paulo/SP",
-    risco: 210000,
-    pdd: 33600,
+    risco: 145000,
+    pdd: 87000,
+    historico: [
+      "05/07/2025 - Cliente não localizado nos telefones cadastrados.",
+      "19/09/2025 - Enviado e-mail, sem retorno.",
+      "11/12/2025 - Nova tentativa de ligação sem atendimento.",
+      "16/02/2026 - Cliente respondeu e-mail informando que buscaria renegociação.",
+      "28/03/2026 - Sem efetivação de acordo até o momento."
+    ],
     operacoes: [
-      ["Crédito com Garantia", 150000, 48, 25000],
-      ["Cartão de Crédito", 25000, 35, 4200],
-      ["Cheque Especial", 35000, 44, 4400]
+      ["Crédito com Garantia", 90000, 132, 54000],
+      ["Cartão de Crédito", 25000, 101, 15000],
+      ["Cheque Especial", 30000, 118, 18000]
     ]
   },
   {
@@ -349,11 +468,18 @@ const clientes = [
     telefone: "(11) 95544-8899",
     email: "patricia.nogueira@email.com",
     endereco: "Rua Domingos de Morais, 611 - São Paulo/SP",
-    risco: 72000,
-    pdd: 8900,
+    risco: 520000,
+    pdd: 78000,
+    historico: [
+      "10/10/2025 - Cliente atendeu e informou que estava aguardando recebimento de venda de imóvel.",
+      "04/12/2025 - Enviado e-mail com demonstrativo da dívida.",
+      "17/01/2026 - Cliente solicitou prazo para retorno.",
+      "12/03/2026 - Cliente informou previsão de pagamento parcial."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 42000, 22, 5200],
-      ["Cartão de Crédito", 30000, 18, 3700]
+      ["Crédito Imobiliário", 420000, 42, 52000],
+      ["Crédito Pessoal", 60000, 63, 18000],
+      ["Cartão de Crédito", 40000, 39, 8000]
     ]
   },
   {
@@ -362,12 +488,19 @@ const clientes = [
     telefone: "(11) 94455-0011",
     email: "eduardo.souza@email.com",
     endereco: "Rua Augusta, 1450 - São Paulo/SP",
-    risco: 168000,
-    pdd: 24100,
+    risco: 67000,
+    pdd: 53600,
+    historico: [
+      "08/06/2025 - Cliente não atendeu ligação.",
+      "20/08/2025 - Enviado e-mail sem retorno.",
+      "15/10/2025 - Cliente localizado, informou que não teria previsão de pagamento.",
+      "09/01/2026 - Nova tentativa de contato sem sucesso.",
+      "26/03/2026 - Cliente segue sem regularização."
+    ],
     operacoes: [
-      ["Crédito Imobiliário", 120000, 31, 16000],
-      ["Crédito Pessoal", 28000, 46, 5900],
-      ["Cheque Especial", 20000, 21, 2200]
+      ["Crédito Pessoal", 30000, 156, 27000],
+      ["Cartão de Crédito", 22000, 141, 17600],
+      ["Cheque Especial", 15000, 122, 9000]
     ]
   },
   {
@@ -376,11 +509,18 @@ const clientes = [
     telefone: "(11) 93366-1122",
     email: "juliana.menezes@email.com",
     endereco: "Av. Paulista, 1009 - São Paulo/SP",
-    risco: 56000,
-    pdd: 7300,
+    risco: 198000,
+    pdd: 23700,
+    historico: [
+      "11/09/2025 - Cliente informou que o atraso foi pontual.",
+      "29/11/2025 - Cliente realizou pagamento parcial.",
+      "06/02/2026 - Enviado e-mail com saldo atualizado.",
+      "18/03/2026 - Cliente em negociação para regularização total."
+    ],
     operacoes: [
-      ["Cartão de Crédito", 26000, 39, 3600],
-      ["Cheque Especial", 30000, 33, 3700]
+      ["Crédito com Garantia", 150000, 29, 12000],
+      ["Cartão de Crédito", 28000, 22, 5200],
+      ["Cheque Especial", 20000, 18, 6500]
     ]
   },
   {
@@ -389,11 +529,19 @@ const clientes = [
     telefone: "(11) 92277-3344",
     email: "andre.rocha@email.com",
     endereco: "Rua Itapura, 782 - São Paulo/SP",
-    risco: 132000,
-    pdd: 19800,
+    risco: 420000,
+    pdd: 210000,
+    historico: [
+      "03/08/2025 - Cliente não localizado.",
+      "27/09/2025 - Enviado e-mail e mensagem para telefone cadastrado.",
+      "15/11/2025 - Cliente respondeu informando dificuldade financeira.",
+      "22/01/2026 - Acordo proposto, cliente não efetivou.",
+      "30/03/2026 - Nova tentativa de contato sem sucesso."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 52000, 64, 9800],
-      ["Crédito com Garantia", 80000, 37, 10000]
+      ["Crédito Imobiliário", 280000, 108, 140000],
+      ["Crédito Pessoal", 90000, 97, 45000],
+      ["Cartão de Crédito", 50000, 84, 25000]
     ]
   },
   {
@@ -402,12 +550,18 @@ const clientes = [
     telefone: "(11) 91188-4455",
     email: "camila.batista@email.com",
     endereco: "Rua Afonso Celso, 340 - São Paulo/SP",
-    risco: 88000,
-    pdd: 11200,
+    risco: 115000,
+    pdd: 17250,
+    historico: [
+      "13/10/2025 - Cliente atendeu e pediu boleto atualizado.",
+      "26/11/2025 - Pagamento parcial identificado.",
+      "19/01/2026 - Cliente informou que quitaria o restante no próximo salário.",
+      "05/03/2026 - Regularização em andamento."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 36000, 28, 4500],
-      ["Cartão de Crédito", 22000, 32, 3100],
-      ["Cheque Especial", 30000, 19, 3600]
+      ["Crédito Pessoal", 55000, 33, 8200],
+      ["Cartão de Crédito", 35000, 28, 5050],
+      ["Cheque Especial", 25000, 21, 4000]
     ]
   },
   {
@@ -416,12 +570,19 @@ const clientes = [
     telefone: "(11) 90099-5566",
     email: "bruno.dias@email.com",
     endereco: "Rua Clodomiro Amazonas, 701 - São Paulo/SP",
-    risco: 245000,
-    pdd: 41200,
+    risco: 760000,
+    pdd: 91200,
+    historico: [
+      "18/07/2025 - Cliente informou que estava reorganizando fluxo financeiro.",
+      "02/10/2025 - Enviado e-mail com opções de regularização.",
+      "16/12/2025 - Cliente atendeu e pediu prazo adicional.",
+      "08/02/2026 - Cliente realizou pagamento parcial de uma operação.",
+      "25/03/2026 - Saldo residual permanece em aberto."
+    ],
     operacoes: [
-      ["Crédito Imobiliário", 180000, 52, 32000],
-      ["Cartão de Crédito", 30000, 44, 4900],
-      ["Cheque Especial", 35000, 36, 4300]
+      ["Crédito Imobiliário", 600000, 39, 60000],
+      ["Crédito com Garantia", 100000, 44, 19000],
+      ["Cartão de Crédito", 60000, 31, 12200]
     ]
   },
   {
@@ -430,11 +591,19 @@ const clientes = [
     telefone: "(11) 98989-6677",
     email: "luciana.ramos@email.com",
     endereco: "Av. Jabaquara, 2110 - São Paulo/SP",
-    risco: 69000,
-    pdd: 9400,
+    risco: 98000,
+    pdd: 63700,
+    historico: [
+      "01/08/2025 - Cliente não atendeu ligação.",
+      "16/09/2025 - E-mail enviado sem resposta.",
+      "09/12/2025 - Cliente informou perda de renda e pediu renegociação.",
+      "23/02/2026 - Proposta enviada, sem formalização.",
+      "14/03/2026 - Cliente não localizado novamente."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 39000, 47, 6100],
-      ["Cartão de Crédito", 30000, 26, 3300]
+      ["Crédito Pessoal", 52000, 138, 36000],
+      ["Cartão de Crédito", 26000, 119, 17000],
+      ["Cheque Especial", 20000, 102, 10700]
     ]
   },
   {
@@ -443,12 +612,18 @@ const clientes = [
     telefone: "(11) 97878-7788",
     email: "gustavo.santos@email.com",
     endereco: "Rua Cerro Corá, 1200 - São Paulo/SP",
-    risco: 157000,
-    pdd: 22600,
+    risco: 285000,
+    pdd: 34200,
+    historico: [
+      "20/09/2025 - Cliente atendeu e informou que o atraso seria resolvido.",
+      "11/11/2025 - Pagamento parcial identificado.",
+      "04/01/2026 - Enviado novo saldo atualizado por e-mail.",
+      "13/03/2026 - Cliente em tratativa para liquidação."
+    ],
     operacoes: [
-      ["Crédito com Garantia", 100000, 42, 14500],
-      ["Crédito Pessoal", 37000, 59, 6600],
-      ["Cartão de Crédito", 20000, 20, 1500]
+      ["Crédito com Garantia", 200000, 28, 18000],
+      ["Crédito Pessoal", 55000, 34, 9200],
+      ["Cartão de Crédito", 30000, 19, 7000]
     ]
   },
   {
@@ -457,12 +632,19 @@ const clientes = [
     telefone: "(11) 96767-8899",
     email: "aline.ferreira@email.com",
     endereco: "Rua Heitor Penteado, 500 - São Paulo/SP",
-    risco: 82000,
-    pdd: 10700,
+    risco: 74000,
+    pdd: 59200,
+    historico: [
+      "07/06/2025 - Tentativa de contato sem sucesso.",
+      "28/08/2025 - Cliente respondeu e-mail informando dificuldade financeira.",
+      "03/10/2025 - Cliente não cumpriu promessa de pagamento.",
+      "19/01/2026 - Nova tentativa de contato sem sucesso.",
+      "01/04/2026 - Pendência segue sem regularização."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 47000, 34, 6800],
-      ["Cheque Especial", 15000, 27, 1700],
-      ["Cartão de Crédito", 20000, 22, 2200]
+      ["Crédito Pessoal", 39000, 162, 31200],
+      ["Cheque Especial", 15000, 147, 12000],
+      ["Cartão de Crédito", 20000, 151, 16000]
     ]
   },
   {
@@ -471,12 +653,19 @@ const clientes = [
     telefone: "(11) 95656-9900",
     email: "rafael.teixeira@email.com",
     endereco: "Av. Faria Lima, 2300 - São Paulo/SP",
-    risco: 310000,
-    pdd: 48600,
+    risco: 940000,
+    pdd: 112800,
+    historico: [
+      "14/08/2025 - Cliente informou atraso por descasamento de fluxo.",
+      "30/10/2025 - Enviado e-mail com posição consolidada.",
+      "09/12/2025 - Cliente solicitou prazo para venda de ativo.",
+      "22/02/2026 - Cliente realizou pagamento parcial.",
+      "18/03/2026 - Saldo em aberto permanece em acompanhamento."
+    ],
     operacoes: [
-      ["Crédito Imobiliário", 230000, 57, 38000],
-      ["Crédito Pessoal", 50000, 48, 8200],
-      ["Cartão de Crédito", 30000, 25, 2400]
+      ["Crédito Imobiliário", 700000, 36, 70000],
+      ["Crédito com Garantia", 160000, 42, 28800],
+      ["Cartão de Crédito", 80000, 27, 14000]
     ]
   },
   {
@@ -485,12 +674,19 @@ const clientes = [
     telefone: "(11) 94545-1010",
     email: "tatiane.campos@email.com",
     endereco: "Rua da Consolação, 1888 - São Paulo/SP",
-    risco: 61000,
-    pdd: 8100,
+    risco: 59000,
+    pdd: 41300,
+    historico: [
+      "25/07/2025 - Cliente não atendeu ligação.",
+      "12/09/2025 - Enviado e-mail com aviso de pendência.",
+      "18/11/2025 - Cliente informou que faria pagamento em dezembro.",
+      "10/01/2026 - Pagamento não localizado.",
+      "04/03/2026 - Cliente não atende telefone cadastrado."
+    ],
     operacoes: [
-      ["Cartão de Crédito", 23000, 31, 2900],
-      ["Cheque Especial", 18000, 40, 2600],
-      ["Crédito Pessoal", 20000, 18, 2600]
+      ["Cartão de Crédito", 24000, 130, 16800],
+      ["Cheque Especial", 18000, 121, 12600],
+      ["Crédito Pessoal", 17000, 110, 11900]
     ]
   },
   {
@@ -499,11 +695,19 @@ const clientes = [
     telefone: "(11) 93434-2121",
     email: "leandro.monteiro@email.com",
     endereco: "Av. Rebouças, 600 - São Paulo/SP",
-    risco: 118000,
-    pdd: 16200,
+    risco: 360000,
+    pdd: 198000,
+    historico: [
+      "02/07/2025 - Cliente não localizado.",
+      "24/09/2025 - Enviado e-mail e mensagem para telefone cadastrado.",
+      "06/11/2025 - Cliente informou impossibilidade de pagamento no curto prazo.",
+      "17/01/2026 - Proposta de renegociação enviada.",
+      "21/03/2026 - Cliente não retornou proposta."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 58000, 54, 9200],
-      ["Crédito com Garantia", 60000, 29, 7000]
+      ["Crédito com Garantia", 260000, 126, 143000],
+      ["Crédito Pessoal", 70000, 117, 38500],
+      ["Cartão de Crédito", 30000, 93, 16500]
     ]
   },
   {
@@ -512,11 +716,17 @@ const clientes = [
     telefone: "(11) 92323-3232",
     email: "renata.prado@email.com",
     endereco: "Rua Tutoia, 333 - São Paulo/SP",
-    risco: 76000,
-    pdd: 9900,
+    risco: 132000,
+    pdd: 15840,
+    historico: [
+      "16/10/2025 - Cliente atendeu e informou atraso pontual.",
+      "05/12/2025 - Pagamento parcial realizado.",
+      "27/01/2026 - Enviado saldo atualizado.",
+      "11/03/2026 - Cliente informou previsão de quitação."
+    ],
     operacoes: [
-      ["Cartão de Crédito", 28000, 23, 2600],
-      ["Crédito Pessoal", 48000, 36, 7300]
+      ["Cartão de Crédito", 32000, 21, 3840],
+      ["Crédito Pessoal", 100000, 30, 12000]
     ]
   },
   {
@@ -525,12 +735,19 @@ const clientes = [
     telefone: "(11) 91212-4343",
     email: "felipe.moraes@email.com",
     endereco: "Av. Ibirapuera, 2101 - São Paulo/SP",
-    risco: 143000,
-    pdd: 21700,
+    risco: 610000,
+    pdd: 366000,
+    historico: [
+      "09/06/2025 - Cliente não localizado.",
+      "18/08/2025 - E-mail enviado sem resposta.",
+      "22/10/2025 - Cliente informou dificuldade severa de caixa.",
+      "13/12/2025 - Acordo não formalizado.",
+      "07/03/2026 - Cliente segue sem contato efetivo."
+    ],
     operacoes: [
-      ["Crédito com Garantia", 90000, 45, 13500],
-      ["Cheque Especial", 23000, 50, 4100],
-      ["Cartão de Crédito", 30000, 27, 4100]
+      ["Crédito com Garantia", 420000, 149, 252000],
+      ["Cheque Especial", 70000, 132, 42000],
+      ["Cartão de Crédito", 120000, 140, 72000]
     ]
   },
   {
@@ -539,11 +756,18 @@ const clientes = [
     telefone: "(11) 90101-5454",
     email: "simone.lima@email.com",
     endereco: "Rua França Pinto, 240 - São Paulo/SP",
-    risco: 53000,
-    pdd: 6900,
+    risco: 47000,
+    pdd: 32900,
+    historico: [
+      "15/08/2025 - Cliente não atendeu ligação.",
+      "02/10/2025 - Enviado e-mail solicitando contato.",
+      "20/12/2025 - Cliente informou que aguardava recebimento de salário.",
+      "08/02/2026 - Pagamento não localizado.",
+      "19/03/2026 - Nova tentativa sem sucesso."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 31000, 21, 3500],
-      ["Cartão de Crédito", 22000, 33, 3400]
+      ["Crédito Pessoal", 25000, 118, 17500],
+      ["Cartão de Crédito", 22000, 107, 15400]
     ]
   },
   {
@@ -552,12 +776,18 @@ const clientes = [
     telefone: "(11) 99090-6565",
     email: "thiago.barros@email.com",
     endereco: "Rua Pedroso Alvarenga, 1550 - São Paulo/SP",
-    risco: 197000,
-    pdd: 29400,
+    risco: 255000,
+    pdd: 28050,
+    historico: [
+      "08/09/2025 - Cliente atendeu e solicitou alternativas para regularização.",
+      "22/11/2025 - Enviado e-mail com proposta.",
+      "15/01/2026 - Cliente realizou pagamento parcial.",
+      "24/03/2026 - Cliente segue em acompanhamento para saldo restante."
+    ],
     operacoes: [
-      ["Crédito Imobiliário", 140000, 38, 19000],
-      ["Crédito Pessoal", 37000, 43, 6700],
-      ["Cheque Especial", 20000, 28, 3700]
+      ["Crédito Imobiliário", 180000, 24, 16200],
+      ["Crédito Pessoal", 45000, 31, 5850],
+      ["Cheque Especial", 30000, 26, 6000]
     ]
   },
   {
@@ -566,21 +796,47 @@ const clientes = [
     telefone: "(11) 98900-7676",
     email: "vanessa.azevedo@email.com",
     endereco: "Av. Engenheiro Luís Carlos Berrini, 800 - São Paulo/SP",
-    risco: 99000,
-    pdd: 13800,
+    risco: 106000,
+    pdd: 74200,
+    historico: [
+      "21/07/2025 - Tentativa de contato sem sucesso.",
+      "09/09/2025 - Cliente respondeu e-mail informando que tentaria pagar.",
+      "28/11/2025 - Promessa de pagamento não cumprida.",
+      "18/01/2026 - Nova ligação sem atendimento.",
+      "29/03/2026 - Cliente segue sem regularização."
+    ],
     operacoes: [
-      ["Crédito Pessoal", 44000, 32, 5900],
-      ["Cartão de Crédito", 25000, 41, 3900],
-      ["Cheque Especial", 30000, 35, 4000]
+      ["Crédito Pessoal", 48000, 144, 33600],
+      ["Cartão de Crédito", 28000, 129, 19600],
+      ["Cheque Especial", 30000, 137, 21000]
     ]
   }
 ];
+
+let ordemRisco = "desc";
+let ordemPdd = "desc";
 
 function dinheiro(valor) {
   return valor.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
   });
+}
+
+function percentual(pdd, risco) {
+  return ((pdd / risco) * 100).toFixed(1) + "%";
+}
+
+function carregarResumo() {
+  const totalClientes = clientes.length;
+  const riscoTotal = clientes.reduce((soma, c) => soma + c.risco, 0);
+  const pddTotal = clientes.reduce((soma, c) => soma + c.pdd, 0);
+  const maiorPddCliente = [...clientes].sort((a, b) => b.pdd - a.pdd)[0];
+
+  document.getElementById("totalClientes").innerText = totalClientes;
+  document.getElementById("riscoCarteira").innerText = dinheiro(riscoTotal);
+  document.getElementById("pddCarteira").innerText = dinheiro(pddTotal);
+  document.getElementById("maiorPdd").innerText = maiorPddCliente.nome.split(" ")[0] + " - " + dinheiro(maiorPddCliente.pdd);
 }
 
 function carregarClientes() {
@@ -597,6 +853,9 @@ function carregarClientes() {
         </td>
         <td>${dinheiro(cliente.risco)}</td>
         <td><strong>${dinheiro(cliente.pdd)}</strong></td>
+        <td>
+          <span class="tag">${percentual(cliente.pdd, cliente.risco)}</span>
+        </td>
         <td>
           <select onchange="alterarStatus(this)">
             <option value="">Selecionar</option>
@@ -616,6 +875,8 @@ function carregarClientes() {
       </tr>
     `;
   });
+
+  carregarResumo();
 }
 
 function alterarStatus(select) {
@@ -634,11 +895,38 @@ function alterarStatus(select) {
   }
 }
 
+function ordenarTabela(campo) {
+  if (campo === "risco") {
+    clientes.sort((a, b) => {
+      return ordemRisco === "desc" ? b.risco - a.risco : a.risco - b.risco;
+    });
+
+    ordemRisco = ordemRisco === "desc" ? "asc" : "desc";
+  }
+
+  if (campo === "pdd") {
+    clientes.sort((a, b) => {
+      return ordemPdd === "desc" ? b.pdd - a.pdd : a.pdd - b.pdd;
+    });
+
+    ordemPdd = ordemPdd === "desc" ? "asc" : "desc";
+  }
+
+  carregarClientes();
+}
+
 function abrirOperacoes(index) {
   const cliente = clientes[index];
 
   let html = `
     <h3>${cliente.nome}</h3>
+
+    <p>
+      <span class="tag">Risco Total: ${dinheiro(cliente.risco)}</span>
+      <span class="tag">PDD Total: ${dinheiro(cliente.pdd)}</span>
+      <span class="tag">% PDD: ${percentual(cliente.pdd, cliente.risco)}</span>
+    </p>
+
     <div class="table-area">
       <table>
         <thead>
@@ -647,6 +935,7 @@ function abrirOperacoes(index) {
             <th>Risco Atualizado</th>
             <th>Dias em Atraso</th>
             <th>PDD da Operação</th>
+            <th>% PDD</th>
           </tr>
         </thead>
         <tbody>
@@ -659,6 +948,7 @@ function abrirOperacoes(index) {
         <td>${dinheiro(op[1])}</td>
         <td>${op[2]} dias</td>
         <td><strong>${dinheiro(op[3])}</strong></td>
+        <td><span class="tag">${percentual(op[3], op[1])}</span></td>
       </tr>
     `;
   });
@@ -675,6 +965,16 @@ function abrirOperacoes(index) {
 
 function abrirFicha(index) {
   const cliente = clientes[index];
+
+  let historicoHtml = "";
+
+  cliente.historico.forEach(item => {
+    historicoHtml += `
+      <div class="info-box" style="grid-column: 1 / -1;">
+        ${item}
+      </div>
+    `;
+  });
 
   document.getElementById("fichaConteudo").innerHTML = `
     <div class="ficha-grid">
@@ -712,6 +1012,18 @@ function abrirFicha(index) {
         <strong>PDD Total Gerada</strong>
         ${dinheiro(cliente.pdd)}
       </div>
+
+      <div class="info-box">
+        <strong>% PDD sobre Risco</strong>
+        ${percentual(cliente.pdd, cliente.risco)}
+      </div>
+
+      <div class="historico-titulo">
+        <span class="material-symbols-outlined">history</span>
+        <h3>Histórico de Atendimentos Anteriores</h3>
+      </div>
+
+      ${historicoHtml}
     </div>
   `;
 
