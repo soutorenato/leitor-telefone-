@@ -1,1 +1,735 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema PDD | Aula Prática</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Comfortaa', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f6fb;
+      color: #1c2233;
+    }
+
+    header {
+      background: #003b71;
+      color: white;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header .material-symbols-outlined {
+      font-size: 36px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #003b71;
+    }
+
+    .table-area {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th {
+      background: #003b71;
+      color: white;
+      padding: 14px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    td {
+      padding: 13px;
+      border-bottom: 1px solid #e6eaf0;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background: #f4f8ff;
+    }
+
+    .cliente-link {
+      color: #003b71;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px solid #ccd5e0;
+      font-family: 'Comfortaa', sans-serif;
+      font-size: 12px;
+    }
+
+    .btn-icon {
+      border: none;
+      background: #003b71;
+      color: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon:hover {
+      background: #005299;
+    }
+
+    .status-regularizou {
+      color: #12805c;
+      font-weight: 700;
+    }
+
+    .status-nao {
+      color: #b3261e;
+      font-weight: 700;
+    }
+
+    .status-andamento {
+      color: #b26a00;
+      font-weight: 700;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 999;
+      padding: 24px;
+    }
+
+    .modal-content {
+      background: white;
+      max-width: 900px;
+      margin: 40px auto;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+      animation: abrir .2s ease;
+    }
+
+    @keyframes abrir {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #003b71;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .close {
+      border: none;
+      background: #eef2f7;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      font-size: 22px;
+    }
+
+    .ficha-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .info-box {
+      background: #f4f8ff;
+      padding: 14px;
+      border-radius: 14px;
+      border-left: 4px solid #003b71;
+    }
+
+    .info-box strong {
+      display: block;
+      color: #003b71;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 16px;
+      }
+
+      header {
+        padding: 18px;
+      }
+
+      header h1 {
+        font-size: 18px;
+      }
+
+      .ficha-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        margin: 10px auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <span class="material-symbols-outlined">account_balance</span>
+  <div>
+    <h1>Sistema de Atuação em PDD</h1>
+    <small>Aula prática | Gestão de risco, regularização e acompanhamento</small>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>
+      <span class="material-symbols-outlined">table_chart</span>
+      Clientes em PDD
+    </h2>
+
+    <div class="table-area">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Risco Total</th>
+            <th>PDD Gerada</th>
+            <th>Status</th>
+            <th>Observação / Atuação</th>
+            <th>Ficha</th>
+          </tr>
+        </thead>
+        <tbody id="clientesTabela"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal" id="modalOperacoes">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>
+        <span class="material-symbols-outlined">credit_score</span>
+        Operações do Cliente
+      </h3>
+      <button class="close" onclick="fecharModal('modalOperacoes')">×</button>
+    </div>
+    <div id="operacoesConteudo"></div>
+  </div>
+</div>
+
+<div class="modal" id="modalFicha">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>
+        <span class="material-symbols-outlined">person_search</span>
+        Ficha Cadastral do Cliente
+      </h3>
+      <button class="close" onclick="fecharModal('modalFicha')">×</button>
+    </div>
+    <div id="fichaConteudo"></div>
+  </div>
+</div>
+
+<script>
+const clientes = [
+  {
+    nome: "Marcos Vinicius Almeida",
+    cpf: "123.456.789-10",
+    telefone: "(11) 98841-2234",
+    email: "marcos.almeida@email.com",
+    endereco: "Rua das Palmeiras, 245 - São Paulo/SP",
+    risco: 185000,
+    pdd: 27800,
+    operacoes: [
+      ["Crédito Pessoal", 45000, 62, 9200],
+      ["Cartão de Crédito", 18000, 41, 3100],
+      ["Cheque Especial", 12000, 38, 1800],
+      ["Crédito com Garantia", 110000, 25, 13700]
+    ]
+  },
+  {
+    nome: "Fernanda Ribeiro Costa",
+    cpf: "234.567.890-21",
+    telefone: "(11) 97722-4411",
+    email: "fernanda.costa@email.com",
+    endereco: "Av. Santo Amaro, 1800 - São Paulo/SP",
+    risco: 94000,
+    pdd: 15100,
+    operacoes: [
+      ["Crédito Pessoal", 30000, 55, 6500],
+      ["Cartão de Crédito", 14000, 29, 2100],
+      ["Crédito Imobiliário", 50000, 18, 6500]
+    ]
+  },
+  {
+    nome: "Ricardo Martins Lima",
+    cpf: "345.678.901-32",
+    telefone: "(11) 96633-7788",
+    email: "ricardo.lima@email.com",
+    endereco: "Rua Vergueiro, 920 - São Paulo/SP",
+    risco: 210000,
+    pdd: 33600,
+    operacoes: [
+      ["Crédito com Garantia", 150000, 48, 25000],
+      ["Cartão de Crédito", 25000, 35, 4200],
+      ["Cheque Especial", 35000, 44, 4400]
+    ]
+  },
+  {
+    nome: "Patricia Gomes Nogueira",
+    cpf: "456.789.012-43",
+    telefone: "(11) 95544-8899",
+    email: "patricia.nogueira@email.com",
+    endereco: "Rua Domingos de Morais, 611 - São Paulo/SP",
+    risco: 72000,
+    pdd: 8900,
+    operacoes: [
+      ["Crédito Pessoal", 42000, 22, 5200],
+      ["Cartão de Crédito", 30000, 18, 3700]
+    ]
+  },
+  {
+    nome: "Eduardo Henrique Souza",
+    cpf: "567.890.123-54",
+    telefone: "(11) 94455-0011",
+    email: "eduardo.souza@email.com",
+    endereco: "Rua Augusta, 1450 - São Paulo/SP",
+    risco: 168000,
+    pdd: 24100,
+    operacoes: [
+      ["Crédito Imobiliário", 120000, 31, 16000],
+      ["Crédito Pessoal", 28000, 46, 5900],
+      ["Cheque Especial", 20000, 21, 2200]
+    ]
+  },
+  {
+    nome: "Juliana Castro Menezes",
+    cpf: "678.901.234-65",
+    telefone: "(11) 93366-1122",
+    email: "juliana.menezes@email.com",
+    endereco: "Av. Paulista, 1009 - São Paulo/SP",
+    risco: 56000,
+    pdd: 7300,
+    operacoes: [
+      ["Cartão de Crédito", 26000, 39, 3600],
+      ["Cheque Especial", 30000, 33, 3700]
+    ]
+  },
+  {
+    nome: "André Felipe Rocha",
+    cpf: "789.012.345-76",
+    telefone: "(11) 92277-3344",
+    email: "andre.rocha@email.com",
+    endereco: "Rua Itapura, 782 - São Paulo/SP",
+    risco: 132000,
+    pdd: 19800,
+    operacoes: [
+      ["Crédito Pessoal", 52000, 64, 9800],
+      ["Crédito com Garantia", 80000, 37, 10000]
+    ]
+  },
+  {
+    nome: "Camila Torres Batista",
+    cpf: "890.123.456-87",
+    telefone: "(11) 91188-4455",
+    email: "camila.batista@email.com",
+    endereco: "Rua Afonso Celso, 340 - São Paulo/SP",
+    risco: 88000,
+    pdd: 11200,
+    operacoes: [
+      ["Crédito Pessoal", 36000, 28, 4500],
+      ["Cartão de Crédito", 22000, 32, 3100],
+      ["Cheque Especial", 30000, 19, 3600]
+    ]
+  },
+  {
+    nome: "Bruno Carvalho Dias",
+    cpf: "901.234.567-98",
+    telefone: "(11) 90099-5566",
+    email: "bruno.dias@email.com",
+    endereco: "Rua Clodomiro Amazonas, 701 - São Paulo/SP",
+    risco: 245000,
+    pdd: 41200,
+    operacoes: [
+      ["Crédito Imobiliário", 180000, 52, 32000],
+      ["Cartão de Crédito", 30000, 44, 4900],
+      ["Cheque Especial", 35000, 36, 4300]
+    ]
+  },
+  {
+    nome: "Luciana Pereira Ramos",
+    cpf: "112.223.334-45",
+    telefone: "(11) 98989-6677",
+    email: "luciana.ramos@email.com",
+    endereco: "Av. Jabaquara, 2110 - São Paulo/SP",
+    risco: 69000,
+    pdd: 9400,
+    operacoes: [
+      ["Crédito Pessoal", 39000, 47, 6100],
+      ["Cartão de Crédito", 30000, 26, 3300]
+    ]
+  },
+  {
+    nome: "Gustavo Moreira Santos",
+    cpf: "223.334.445-56",
+    telefone: "(11) 97878-7788",
+    email: "gustavo.santos@email.com",
+    endereco: "Rua Cerro Corá, 1200 - São Paulo/SP",
+    risco: 157000,
+    pdd: 22600,
+    operacoes: [
+      ["Crédito com Garantia", 100000, 42, 14500],
+      ["Crédito Pessoal", 37000, 59, 6600],
+      ["Cartão de Crédito", 20000, 20, 1500]
+    ]
+  },
+  {
+    nome: "Aline Cristina Ferreira",
+    cpf: "334.445.556-67",
+    telefone: "(11) 96767-8899",
+    email: "aline.ferreira@email.com",
+    endereco: "Rua Heitor Penteado, 500 - São Paulo/SP",
+    risco: 82000,
+    pdd: 10700,
+    operacoes: [
+      ["Crédito Pessoal", 47000, 34, 6800],
+      ["Cheque Especial", 15000, 27, 1700],
+      ["Cartão de Crédito", 20000, 22, 2200]
+    ]
+  },
+  {
+    nome: "Rafael Augusto Teixeira",
+    cpf: "445.556.667-78",
+    telefone: "(11) 95656-9900",
+    email: "rafael.teixeira@email.com",
+    endereco: "Av. Faria Lima, 2300 - São Paulo/SP",
+    risco: 310000,
+    pdd: 48600,
+    operacoes: [
+      ["Crédito Imobiliário", 230000, 57, 38000],
+      ["Crédito Pessoal", 50000, 48, 8200],
+      ["Cartão de Crédito", 30000, 25, 2400]
+    ]
+  },
+  {
+    nome: "Tatiane Alves Campos",
+    cpf: "556.667.778-89",
+    telefone: "(11) 94545-1010",
+    email: "tatiane.campos@email.com",
+    endereco: "Rua da Consolação, 1888 - São Paulo/SP",
+    risco: 61000,
+    pdd: 8100,
+    operacoes: [
+      ["Cartão de Crédito", 23000, 31, 2900],
+      ["Cheque Especial", 18000, 40, 2600],
+      ["Crédito Pessoal", 20000, 18, 2600]
+    ]
+  },
+  {
+    nome: "Leandro Pires Monteiro",
+    cpf: "667.778.889-90",
+    telefone: "(11) 93434-2121",
+    email: "leandro.monteiro@email.com",
+    endereco: "Av. Rebouças, 600 - São Paulo/SP",
+    risco: 118000,
+    pdd: 16200,
+    operacoes: [
+      ["Crédito Pessoal", 58000, 54, 9200],
+      ["Crédito com Garantia", 60000, 29, 7000]
+    ]
+  },
+  {
+    nome: "Renata Oliveira Prado",
+    cpf: "778.889.990-01",
+    telefone: "(11) 92323-3232",
+    email: "renata.prado@email.com",
+    endereco: "Rua Tutoia, 333 - São Paulo/SP",
+    risco: 76000,
+    pdd: 9900,
+    operacoes: [
+      ["Cartão de Crédito", 28000, 23, 2600],
+      ["Crédito Pessoal", 48000, 36, 7300]
+    ]
+  },
+  {
+    nome: "Felipe Barbosa Moraes",
+    cpf: "889.990.001-12",
+    telefone: "(11) 91212-4343",
+    email: "felipe.moraes@email.com",
+    endereco: "Av. Ibirapuera, 2101 - São Paulo/SP",
+    risco: 143000,
+    pdd: 21700,
+    operacoes: [
+      ["Crédito com Garantia", 90000, 45, 13500],
+      ["Cheque Especial", 23000, 50, 4100],
+      ["Cartão de Crédito", 30000, 27, 4100]
+    ]
+  },
+  {
+    nome: "Simone Aparecida Lima",
+    cpf: "990.001.112-23",
+    telefone: "(11) 90101-5454",
+    email: "simone.lima@email.com",
+    endereco: "Rua França Pinto, 240 - São Paulo/SP",
+    risco: 53000,
+    pdd: 6900,
+    operacoes: [
+      ["Crédito Pessoal", 31000, 21, 3500],
+      ["Cartão de Crédito", 22000, 33, 3400]
+    ]
+  },
+  {
+    nome: "Thiago Henrique Barros",
+    cpf: "101.112.223-34",
+    telefone: "(11) 99090-6565",
+    email: "thiago.barros@email.com",
+    endereco: "Rua Pedroso Alvarenga, 1550 - São Paulo/SP",
+    risco: 197000,
+    pdd: 29400,
+    operacoes: [
+      ["Crédito Imobiliário", 140000, 38, 19000],
+      ["Crédito Pessoal", 37000, 43, 6700],
+      ["Cheque Especial", 20000, 28, 3700]
+    ]
+  },
+  {
+    nome: "Vanessa Moura Azevedo",
+    cpf: "212.223.334-45",
+    telefone: "(11) 98900-7676",
+    email: "vanessa.azevedo@email.com",
+    endereco: "Av. Engenheiro Luís Carlos Berrini, 800 - São Paulo/SP",
+    risco: 99000,
+    pdd: 13800,
+    operacoes: [
+      ["Crédito Pessoal", 44000, 32, 5900],
+      ["Cartão de Crédito", 25000, 41, 3900],
+      ["Cheque Especial", 30000, 35, 4000]
+    ]
+  }
+];
+
+function dinheiro(valor) {
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}
+
+function carregarClientes() {
+  const tabela = document.getElementById("clientesTabela");
+  tabela.innerHTML = "";
+
+  clientes.forEach((cliente, index) => {
+    tabela.innerHTML += `
+      <tr>
+        <td>
+          <span class="cliente-link" onclick="abrirOperacoes(${index})">
+            ${cliente.nome}
+          </span>
+        </td>
+        <td>${dinheiro(cliente.risco)}</td>
+        <td><strong>${dinheiro(cliente.pdd)}</strong></td>
+        <td>
+          <select onchange="alterarStatus(this)">
+            <option value="">Selecionar</option>
+            <option value="regularizou">Regularizou</option>
+            <option value="nao">Não regularizou</option>
+            <option value="andamento">Em andamento</option>
+          </select>
+        </td>
+        <td>
+          <input type="text" placeholder="Ex: Cliente acionado, aguardando retorno..." />
+        </td>
+        <td>
+          <button class="btn-icon" onclick="abrirFicha(${index})" title="Abrir ficha">
+            <span class="material-symbols-outlined">person</span>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function alterarStatus(select) {
+  select.className = "";
+
+  if (select.value === "regularizou") {
+    select.classList.add("status-regularizou");
+  }
+
+  if (select.value === "nao") {
+    select.classList.add("status-nao");
+  }
+
+  if (select.value === "andamento") {
+    select.classList.add("status-andamento");
+  }
+}
+
+function abrirOperacoes(index) {
+  const cliente = clientes[index];
+
+  let html = `
+    <h3>${cliente.nome}</h3>
+    <div class="table-area">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Risco Atualizado</th>
+            <th>Dias em Atraso</th>
+            <th>PDD da Operação</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  cliente.operacoes.forEach(op => {
+    html += `
+      <tr>
+        <td>${op[0]}</td>
+        <td>${dinheiro(op[1])}</td>
+        <td>${op[2]} dias</td>
+        <td><strong>${dinheiro(op[3])}</strong></td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("operacoesConteudo").innerHTML = html;
+  document.getElementById("modalOperacoes").style.display = "block";
+}
+
+function abrirFicha(index) {
+  const cliente = clientes[index];
+
+  document.getElementById("fichaConteudo").innerHTML = `
+    <div class="ficha-grid">
+      <div class="info-box">
+        <strong>Nome</strong>
+        ${cliente.nome}
+      </div>
+
+      <div class="info-box">
+        <strong>CPF</strong>
+        ${cliente.cpf}
+      </div>
+
+      <div class="info-box">
+        <strong>Telefone</strong>
+        ${cliente.telefone}
+      </div>
+
+      <div class="info-box">
+        <strong>E-mail</strong>
+        ${cliente.email}
+      </div>
+
+      <div class="info-box" style="grid-column: 1 / -1;">
+        <strong>Endereço</strong>
+        ${cliente.endereco}
+      </div>
+
+      <div class="info-box">
+        <strong>Risco Total</strong>
+        ${dinheiro(cliente.risco)}
+      </div>
+
+      <div class="info-box">
+        <strong>PDD Total Gerada</strong>
+        ${dinheiro(cliente.pdd)}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("modalFicha").style.display = "block";
+}
+
+function fecharModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+window.onclick = function(event) {
+  if (event.target.classList.contains("modal")) {
+    event.target.style.display = "none";
+  }
+}
+
+carregarClientes();
+</script>
+
+</body>
+</html>
