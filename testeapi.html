@@ -118,6 +118,7 @@
       type="text" 
       id="nome"
       placeholder="Digite seu nome"
+      autocomplete="off"
     >
 
     <button onclick="abrirGPT()">
@@ -134,9 +135,9 @@
 
     function abrirGPT(){
 
-      let nome = document.getElementById('nome').value;
+      let nome = document.getElementById('nome').value.trim();
 
-      if(nome.trim() == ''){
+      if(nome == ''){
         alert('Digite seu nome');
         return;
       }
@@ -155,9 +156,14 @@ Quero melhorar:
 - minha organização do dia
 `;
 
-      let url = "https://chat.openai.com/?prompt=" + encodeURIComponent(pergunta);
+      let url = "https://chat.openai.com/?prompt=" 
+        + encodeURIComponent(pergunta)
+        + "&t=" + Date.now();
 
-      window.open(url, '_blank');
+      window.open(
+        url,
+        '_blank_' + Date.now()
+      );
 
     }
 
