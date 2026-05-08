@@ -4,30 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>EmpreendaBanco</title>
+<title>Preparação de Visita B2B</title>
 
 <style>
 body{
     margin:0;
     background:#f5f6fa;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
+    padding:20px;
 }
 
 .box{
     background:#fff;
     padding:30px;
     border-radius:20px;
-    width:400px;
+    width:100%;
+    max-width:430px;
     box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
 
 h1{
     margin-top:0;
-    color:#1C2233;
+    color:#660099;
+    font-size:24px;
+}
+
+p{
+    color:#555;
+    font-size:14px;
+    line-height:1.5;
+}
+
+label{
+    font-weight:bold;
+    color:#333;
+    display:block;
+    margin-bottom:8px;
 }
 
 input{
@@ -36,7 +52,7 @@ input{
     border-radius:10px;
     border:1px solid #ccc;
     box-sizing:border-box;
-    margin-bottom:20px;
+    margin-bottom:18px;
     font-size:16px;
 }
 
@@ -45,9 +61,10 @@ button{
     padding:15px;
     border:none;
     border-radius:10px;
-    background:#FF6A1A;
+    background:#660099;
     color:#fff;
     font-size:16px;
+    font-weight:bold;
     cursor:pointer;
 }
 </style>
@@ -57,18 +74,30 @@ button{
 
 <div class="box">
 
-    <h1>EmpreendaBanco</h1>
+    <h1>Preparação de Visita B2B</h1>
 
+    <p>
+        Preencha seu nome e a empresa que será visitada para abrir o ChatGPT com uma análise de preparação comercial.
+    </p>
+
+    <label>Seu nome</label>
     <input 
         type="text" 
         id="nome"
         placeholder="Digite seu nome"
         autocomplete="off"
-        value=""
+    >
+
+    <label>Empresa do cliente</label>
+    <input 
+        type="text" 
+        id="empresa"
+        placeholder="Digite o nome da empresa"
+        autocomplete="off"
     >
 
     <button type="button" onclick="abrirGPT()">
-        Abrir ChatGPT
+        Preparar minha visita
     </button>
 
 </div>
@@ -76,21 +105,47 @@ button{
 <script>
 window.onload = function(){
     document.getElementById("nome").value = "";
+    document.getElementById("empresa").value = "";
 };
 
 function abrirGPT(){
 
-    const campoNome = document.getElementById("nome");
-    const nomeDigitado = campoNome.value.trim();
+    const nome = document.getElementById("nome").value.trim();
+    const empresa = document.getElementById("empresa").value.trim();
 
-    if(nomeDigitado === ""){
+    if(nome === ""){
         alert("Digite seu nome");
         return;
     }
 
+    if(empresa === ""){
+        alert("Digite o nome da empresa");
+        return;
+    }
+
     const pergunta = 
-        "Meu nome é " + nomeDigitado + 
-        ". Como posso me organizar melhor como gerente bancário?";
+`Meu nome é ${nome}.
+
+Sou gerente comercial da Vivo e atuo com vendas B2B.
+
+Tenho uma visita comercial com a empresa ${empresa}.
+
+Quero que você me ajude a me preparar para essa reunião.
+
+Traga uma análise prática com:
+
+1. O que essa empresa faz
+2. Possíveis necessidades de telecom, conectividade, internet, telefonia móvel, dados, segurança, cloud, IoT ou soluções digitais
+3. Perguntas inteligentes que eu devo fazer na visita
+4. Possíveis dores do cliente
+5. Como eu devo conduzir a conversa comercial
+6. Argumentos de valor para uma venda consultiva B2B
+7. Cuidados para não parecer apenas um vendedor de produto
+8. Sugestão de roteiro para a reunião
+9. Possíveis oportunidades para a Vivo Empresas
+10. Como finalizar a visita com próximos passos claros
+
+Responda como um mentor comercial experiente em vendas consultivas B2B.`;
 
     const url = 
         "https://chatgpt.com/?q=" + 
@@ -99,7 +154,8 @@ function abrirGPT(){
 
     window.open(url, "_blank_" + new Date().getTime());
 
-    campoNome.value = "";
+    document.getElementById("nome").value = "";
+    document.getElementById("empresa").value = "";
 
     setTimeout(function(){
         window.location.href = window.location.pathname + "?reload=" + new Date().getTime();
