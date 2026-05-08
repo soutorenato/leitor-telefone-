@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Preparação de Visita B2B</title>
+<title>Vivo Empresas B2B</title>
 
 <style>
 body{
@@ -23,7 +23,7 @@ body{
     padding:30px;
     border-radius:20px;
     width:100%;
-    max-width:430px;
+    max-width:500px;
     box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
 
@@ -39,6 +39,36 @@ p{
     line-height:1.5;
 }
 
+.tabs{
+    display:flex;
+    gap:10px;
+    margin:25px 0;
+}
+
+.tab{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#eee;
+    color:#333;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.tab.active{
+    background:#660099;
+    color:#fff;
+}
+
+.formulario{
+    display:none;
+}
+
+.formulario.active{
+    display:block;
+}
+
 label{
     font-weight:bold;
     color:#333;
@@ -46,7 +76,7 @@ label{
     margin-bottom:8px;
 }
 
-input{
+input, select{
     width:100%;
     padding:15px;
     border-radius:10px;
@@ -56,7 +86,7 @@ input{
     font-size:16px;
 }
 
-button{
+button.enviar{
     width:100%;
     padding:15px;
     border:none;
@@ -67,6 +97,13 @@ button{
     font-weight:bold;
     cursor:pointer;
 }
+
+.obs{
+    margin-top:15px;
+    font-size:12px;
+    color:#666;
+    line-height:1.5;
+}
 </style>
 </head>
 
@@ -74,44 +111,88 @@ button{
 
 <div class="box">
 
-    <h1>Preparação de Visita B2B</h1>
+    <h1>Vivo Empresas B2B</h1>
 
     <p>
-        Preencha seu nome e a empresa que será visitada para abrir o ChatGPT com uma análise de preparação comercial.
+        Escolha uma opção para abrir o ChatGPT com um prompt pronto para análise comercial consultiva.
     </p>
 
-    <label>Seu nome</label>
-    <input 
-        type="text" 
-        id="nome"
-        placeholder="Digite seu nome"
-        autocomplete="off"
-    >
+    <div class="tabs">
+        <button class="tab active" onclick="trocarAba('carteira')">
+            Cliente da Carteira
+        </button>
 
-    <label>Empresa do cliente</label>
-    <input 
-        type="text" 
-        id="empresa"
-        placeholder="Digite o nome da empresa"
-        autocomplete="off"
-    >
+        <button class="tab" onclick="trocarAba('prospeccao')">
+            Prospecção
+        </button>
+    </div>
 
-    <button type="button" onclick="abrirGPT()">
-        Preparar minha visita
-    </button>
+    <div id="carteira" class="formulario active">
+
+        <label>Seu nome</label>
+        <input type="text" id="nomeCarteira" placeholder="Digite seu nome" autocomplete="off">
+
+        <label>Nome da empresa</label>
+        <input type="text" id="empresaCarteira" placeholder="Digite o nome da empresa cliente" autocomplete="off">
+
+        <button class="enviar" onclick="abrirClienteCarteira()">
+            Preparar visita ao cliente
+        </button>
+
+    </div>
+
+    <div id="prospeccao" class="formulario">
+
+        <label>Seu nome</label>
+        <input type="text" id="nomeProspec" placeholder="Digite seu nome" autocomplete="off">
+
+        <label>CEP base</label>
+        <input type="text" id="cepProspec" placeholder="Exemplo: 09668130" autocomplete="off">
+
+        <label>Raio de busca</label>
+        <select id="raioProspec">
+            <option value="5 km">5 quilômetros</option>
+            <option value="10 km">10 quilômetros</option>
+            <option value="15 km">15 quilômetros</option>
+            <option value="20 km">20 quilômetros</option>
+        </select>
+
+        <button class="enviar" onclick="abrirProspecao()">
+            Pesquisar empresas da região
+        </button>
+
+    </div>
+
+    <div class="obs">
+        O ChatGPT abrirá com a pergunta preenchida. Pode ser necessário clicar em enviar dentro do ChatGPT.
+    </div>
 
 </div>
 
 <script>
-window.onload = function(){
-    document.getElementById("nome").value = "";
-    document.getElementById("empresa").value = "";
-};
+function trocarAba(aba){
 
-function abrirGPT(){
+    document.querySelectorAll('.tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-    const nome = document.getElementById("nome").value.trim();
-    const empresa = document.getElementById("empresa").value.trim();
+    document.querySelectorAll('.formulario').forEach(form => {
+        form.classList.remove('active');
+    });
+
+    document.getElementById(aba).classList.add('active');
+
+    if(aba === 'carteira'){
+        document.querySelectorAll('.tab')[0].classList.add('active');
+    } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+    }
+}
+
+function abrirClienteCarteira(){
+
+    const nome = document.getElementById("nomeCarteira").value.trim();
+    const empresa = document.getElementById("empresaCarteira").value.trim();
 
     if(nome === ""){
         alert("Digite seu nome");
@@ -126,7 +207,7 @@ function abrirGPT(){
     const pergunta = 
 `Meu nome é ${nome}.
 
-Sou gerente comercial da Vivo e atuo com vendas B2B.
+Sou gerente comercial da Vivo Empresas e atuo com vendas B2B.
 
 Tenho uma visita comercial com a empresa ${empresa}.
 
@@ -135,17 +216,92 @@ Quero que você me ajude a me preparar para essa reunião.
 Traga uma análise prática com:
 
 1. O que essa empresa faz
-2. Possíveis necessidades de telecom, conectividade, internet, telefonia móvel, dados, segurança, cloud, IoT ou soluções digitais
-3. Perguntas inteligentes que eu devo fazer na visita
-4. Possíveis dores do cliente
-5. Como eu devo conduzir a conversa comercial
-6. Argumentos de valor para uma venda consultiva B2B
-7. Cuidados para não parecer apenas um vendedor de produto
-8. Sugestão de roteiro para a reunião
-9. Possíveis oportunidades para a Vivo Empresas
-10. Como finalizar a visita com próximos passos claros
+2. Segmento de atuação
+3. Área principal da empresa, como varejo, saúde, logística, indústria, finanças, tecnologia, educação, alimentação ou outro
+4. Capital social da empresa, se houver informação pública disponível
+5. Possíveis necessidades de telecom, conectividade, internet, telefonia móvel, dados, segurança digital, cloud, IoT, redes, PABX em nuvem ou soluções digitais
+6. Possíveis dores do cliente
+7. Como eu devo conduzir a conversa comercial
+8. Argumentos de valor para uma venda consultiva B2B
+9. Cuidados para não parecer apenas um vendedor de produto
+10. Sugestão de roteiro para a reunião
+11. Possíveis oportunidades para Vivo Empresas
+12. Perguntas inteligentes que eu devo fazer na visita
+13. Como finalizar a visita com próximos passos claros
+14. Site, LinkedIn ou presença digital da empresa, se existir
 
+Importante:
+Use apenas informações públicas disponíveis na internet.
+Não invente dados.
+Quando alguma informação for estimada, deixe claro que é uma estimativa.
 Responda como um mentor comercial experiente em vendas consultivas B2B.`;
+
+    abrirChatGPT(pergunta);
+}
+
+function abrirProspecao(){
+
+    const nome = document.getElementById("nomeProspec").value.trim();
+    const cep = document.getElementById("cepProspec").value.trim();
+    const raio = document.getElementById("raioProspec").value;
+
+    if(nome === ""){
+        alert("Digite seu nome");
+        return;
+    }
+
+    if(cep === ""){
+        alert("Digite o CEP base");
+        return;
+    }
+
+    const pergunta = 
+`Meu nome é ${nome}.
+
+Sou gerente comercial da Vivo Empresas e atuo com vendas B2B.
+
+Quero fazer uma prospecção consultiva por região.
+
+CEP base: ${cep}
+Raio de busca: ${raio}
+
+Pesquise empresas próximas desse CEP com potencial para soluções Vivo Empresas.
+
+Priorize empresas com:
+- estrutura comercial
+- operação ativa
+- potencial corporativo
+- possível faturamento acima de R$ 20 mil por mês
+- necessidade de conectividade e tecnologia
+
+Monte uma lista detalhada contendo:
+
+1. Nome da empresa
+2. Segmento de atuação
+3. Área principal da empresa, como varejo, saúde, logística, indústria, finanças, tecnologia, educação, alimentação ou outro
+4. Capital social da empresa
+5. Porte estimado
+6. Endereço aproximado ou bairro
+7. Possíveis necessidades de telecom e tecnologia
+8. Possíveis dores da operação
+9. Oportunidades para Vivo Empresas
+10. Melhor abordagem comercial
+11. Perguntas inteligentes para a visita
+12. Sugestão de primeiro contato comercial
+13. Sinais públicos de crescimento da empresa
+14. Site, LinkedIn ou presença digital da empresa, se existir
+
+Importante:
+Use apenas informações públicas disponíveis na internet.
+Quando o faturamento não estiver disponível, faça estimativa baseada em porte, estrutura, número de funcionários, capital social, presença digital, operação, avaliações, filiais, site, LinkedIn ou notícias.
+Não invente dados.
+Quando alguma informação for estimada, deixe claro que é uma estimativa.
+Se possível, apresente em formato de tabela.`;
+
+    abrirChatGPT(pergunta);
+}
+
+function abrirChatGPT(pergunta){
 
     const url = 
         "https://chatgpt.com/?q=" + 
@@ -153,9 +309,6 @@ Responda como um mentor comercial experiente em vendas consultivas B2B.`;
         "&v=" + new Date().getTime();
 
     window.open(url, "_blank_" + new Date().getTime());
-
-    document.getElementById("nome").value = "";
-    document.getElementById("empresa").value = "";
 
     setTimeout(function(){
         window.location.href = window.location.pathname + "?reload=" + new Date().getTime();
