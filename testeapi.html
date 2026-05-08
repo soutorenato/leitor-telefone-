@@ -1,11 +1,11 @@
+Segue o código atualizado com Radar FSP centralizado e layout responsivo: no desktop fica no meio da tela; no celular começa no topo.
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Vivo Empresas B2B</title>
-
+<title>Radar FSP</title>
 <style>
 body{
     margin:0;
@@ -16,8 +16,8 @@ body{
     align-items:center;
     min-height:100vh;
     padding:20px;
+    box-sizing:border-box;
 }
-
 .box{
     background:#fff;
     padding:30px;
@@ -26,25 +26,23 @@ body{
     max-width:500px;
     box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
-
 h1{
     margin-top:0;
     color:#660099;
-    font-size:24px;
+    font-size:28px;
+    text-align:center;
 }
-
 p{
     color:#555;
     font-size:14px;
     line-height:1.5;
+    text-align:center;
 }
-
 .tabs{
     display:flex;
     gap:10px;
     margin:25px 0;
 }
-
 .tab{
     flex:1;
     padding:12px;
@@ -55,27 +53,22 @@ p{
     font-weight:bold;
     cursor:pointer;
 }
-
 .tab.active{
     background:#660099;
     color:#fff;
 }
-
 .formulario{
     display:none;
 }
-
 .formulario.active{
     display:block;
 }
-
 label{
     font-weight:bold;
     color:#333;
     display:block;
     margin-bottom:8px;
 }
-
 input, select{
     width:100%;
     padding:15px;
@@ -85,7 +78,6 @@ input, select{
     margin-bottom:18px;
     font-size:16px;
 }
-
 button.enviar{
     width:100%;
     padding:15px;
@@ -97,58 +89,61 @@ button.enviar{
     font-weight:bold;
     cursor:pointer;
 }
-
 .obs{
     margin-top:15px;
     font-size:12px;
     color:#666;
     line-height:1.5;
+    text-align:center;
+}
+@media (max-width:600px){
+    body{
+        align-items:flex-start;
+        padding:16px;
+        min-height:100vh;
+    }
+    .box{
+        margin-top:10px;
+        padding:24px;
+        border-radius:18px;
+    }
+    h1{
+        font-size:26px;
+    }
+    .tabs{
+        flex-direction:column;
+    }
 }
 </style>
 </head>
-
 <body>
-
 <div class="box">
-
-    <h1>Vivo Empresas B2B</h1>
-
+    <h1>Radar FSP</h1>
     <p>
         Escolha uma opção para abrir o ChatGPT com um prompt pronto para análise comercial consultiva.
     </p>
-
     <div class="tabs">
         <button class="tab active" onclick="trocarAba('carteira')">
             Cliente da Carteira
         </button>
-
         <button class="tab" onclick="trocarAba('prospeccao')">
             Prospecção
         </button>
     </div>
-
     <div id="carteira" class="formulario active">
-
         <label>Seu nome</label>
         <input type="text" id="nomeCarteira" placeholder="Digite seu nome" autocomplete="off">
-
         <label>Nome da empresa</label>
         <input type="text" id="empresaCarteira" placeholder="Digite o nome da empresa cliente" autocomplete="off">
-
         <button class="enviar" onclick="abrirClienteCarteira()">
             Preparar visita ao cliente
         </button>
-
     </div>
-
     <div id="prospeccao" class="formulario">
-
         <label>Seu nome</label>
         <input type="text" id="nomeProspec" placeholder="Digite seu nome" autocomplete="off">
-
         <label>CEP base</label>
         <input type="text" id="cepProspec" placeholder="Exemplo: 04571936" autocomplete="off">
-
         <label>Raio de busca</label>
         <select id="raioProspec">
             <option value="5 km">5 quilômetros</option>
@@ -156,65 +151,46 @@ button.enviar{
             <option value="15 km">15 quilômetros</option>
             <option value="20 km">20 quilômetros</option>
         </select>
-
         <button class="enviar" onclick="abrirProspecao()">
             Pesquisar empresas da região
         </button>
-
     </div>
-
     <div class="obs">
         O ChatGPT abrirá com a pergunta preenchida. Pode ser necessário clicar em enviar dentro do ChatGPT.
     </div>
-
 </div>
-
 <script>
 function trocarAba(aba){
-
     document.querySelectorAll('.tab').forEach(btn => {
         btn.classList.remove('active');
     });
-
     document.querySelectorAll('.formulario').forEach(form => {
         form.classList.remove('active');
     });
-
     document.getElementById(aba).classList.add('active');
-
     if(aba === 'carteira'){
         document.querySelectorAll('.tab')[0].classList.add('active');
     } else {
         document.querySelectorAll('.tab')[1].classList.add('active');
     }
 }
-
 function abrirClienteCarteira(){
-
     const nome = document.getElementById("nomeCarteira").value.trim();
     const empresa = document.getElementById("empresaCarteira").value.trim();
-
     if(nome === ""){
         alert("Digite seu nome");
         return;
     }
-
     if(empresa === ""){
         alert("Digite o nome da empresa");
         return;
     }
-
     const pergunta = 
 `Meu nome é ${nome}.
-
 Sou Gerente de Negócios da Vivo Empresas e atuo com vendas B2B.
-
 Tenho uma visita comercial com a empresa ${empresa}.
-
 Quero que você me ajude a me preparar para essa reunião.
-
 Traga uma análise prática com:
-
 1. O que essa empresa faz
 2. Segmento de atuação
 3. Área principal da empresa, como varejo, saúde, logística, indústria, finanças, tecnologia, educação, alimentação ou outro
@@ -229,53 +205,39 @@ Traga uma análise prática com:
 12. Perguntas inteligentes que eu devo fazer na visita
 13. Como finalizar a visita com próximos passos claros
 14. Site, LinkedIn ou presença digital da empresa, se existir
-
 Importante:
 Use apenas informações públicas disponíveis na internet.
 Não invente dados.
 Quando alguma informação for estimada, deixe claro que é uma estimativa.
 Responda como um mentor comercial experiente em vendas consultivas B2B.`;
-
     abrirChatGPT(pergunta);
 }
-
 function abrirProspecao(){
-
     const nome = document.getElementById("nomeProspec").value.trim();
     const cep = document.getElementById("cepProspec").value.trim();
     const raio = document.getElementById("raioProspec").value;
-
     if(nome === ""){
         alert("Digite seu nome");
         return;
     }
-
     if(cep === ""){
         alert("Digite o CEP base");
         return;
     }
-
     const pergunta = 
 `Meu nome é ${nome}.
-
-Sou gerente comercial da Vivo Empresas e atuo com vendas B2B.
-
+Sou Gerente de Negócios da Vivo Empresas e atuo com vendas B2B.
 Quero fazer uma prospecção consultiva por região.
-
 CEP base: ${cep}
 Raio de busca: ${raio}
-
 Pesquise empresas próximas desse CEP com potencial para soluções Vivo Empresas.
-
 Priorize empresas com:
 - estrutura comercial
 - operação ativa
 - potencial corporativo
 - possível faturamento acima de R$ 20 mil por mês
 - necessidade de conectividade e tecnologia
-
 Monte uma lista detalhada contendo:
-
 1. Nome da empresa
 2. Segmento de atuação
 3. Área principal da empresa, como varejo, saúde, logística, indústria, finanças, tecnologia, educação, alimentação ou outro
@@ -290,31 +252,24 @@ Monte uma lista detalhada contendo:
 12. Sugestão de primeiro contato comercial
 13. Sinais públicos de crescimento da empresa
 14. Site, LinkedIn ou presença digital da empresa, se existir
-
 Importante:
 Use apenas informações públicas disponíveis na internet.
 Quando o faturamento não estiver disponível, faça estimativa baseada em porte, estrutura, número de funcionários, capital social, presença digital, operação, avaliações, filiais, site, LinkedIn ou notícias.
 Não invente dados.
 Quando alguma informação for estimada, deixe claro que é uma estimativa.
 Se possível, apresente em formato de tabela.`;
-
     abrirChatGPT(pergunta);
 }
-
 function abrirChatGPT(pergunta){
-
     const url = 
         "https://chatgpt.com/?q=" + 
         encodeURIComponent(pergunta) + 
         "&v=" + new Date().getTime();
-
     window.open(url, "_blank_" + new Date().getTime());
-
     setTimeout(function(){
         window.location.href = window.location.pathname + "?reload=" + new Date().getTime();
     }, 500);
 }
 </script>
-
 </body>
 </html>
