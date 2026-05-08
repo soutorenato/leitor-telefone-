@@ -7,7 +7,6 @@
 <title>EmpreendaBanco</title>
 
 <style>
-
 body{
     margin:0;
     background:#f5f6fa;
@@ -51,7 +50,6 @@ button{
     font-size:16px;
     cursor:pointer;
 }
-
 </style>
 </head>
 
@@ -66,42 +64,47 @@ button{
         id="nome"
         placeholder="Digite seu nome"
         autocomplete="off"
+        value=""
     >
 
-    <button onclick="abrirGPT()">
+    <button type="button" onclick="abrirGPT()">
         Abrir ChatGPT
     </button>
 
 </div>
 
 <script>
+window.onload = function(){
+    document.getElementById("nome").value = "";
+};
 
 function abrirGPT(){
 
-    let nome = document.getElementById("nome").value.trim();
+    const campoNome = document.getElementById("nome");
+    const nomeDigitado = campoNome.value.trim();
 
-    if(nome == ""){
+    if(nomeDigitado === ""){
         alert("Digite seu nome");
         return;
     }
 
-    let pergunta = "Meu nome é " + nome + ". Como posso me organizar melhor como gerente bancário?";
+    const pergunta = 
+        "Meu nome é " + nomeDigitado + 
+        ". Como posso me organizar melhor como gerente bancário?";
 
-    let url = "https://chatgpt.com/?q=" 
-        + encodeURIComponent(pergunta)
-        + "&atualiza=" + Date.now();
+    const url = 
+        "https://chatgpt.com/?q=" + 
+        encodeURIComponent(pergunta) + 
+        "&v=" + new Date().getTime();
 
-    window.open(
-        url,
-        "_blank"
-    );
+    window.open(url, "_blank_" + new Date().getTime());
 
-    setTimeout(() => {
-        location.reload();
-    }, 300);
+    campoNome.value = "";
 
+    setTimeout(function(){
+        window.location.href = window.location.pathname + "?reload=" + new Date().getTime();
+    }, 500);
 }
-
 </script>
 
 </body>
