@@ -1,173 +1,98 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>EmpreendaBanco</title>
+<title>EmpreendaBanco</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
 
-  <style>
+body{
+    margin:0;
+    background:#f5f6fa;
+    font-family:Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
 
-    body{
-      margin:0;
-      padding:20px;
-      background:#f5f6fa;
-      font-family:'Comfortaa', Arial, sans-serif;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      min-height:100vh;
-    }
+.box{
+    background:#fff;
+    padding:30px;
+    border-radius:20px;
+    width:400px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
 
-    .card{
-      width:100%;
-      max-width:520px;
-      background:#fff;
-      border-radius:24px;
-      padding:32px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-    }
+h1{
+    margin-top:0;
+    color:#1C2233;
+}
 
-    .topo{
-      background:#1C2233;
-      color:#fff;
-      padding:24px;
-      border-radius:20px;
-      margin-bottom:24px;
-    }
+input{
+    width:100%;
+    padding:15px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    margin-bottom:20px;
+    font-size:16px;
+}
 
-    .topo h1{
-      margin:0;
-      font-size:26px;
-    }
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#FF6A1A;
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+}
 
-    .topo p{
-      margin-top:10px;
-      font-size:14px;
-      line-height:1.5;
-    }
-
-    label{
-      display:block;
-      margin-bottom:10px;
-      font-weight:700;
-      color:#1C2233;
-    }
-
-    input{
-      width:100%;
-      padding:16px;
-      border-radius:14px;
-      border:1px solid #dcdcdc;
-      font-size:16px;
-      box-sizing:border-box;
-      margin-bottom:20px;
-      font-family:'Comfortaa', Arial, sans-serif;
-    }
-
-    input:focus{
-      outline:none;
-      border-color:#FF6A1A;
-    }
-
-    button{
-      width:100%;
-      padding:18px;
-      border:none;
-      border-radius:16px;
-      background:#FF6A1A;
-      color:#fff;
-      font-size:16px;
-      font-weight:700;
-      cursor:pointer;
-      font-family:'Comfortaa', Arial, sans-serif;
-      transition:0.3s;
-    }
-
-    button:hover{
-      opacity:0.92;
-    }
-
-    .obs{
-      margin-top:16px;
-      font-size:12px;
-      line-height:1.5;
-      color:#666;
-    }
-
-  </style>
+</style>
 </head>
 
 <body>
 
-  <div class="card">
+<div class="box">
 
-    <div class="topo">
-      <h1>EmpreendaBanco</h1>
-
-      <p>
-        Preencha seu nome abaixo e abra o ChatGPT com a pergunta personalizada.
-      </p>
-    </div>
-
-    <label>Seu nome</label>
+    <h1>EmpreendaBanco</h1>
 
     <input 
-      type="text" 
-      id="nome"
-      placeholder="Digite seu nome"
-      autocomplete="off"
+        type="text" 
+        id="nome"
+        placeholder="Digite seu nome"
     >
 
     <button onclick="abrirGPT()">
-      Abrir ChatGPT
+        Abrir ChatGPT
     </button>
 
-    <div class="obs">
-      O ChatGPT abrirá com a pergunta preenchida automaticamente.
-    </div>
+</div>
 
-  </div>
+<script>
 
-  <script>
+function abrirGPT(){
 
-    function abrirGPT(){
+    let nome = document.getElementById("nome").value;
 
-      let nome = document.getElementById('nome').value.trim();
-
-      if(nome == ''){
-        alert('Digite seu nome');
+    if(nome == ""){
+        alert("Digite seu nome");
         return;
-      }
-
-      let pergunta = `
-Meu nome é ${nome}.
-
-Como posso me organizar melhor como gerente bancário?
-
-Quero melhorar:
-- minha agenda comercial
-- minha produtividade
-- minha gestão de carteira
-- minhas abordagens consultivas
-- meu acompanhamento de metas
-- minha organização do dia
-`;
-
-      let url = "https://chat.openai.com/?prompt=" 
-        + encodeURIComponent(pergunta)
-        + "&t=" + Date.now();
-
-      window.open(
-        url,
-        '_blank_' + Date.now()
-      );
-
     }
 
-  </script>
+    let pergunta = "Meu nome é " + nome + ". Como posso me organizar melhor como gerente bancário?";
+
+    let url = "https://chatgpt.com/?q=" + encodeURIComponent(pergunta);
+
+    window.open(url, "_blank");
+
+}
+
+</script>
 
 </body>
 </html>
