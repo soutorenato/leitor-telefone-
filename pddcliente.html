@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador PDD - Cliente Devedor</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --panel:#fff; --line:#e7ebf2; --line-strong:#d8dee9;
+      --text:#152033; --muted:#6c7890; --soft:#f8fafd; --accent:#183c7a;
+      --accent-soft:#eef4ff; --shadow:0 18px 50px rgba(15,24,40,.08);
+      --ok:#2fb879; --warn:#d18c1d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:linear-gradient(180deg,#fbfcfe 0%, #f2f5fa 100%); color:var(--text);
+    }
+    button,input,textarea{font:inherit}
+    .hidden{display:none!important}
+    .app{min-height:100%; width:min(1360px,100%); margin:0 auto; padding:22px; display:flex; flex-direction:column; gap:18px}
+    .topbar{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:6px 2px}
+    .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600}
+    .title{font-size:30px; line-height:1.1; font-weight:300}
+    .title strong{font-weight:600}
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .icon-btn{
+      width:48px; height:48px; border-radius:16px; border:1px solid var(--line); background:#fff;
+      display:grid; place-items:center; cursor:pointer; box-shadow:0 8px 22px rgba(17,24,39,.05)
+    }
+    .icon-btn svg{width:20px; height:20px; stroke:#33425f; stroke-width:1.8; fill:none}
+    .shell{flex:1; display:grid; grid-template-columns:320px minmax(0,1fr); gap:18px; min-height:0}
+    .sidebar,.chat-wrap{
+      background:#fff; border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow); min-height:0;
+    }
+    .sidebar{padding:22px; display:flex; flex-direction:column; gap:16px}
+    .card{border:1px solid var(--line); border-radius:22px; padding:18px; background:#fff}
+    .label{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+    .value{margin-top:8px; font-size:18px; font-weight:500; line-height:1.35}
+    .muted{color:var(--muted); line-height:1.55; font-size:14px}
+    .status{display:inline-flex; align-items:center; gap:9px; padding:9px 12px; border-radius:999px; background:var(--soft); border:1px solid var(--line); color:#41506b; font-size:13px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#ced7e7}
+    .dot.live{background:var(--ok); box-shadow:0 0 0 6px rgba(47,184,121,.13)}
+    .dot.wait{background:var(--warn); box-shadow:0 0 0 6px rgba(209,140,29,.12)}
+    .tips{margin-top:8px; display:flex; flex-direction:column; gap:10px}
+    .tip{position:relative; padding-left:14px; font-size:14px; line-height:1.55; color:#44516a}
+    .tip:before{content:""; position:absolute; left:0; top:9px; width:5px; height:5px; border-radius:50%; background:#b2bed1}
+    .chat-wrap{display:flex; flex-direction:column; overflow:hidden; min-height:70dvh}
+    .chat-head{padding:20px 22px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:16px; background:#fff}
+    .chat-title{font-size:22px; font-weight:300}
+    .chat-title strong{font-weight:600}
+    .sub{margin-top:6px; font-size:13px; color:var(--muted); line-height:1.45}
+    .header-badge{padding:9px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; color:#50607a; font-size:12px}
+    .messages{flex:1; overflow:auto; padding:22px; display:flex; flex-direction:column; gap:16px; background:#fbfcff}
+    .empty{margin:auto; max-width:620px; text-align:center; padding:18px}
+    .empty h3{margin:0 0 10px; font-size:28px; font-weight:300}
+    .empty p{margin:0; color:var(--muted); line-height:1.7; font-size:15px}
+    .bubble-row{display:flex; gap:12px; align-items:flex-end; width:100%}
+    .bubble-row.me{justify-content:flex-end}
+    .avatar{width:38px; height:38px; border-radius:14px; display:grid; place-items:center; background:#f2f5fa; border:1px solid var(--line); color:#34425d; font-size:13px; font-weight:600}
+    .bubble-wrap{max-width:min(76%, 780px)}
+    .bubble{padding:15px 17px; border-radius:20px; font-size:15px; line-height:1.66; white-space:pre-wrap; border:1px solid var(--line)}
+    .bubble.client{background:#fff; color:#1d283d; border-top-left-radius:8px}
+    .bubble.me{background:var(--accent-soft); color:#173159; border-color:#d9e6ff; border-top-right-radius:8px}
+    .meta{font-size:12px; color:var(--muted); margin-top:6px}
+    .typing-dots{display:inline-flex; gap:6px; align-items:center}
+    .typing-dots span{width:7px; height:7px; border-radius:50%; background:#b1bdd1; display:block; animation:bounce 1.1s infinite ease-in-out}
+    .typing-dots span:nth-child(2){animation-delay:.12s}
+    .typing-dots span:nth-child(3){animation-delay:.24s}
+    @keyframes bounce{0%,80%,100%{transform:scale(.75);opacity:.5}40%{transform:scale(1);opacity:1}}
+    .composer{border-top:1px solid var(--line); padding:16px; background:#fff}
+    .composer-box{display:flex; align-items:flex-end; gap:12px; border:1px solid var(--line); border-radius:24px; padding:12px 12px 12px 16px; background:#fff}
+    textarea{flex:1; min-height:52px; max-height:180px; resize:vertical; border:none; outline:none; background:transparent; color:var(--text); line-height:1.6; font-size:15px}
+    .send{width:48px; height:48px; border:none; border-radius:16px; background:var(--text); display:grid; place-items:center; cursor:pointer}
+    .send:disabled{cursor:not-allowed; opacity:.45}
+    .send svg{width:18px;height:18px;stroke:#fff;stroke-width:1.9;fill:none}
+    .overlay{position:fixed; inset:0; background:rgba(14,20,35,.3); backdrop-filter: blur(6px); display:none; align-items:center; justify-content:center; padding:18px; z-index:50}
+    .overlay.show{display:flex}
+    .modal{width:min(980px,100%); background:#fff; border:1px solid var(--line); border-radius:28px; box-shadow:0 30px 90px rgba(16,24,40,.18); overflow:hidden; max-height:92dvh; display:flex; flex-direction:column}
+    .modal.small{width:min(560px,100%)}
+    .modal-head{padding:20px 22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center}
+    .modal-title{font-size:22px; font-weight:300}
+    .close{width:42px; height:42px; border-radius:14px; border:1px solid var(--line); background:#fff; display:grid; place-items:center; cursor:pointer}
+    .close svg{width:17px;height:17px;stroke:#44526d;stroke-width:1.8;fill:none}
+    .modal-body{padding:20px 22px 24px; overflow:auto}
+    .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+    .case-card{border:1px solid var(--line); border-radius:24px; padding:18px; cursor:pointer; background:#fff; transition:.18s ease}
+    .case-card:hover{transform:translateY(-2px); border-color:#d5ddef; box-shadow:0 16px 30px rgba(18,36,69,.08)}
+    .case-name{font-size:18px; font-weight:500; margin-bottom:7px}
+    .case-role{font-size:14px; color:var(--muted); line-height:1.45}
+    .field{display:flex; flex-direction:column; gap:8px; margin-bottom:14px}
+    .field label{font-size:13px; color:#52607a}
+    .field input{height:50px; border:1px solid var(--line); border-radius:16px; padding:0 16px; font-size:15px; color:var(--text); outline:none; width:100%}
+    .help{font-size:13px; color:var(--muted); line-height:1.6}
+    .save-actions{display:flex; justify-content:flex-end; margin-top:18px; gap:10px}
+    .primary-btn,.secondary-btn{border-radius:16px; border:1px solid var(--line); padding:12px 16px; cursor:pointer; background:#fff; color:var(--text)}
+    .primary-btn{background:var(--text); color:#fff; border-color:var(--text)}
+    .toast-wrap{position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:80; pointer-events:none}
+    .toast{background:#111827; color:#fff; padding:13px 15px; border-radius:16px; font-size:14px; max-width:360px; opacity:0; transform:translateY(12px); animation:toastIn .18s ease forwards}
+    .toast.error{background:#7b2430}
+    .toast.success{background:#14392d}
+    @keyframes toastIn{to{opacity:1;transform:translateY(0)}}
+    @media (max-width:980px){.app{padding:16px}.shell{grid-template-columns:1fr}.sidebar{order:2}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}.title{font-size:24px}.bubble-wrap{max-width:92%}.chat-head{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">EmpreendaBanco</div>
+        <div class="title">Simulador <strong>Reversão de PDD</strong></div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" id="openStart" title="Iniciar atendimento">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="openProfile" title="Perfil do especialista">
+          <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0" stroke-linecap="round"/><circle cx="12" cy="8" r="4"/></svg>
+        </button>
+        <button class="icon-btn" id="openSettings" title="Configurações">
+          <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 1 1-4 0v-.2a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 1 1 0-4h.2a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 1 1 4 0v.2a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 1 1 0 4h-.2a1 1 0 0 0-.4.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="card">
+          <div class="label">Especialista em simulação</div>
+          <div class="value" id="managerNameLabel">Não definido</div>
+        </div>
+        <div class="card">
+          <div class="label">Cliente atual</div>
+          <div class="value" id="currentClient">Nenhum atendimento iniciado</div>
+          <div class="muted" id="currentProfession" style="margin-top:8px;">Selecione um case no ícone superior.</div>
+        </div>
+        <div class="card">
+          <div class="label">Status</div>
+          <div style="margin-top:12px;">
+            <span class="status"><span class="dot" id="liveDot"></span><span id="statusText">Aguardando início</span></span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="label">Objetivo da aula</div>
+          <div class="tips">
+            <div class="tip">Entender a causa real da inadimplência antes de propor solução.</div>
+            <div class="tip">Reduzir atrito e recuperar confiança do cliente.</div>
+            <div class="tip">Construir plano de regularização possível e com data clara.</div>
+            <div class="tip">Treinar postura consultiva para reversão de PDD.</div>
+          </div>
+        </div>
+      </aside>
+      <section class="chat-wrap">
+        <div class="chat-head">
+          <div>
+            <div class="chat-title">Chat com <strong>cliente devedor</strong></div>
+            <div class="sub" id="headerSub">Simulação prática de renegociação PF.</div>
+          </div>
+          <div class="header-badge" id="headerBadge">Sem case ativo</div>
+        </div>
+        <div class="messages" id="messages">
+          <div class="empty" id="emptyState">
+            <h3>Atendimento ainda não iniciado</h3>
+            <p>Escolha uma ficha de cliente e conduza a conversa tentando entender o motivo do atraso, reduzir resistência e construir uma proposta viável de regularização.</p>
+          </div>
+        </div>
+        <div class="composer">
+          <div class="composer-box">
+            <textarea id="input" placeholder="Digite sua abordagem ao cliente..." disabled></textarea>
+            <button class="send" id="sendBtn" disabled>
+              <svg viewBox="0 0 24 24"><path d="M4 20 20 12 4 4l3 8-3 8Z" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="overlay" id="modalStartWrap">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Selecionar case de PDD</div>
+        <button class="close" data-close="modalStartWrap">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="grid" id="casesGrid"></div>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="modalProfileWrap">
+    <div class="modal small">
+      <div class="modal-head">
+        <div class="modal-title">Perfil do especialista</div>
+        <button class="close" data-close="modalProfileWrap">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="managerName">Nome do especialista</label>
+          <input type="text" id="managerName" placeholder="Ex.: Renato Souto" />
+        </div>
+        <div class="help">O nome será exibido no painel lateral.</div>
+        <div class="save-actions">
+          <button class="primary-btn" id="saveProfileBtn">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="modalSettingsWrap">
+    <div class="modal small">
+      <div class="modal-head">
+        <div class="modal-title">Configurações</div>
+        <button class="close" data-close="modalSettingsWrap">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="apiKey">Chave da API</label>
+          <input type="password" id="apiKey" placeholder="Cole aqui sua chave da OpenAI" autocomplete="off" />
+        </div>
+        <div class="help">A chave fica salva apenas no navegador.</div>
+        <div class="save-actions">
+          <button class="secondary-btn" id="clearApiBtn">Limpar</button>
+          <button class="primary-btn" id="saveSettingsBtn">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast-wrap" id="toastWrap"></div>
+  <script>
+    const clientCases = [
+      {
+        id:'pdd1',
+        name:'Carlos Menezes',
+        product:'Crédito pessoal em atraso',
+        debt:'R$ 18.700 em atraso há 74 dias',
+        initialRequest:'Olha, eu sei que estou devendo. Eu vou pagar, pode ficar tranquilo.',
+        style:'Evasivo, cordial, promete pagar, mas evita assumir data e valor.',
+        shortBehavior:'Crédito pessoal • cliente evasivo',
+        data:{
+          perfil:'Assalariado, 38 anos, trabalha em empresa de tecnologia.',
+          motivo:'Perdeu parte da renda variável e usou o crédito pessoal para cobrir despesas da casa.',
+          situacao:'Tem intenção de pagar, mas está desorganizado e com medo de assumir uma promessa que não consiga cumprir.',
+          pontoSensivel:'Foge quando o especialista pede data exata.',
+          abertura:'Se o especialista fizer perguntas calmas sobre fluxo de caixa, renda, despesas e possibilidade real de entrada, ele começa a abrir valores e datas.',
+          resistencia:'Se for pressionado, responde que vai pagar e tenta encerrar a conversa.',
+          possibilidade:'Pode pagar entrada de R$ 2.000 em até 5 dias e parcelar o restante se a parcela ficar abaixo de R$ 950.',
+          risco:'Se não houver acordo, tende a continuar prometendo sem pagar.',
+          outside:'Eu entendo, mas prefiro não entrar muito em detalhes. Só sei que vou resolver.'
+        }
+      },
+      {
+        id:'pdd2',
+        name:'Sandra Pacheco',
+        product:'Cartão de crédito em atraso',
+        debt:'R$ 9.850 em atraso há 63 dias',
+        initialRequest:'Eu não aguento mais ligação de cobrança. Se for para me pressionar, eu já vou desligar.',
+        style:'Irritada, defensiva e cansada de cobranças anteriores.',
+        shortBehavior:'Cartão • cliente irritada',
+        data:{
+          perfil:'Autônoma, 44 anos, trabalha com estética e teve queda forte de agenda.',
+          motivo:'Usou o cartão para comprar materiais do trabalho e pagar despesas pessoais quando os clientes diminuíram.',
+          situacao:'Está envergonhada e irritada, mas quer limpar o nome para voltar a comprar equipamentos.',
+          pontoSensivel:'Sente que o banco só liga para cobrar e não para entender.',
+          abertura:'Se o especialista validar o desconforto dela e pedir permissão para entender o cenário, ela suaviza.',
+          resistencia:'Se ouvir ameaça, cobrança dura ou tom frio, ela fica ríspida e encerra.',
+          possibilidade:'Consegue pagar R$ 800 de entrada em 10 dias e assumir parcela de até R$ 420.',
+          risco:'Se não se sentir respeitada, ignora novas tentativas.',
+          outside:'Eu não quero falar da minha vida toda. Quero saber se tem uma solução de verdade.'
+        }
+      },
+      {
+        id:'pdd3',
+        name:'Roberto Lima',
+        product:'Financiamento de veículo',
+        debt:'3 parcelas em atraso de financiamento de carro',
+        initialRequest:'Pode mandar busca, polícia, advogado, o que quiser. Eu não tenho dinheiro agora.',
+        style:'Afrontoso, reativo e usa provocação como defesa.',
+        shortBehavior:'Veículo • cliente confrontador',
+        data:{
+          perfil:'Motorista de aplicativo, 51 anos, depende do carro para trabalhar.',
+          motivo:'O carro ficou parado por problema mecânico e ele perdeu renda. Depois disso, acumulou parcelas.',
+          situacao:'Tem medo de perder o veículo porque é sua fonte de renda.',
+          pontoSensivel:'Fala grosso para esconder preocupação.',
+          abertura:'Se o especialista não entrar no confronto e mostrar que quer preservar a capacidade de trabalho dele, ele começa a colaborar.',
+          resistencia:'Se o especialista responder no mesmo tom, ele ameaça parar de atender.',
+          possibilidade:'Pode pagar uma parcela em atraso em 7 dias se conseguir rodar no fim de semana; aceita analisar composição das demais.',
+          risco:'Se perder o carro, perde renda e a chance de recuperação piora.',
+          outside:'Faz o que vocês quiserem. Eu já estou cheio disso.'
+        }
+      },
+      {
+        id:'pdd4',
+        name:'Mariana Farias',
+        product:'Crédito imobiliário',
+        debt:'4 parcelas em atraso no crédito imobiliário',
+        initialRequest:'Eu recebi uma notificação falando de risco para o imóvel. Estou muito preocupada, mas não sei nem por onde começar.',
+        style:'Boa-fé, assustada, colaborativa e emocionalmente abalada.',
+        shortBehavior:'Imobiliário • cliente colaborativa',
+        data:{
+          perfil:'Professora, 36 anos, mãe solo de um filho de 7 anos.',
+          motivo:'Teve afastamento médico temporário e redução de renda por alguns meses.',
+          situacao:'Quer muito manter o imóvel e está disposta a organizar um plano realista.',
+          pontoSensivel:'Tem medo de perder a casa e se emociona quando o tema aparece.',
+          abertura:'Se o especialista acolher, organizar a conversa por etapas e pedir informações objetivas, ela fornece tudo.',
+          resistencia:'Se a abordagem for fria ou ameaçadora, ela trava e chora, dificultando o avanço.',
+          possibilidade:'Consegue pagar uma entrada menor em 15 dias e precisa de alternativa para diluir parte do atraso.',
+          risco:'Sem plano, o caso pode avançar para medidas mais graves de cobrança.',
+          outside:'Eu só quero entender o que eu consigo fazer para não perder minha casa.'
+        }
+      },
+      {
+        id:'pdd5',
+        name:'Paulo Henrique Duarte',
+        product:'Crédito consignado',
+        debt:'Contrato consignado com parcela rejeitada e saldo em atraso',
+        initialRequest:'Eu não entendi por que isso virou atraso. O desconto era para sair direto, não era?',
+        style:'Confuso, mas disposto a entender. Cliente de boa-fé.',
+        shortBehavior:'Consignado • cliente confuso',
+        data:{
+          perfil:'Servidor público aposentado, 67 anos.',
+          motivo:'Houve mudança de margem e um desconto deixou de ocorrer corretamente. Ele não acompanhou os avisos.',
+          situacao:'Tem renda estável, mas orçamento apertado com remédios e ajuda aos netos.',
+          pontoSensivel:'Não gosta de se sentir culpado por algo que acha que era automático.',
+          abertura:'Se o especialista explicar com calma e confirmar dados, ele aceita negociar.',
+          resistencia:'Se for tratado como mau pagador, fica magoado e desconfiado.',
+          possibilidade:'Consegue pagar valor parcial no próximo benefício e ajustar a regularização desde que fique claro.',
+          risco:'Pode deixar acumular por falta de entendimento.',
+          outside:'Eu só preciso que alguém me explique com calma, porque achei que estava tudo certo.'
+        }
+      },
+      {
+        id:'pdd6',
+        name:'Tatiane Rocha',
+        product:'Crédito pessoal + cartão',
+        debt:'R$ 27.400 somando crédito pessoal e cartão em atraso',
+        initialRequest:'Eu até quero resolver, mas estou pagando aluguel, escola, mercado... não sobra nada.',
+        style:'Cansada, realista, preocupada e com baixa capacidade imediata.',
+        shortBehavior:'Múltiplos contratos • cliente sobrecarregada',
+        data:{
+          perfil:'Coordenadora administrativa, 42 anos, divorciada, dois filhos.',
+          motivo:'Separação recente aumentou despesas e reduziu renda familiar.',
+          situacao:'Tem intenção de pagar, mas precisa de proposta que caiba no orçamento.',
+          pontoSensivel:'Tem medo de assumir parcela alta e falhar de novo.',
+          abertura:'Se o especialista perguntar sobre orçamento, prioridades e valor possível sem julgamento, ela colabora bastante.',
+          resistencia:'Se for pressionada por entrada alta, ela diz que não tem condição e desiste.',
+          possibilidade:'Consegue começar com R$ 500 de entrada e parcela máxima de R$ 600, mas talvez consiga melhorar em 60 dias.',
+          risco:'Se a proposta não couber no orçamento, a renegociação quebra rapidamente.',
+          outside:'Eu não estou fugindo. Só não quero prometer uma coisa que eu já sei que não vou conseguir pagar.'
+        }
+      }
+    ];
+    const MODEL = 'gpt-4o-mini';
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const casesGrid = document.getElementById('casesGrid');
+    const emptyState = document.getElementById('emptyState');
+    const managerNameInput = document.getElementById('managerName');
+    const managerNameLabel = document.getElementById('managerNameLabel');
+    const currentClientEl = document.getElementById('currentClient');
+    const currentProfessionEl = document.getElementById('currentProfession');
+    const statusTextEl = document.getElementById('statusText');
+    const liveDotEl = document.getElementById('liveDot');
+    const headerBadgeEl = document.getElementById('headerBadge');
+    const headerSubEl = document.getElementById('headerSub');
+    const apiKeyInput = document.getElementById('apiKey');
+    let activeCase = null;
+    let history = [];
+    let isSending = false;
+    let typingEl = null;
+    let currentAbortController = null;
+    let conversationToken = 0;
+    function openModal(id){ document.getElementById(id).classList.add('show'); }
+    function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+    document.getElementById('openStart').addEventListener('click', ()=>openModal('modalStartWrap'));
+    document.getElementById('openProfile').addEventListener('click', ()=>openModal('modalProfileWrap'));
+    document.getElementById('openSettings').addEventListener('click', ()=>openModal('modalSettingsWrap'));
+    document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click', e=>closeModal(e.currentTarget.dataset.close)));
+    document.querySelectorAll('.overlay').forEach(overlay=>overlay.addEventListener('click', e=>{ if(e.target === overlay) overlay.classList.remove('show'); }));
+    document.getElementById('saveProfileBtn').addEventListener('click', ()=>{
+      const value = managerNameInput.value.trim();
+      localStorage.setItem('simulador_pdd_manager_name', value);
+      managerNameLabel.textContent = value || 'Não definido';
+      showToast('Perfil salvo.', 'success');
+      closeModal('modalProfileWrap');
+    });
+    document.getElementById('saveSettingsBtn').addEventListener('click', ()=>{
+      const key = apiKeyInput.value.trim();
+      localStorage.setItem('simulador_pdd_openai_key', key);
+      showToast(key ? 'Chave da API salva no navegador.' : 'Campo salvo vazio.', 'success');
+      closeModal('modalSettingsWrap');
+    });
+    document.getElementById('clearApiBtn').addEventListener('click', ()=>{
+      apiKeyInput.value = '';
+      localStorage.removeItem('simulador_pdd_openai_key');
+      showToast('Chave removida.', 'success');
+    });
+    function restoreLocalData(){
+      const savedName = localStorage.getItem('simulador_pdd_manager_name') || '';
+      const savedKey = localStorage.getItem('simulador_pdd_openai_key') || '';
+      managerNameInput.value = savedName;
+      apiKeyInput.value = savedKey;
+      managerNameLabel.textContent = savedName || 'Não definido';
+    }
+    function createCaseCards(){
+      casesGrid.innerHTML = '';
+      clientCases.forEach(c=>{
+        const card = document.createElement('div');
+        card.className = 'case-card';
+        card.innerHTML = `
+          <div class="case-name">${escapeHtml(c.name)}</div>
+          <div class="case-role">${escapeHtml(c.product)}<br>${escapeHtml(c.debt)}</div>
+        `;
+        card.addEventListener('click', ()=>startCase(c.id));
+        casesGrid.appendChild(card);
+      });
+    }
+    function formatTime(){
+      return new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    }
+    function getInitials(name){
+      return (name || '').trim().split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0].toUpperCase()).join('') || 'ES';
+    }
+    function escapeHtml(str=''){
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+    function addMessage(text, who='client'){
+      if (emptyState) emptyState.classList.add('hidden');
+      const row = document.createElement('div');
+      row.className = 'bubble-row' + (who === 'me' ? ' me' : '');
+      const initials = who === 'me' ? getInitials(managerNameInput.value || 'Especialista') : getInitials(activeCase?.name || 'Cliente');
+      row.innerHTML = who === 'me'
+        ? `<div class="bubble-wrap"><div class="bubble me">${escapeHtml(text)}</div><div class="meta">Você • ${formatTime()}</div></div><div class="avatar">${initials}</div>`
+        : `<div class="avatar">${initials}</div><div class="bubble-wrap"><div class="bubble client">${escapeHtml(text)}</div><div class="meta">${escapeHtml(activeCase?.name || 'Cliente')} • ${formatTime()}</div></div>`;
+      messagesEl.appendChild(row);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    function showTyping(){
+      removeTyping();
+      const row = document.createElement('div');
+      row.className = 'bubble-row';
+      row.innerHTML = `<div class="avatar">${getInitials(activeCase?.name || 'Cliente')}</div><div class="bubble-wrap"><div class="bubble client"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="meta">${escapeHtml(activeCase?.name || 'Cliente')} está digitando...</div></div>`;
+      messagesEl.appendChild(row);
+      typingEl = row;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    function removeTyping(){
+      if(typingEl && typingEl.parentNode){
+        typingEl.parentNode.removeChild(typingEl);
+      }
+      typingEl = null;
+    }
+    function setStatus(mode){
+      liveDotEl.classList.remove('live', 'wait');
+      if(mode === 'live'){
+        liveDotEl.classList.add('live');
+        statusTextEl.textContent = 'Atendimento em andamento';
+      }else if(mode === 'loading'){
+        liveDotEl.classList.add('wait');
+        statusTextEl.textContent = 'Cliente respondendo';
+      }else{
+        statusTextEl.textContent = 'Aguardando início';
+      }
+    }
+    function startCase(id){
+      if(currentAbortController){
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      conversationToken += 1;
+      isSending = false;
+      removeTyping();
+      activeCase = clientCases.find(c => c.id === id);
+      history = [];
+      messagesEl.innerHTML = '';
+      addMessage(activeCase.initialRequest, 'client');
+      currentClientEl.textContent = activeCase.name;
+      currentProfessionEl.textContent = `${activeCase.product} • ${activeCase.debt}`;
+      headerBadgeEl.textContent = activeCase.shortBehavior;
+      headerSubEl.textContent = activeCase.style;
+      inputEl.disabled = false;
+      sendBtn.disabled = false;
+      setStatus('live');
+      closeModal('modalStartWrap');
+      inputEl.focus();
+    }
+    function buildSystemPrompt(caseObj){
+      return `
+Você é ${caseObj.name}, cliente pessoa física inadimplente em uma simulação educacional de reversão de PDD.
+Seu papel é incorporar o cliente do case e conversar com o especialista como se fosse uma situação real de cobrança consultiva e tentativa de regularização.
+Tema da aula:
+"Falando com o cliente devedor na prática para reverter a PDD."
+Produto/contrato:
+- ${caseObj.product}
+- Situação da dívida: ${caseObj.debt}
+Perfil do cliente:
+- ${caseObj.data.perfil}
+Comportamento:
+- ${caseObj.style}
+Motivo real do atraso:
+- ${caseObj.data.motivo}
+Situação emocional e financeira:
+- ${caseObj.data.situacao}
+Ponto sensível:
+- ${caseObj.data.pontoSensivel}
+Quando o especialista conduz bem:
+- ${caseObj.data.abertura}
+Quando o especialista conduz mal:
+- ${caseObj.data.resistencia}
+Possibilidade real de negociação:
+- ${caseObj.data.possibilidade}
+Risco do caso:
+- ${caseObj.data.risco}
+Resposta para perguntas fora de contexto:
+- ${caseObj.data.outside}
+Regras obrigatórias:
+1. Responda sempre como o cliente, em primeira pessoa.
+2. Não diga que é IA, professor, sistema ou simulador.
+3. Não entregue todas as informações de uma vez. Revele aos poucos, conforme a qualidade das perguntas do especialista.
+4. Se o especialista demonstrar empatia, escuta ativa, respeito, organização e buscar entender o motivo do atraso, seja gradualmente mais colaborativo.
+5. Se o especialista for frio, agressivo, ameaçador, apressado ou apenas cobrar sem entender o contexto, aumente a resistência.
+6. Se o especialista pedir uma data, valor possível, entrada, renda, despesas ou condição real, responda de forma coerente com o case.
+7. Se o especialista tentar construir um plano de negociação realista, ajude a conversa avançar.
+8. Se o especialista prometer coisas que dependem de política do banco, responda com cautela.
+9. Não dê aula ao especialista. Aja como cliente.
+10. Não use termos técnicos demais. Fale como uma pessoa comum.
+11. Mantenha a conversa realista, humana e com emoção compatível com o perfil.
+12. Não invente fatos fora do case. Se algo não estiver definido, responda de forma prudente.
+13. O objetivo é treinar relacionamento, diagnóstico, negociação e reversão de PDD.
+Mensagem inicial do cliente:
+${caseObj.initialRequest}
+`.trim();
+    }
+    async function callOpenAI(userText, tokenAtSend){
+      const apiKey = apiKeyInput.value.trim();
+      if(!apiKey) throw new Error('Cole sua chave da API em Configurações antes de iniciar a conversa.');
+      if(!activeCase) throw new Error('Selecione um cliente antes de enviar uma mensagem.');
+      if(currentAbortController) currentAbortController.abort();
+      currentAbortController = new AbortController();
+      const messages = [
+        { role:'system', content: buildSystemPrompt(activeCase) },
+        ...history,
+        { role:'user', content:userText }
+      ];
+      let response;
+      try{
+        response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer ' + apiKey
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            temperature: 0.75,
+            messages
+          }),
+          signal: currentAbortController.signal
+        });
+      }catch(error){
+        if(error.name === 'AbortError'){
+          throw new Error('A conversa anterior foi encerrada ao trocar de cliente.');
+        }
+        throw new Error('Falha ao conectar com a OpenAI. Tente novamente ou reabra a página.');
+      }
+      let data;
+      try{
+        data = await response.json();
+      }catch{
+        throw new Error('Não foi possível interpretar a resposta da OpenAI.');
+      }
+      if(tokenAtSend !== conversationToken){
+        throw new Error('A conversa mudou durante a resposta. Tente novamente no novo cliente.');
+      }
+      if(!response.ok){
+        const apiMessage = data?.error?.message || `Erro ${response.status} ao conectar com a OpenAI.`;
+        throw new Error(apiMessage);
+      }
+      const content = data?.choices?.[0]?.message?.content;
+      if(!content) throw new Error('A OpenAI não retornou conteúdo.');
+      return content.trim();
+    }
+    async function sendMessage(){
+      const text = inputEl.value.trim();
+      if(!text || !activeCase || isSending) return;
+      const tokenAtSend = conversationToken;
+      isSending = true;
+      sendBtn.disabled = true;
+      inputEl.disabled = true;
+      addMessage(text, 'me');
+      inputEl.value = '';
+      autoResizeTextarea();
+      history.push({ role:'user', content:text });
+      showTyping();
+      setStatus('loading');
+      try{
+        const reply = await callOpenAI(text, tokenAtSend);
+        if(tokenAtSend !== conversationToken) return;
+        removeTyping();
+        addMessage(reply, 'client');
+        history.push({ role:'assistant', content:reply });
+        setStatus('live');
+      }catch(error){
+        if(tokenAtSend === conversationToken){
+          removeTyping();
+          setStatus('live');
+          if(history.length && history[history.length - 1]?.role === 'user' && history[history.length - 1]?.content === text){
+            history.pop();
+          }
+          showToast(error.message || 'Erro ao gerar resposta.', 'error');
+        }
+      }finally{
+        if(tokenAtSend === conversationToken){
+          isSending = false;
+          sendBtn.disabled = false;
+          inputEl.disabled = false;
+          inputEl.focus();
+        }
+      }
+    }
+    function showToast(message, type=''){
+      const wrap = document.getElementById('toastWrap');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`.trim();
+      toast.textContent = message;
+      wrap.appendChild(toast);
+      setTimeout(()=>{ toast.style.opacity = '0'; toast.style.transform = 'translateY(10px)'; }, 2600);
+      setTimeout(()=>{ if(toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
+    }
+    function autoResizeTextarea(){
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 180) + 'px';
+    }
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    inputEl.addEventListener('input', autoResizeTextarea);
+    restoreLocalData();
+    createCaseCards();
+    autoResizeTextarea();
+  </script>
+</body>
+</html>
